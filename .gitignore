@@ -52,8 +52,3 @@ Firmware/Doc
 /Firmware/Firmware.vcxproj
 /Firmware/Configuration_prusa_bckp.h
 /Firmware/variants/printers.h
-/out/build/x64-Debug/CMakeFiles
-/out/build/x64-Debug/Testing/Temporary
-/out/build/x64-Debug
-/.vs/Prusa-Firmware/v16/ipch/AutoPCH
-/.vs

@@ -391,6 +391,7 @@ extern uint16_t print_time_remaining_silent;
 
 extern uint16_t mcode_in_progress;
 extern uint16_t gcode_in_progress;
+extern uint16_t pcode_in_progress;
 
 extern LongTimer safetyTimer;
 

@@ -129,6 +129,7 @@ static void prusa_stat_farm_number();
 static void prusa_stat_diameter();
 static void prusa_stat_temperatures();
 static void prusa_stat_printinfo();
+
 static void lcd_menu_xyz_y_min();
 static void lcd_menu_xyz_skew();
 static void lcd_menu_xyz_offset();
@@ -353,6 +354,7 @@ static void lcd_implementation_drawmenu_sddirectory(uint8_t row, const char* lon
     }
     lcd_space(n);
 }
+
 
 
 
@@ -4343,9 +4345,11 @@ static void lcd_fsensor_state_set()
 }
 #endif //FILAMENT_SENSOR
 
+
 void lcd_set_degree() {
 	lcd_set_custom_characters_degree();
 }
+
 
 #if (LANG_MODE != 0)
 
@@ -6248,6 +6252,7 @@ void unload_filament(bool automatic)
 
 }
 
+
 unsigned char lcd_choose_color() {
 	//function returns index of currently chosen item
 	//following part can be modified from 2 to 255 items:
@@ -6328,6 +6333,7 @@ unsigned char lcd_choose_color() {
 }
 
 #include "xflash.h"
+
 
 #ifdef LCD_TEST
 static void lcd_test_menu()

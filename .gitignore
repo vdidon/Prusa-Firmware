@@ -53,3 +53,7 @@ Firmware/Doc
 /Firmware/Configuration_prusa_bckp.h
 /Firmware/variants/printers.h
 Firmware/.vs/
+
+#Perso
+.idea
+cmake-build-debug

@@ -21,8 +21,8 @@ extern PGM_P sPrinterName;
 // FW_VERSION_UNKNOWN means this is an unofficial build.
 // The firmware should only be checked into github with this symbol.
 #define FW_DEV_VERSION FW_VERSION_UNKNOWN
-#define FW_REPOSITORY "Unknown"
-#define FW_VERSION_FULL FW_VERSION "-" STR(FW_COMMIT_NR)
+#define FW_REPOSITORY "VDIDON"
+#define FW_VERSION_FULL FW_VERSION "-" STR(FW_COMMIT_NR) "-" "Perso"
 
 // G-code language level
 #define GCODE_LEVEL 1

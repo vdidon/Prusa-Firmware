@@ -37,5 +37,7 @@ $BUILD_ENV_PATH/arduino $SCRIPT_PATH/Firmware/Firmware.ino --verify --board Prus
 export ARDUINO=$BUILD_ENV_PATH
 
 cd $SCRIPT_PATH/lang
-./lang-build.sh || exit 10
-./fw-build.sh || exit 11
+./lang-build.sh en || exit 10
+./lang-build.sh fr || exit 10
+./fw-build.sh en || exit 11
+./fw-build.sh fr || exit 11

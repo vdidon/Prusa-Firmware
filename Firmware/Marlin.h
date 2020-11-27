@@ -258,7 +258,7 @@ void repeatcommand_front();
 // Remove all lines from the command queue.
 void cmdqueue_reset();
 
-void prepare_arc_move(char isclockwise);
+void prepare_arc_move(bool isclockwise);
 void clamp_to_software_endstops(float target[3]);
 void refresh_cmd_timeout(void);
 

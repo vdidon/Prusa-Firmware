@@ -29,7 +29,7 @@ cd Prusa-Firmware-build || exit 7
 BUILD_PATH="$( pwd -P )"
 
 if [ ! -f "$SCRIPT_PATH/Firmware/Configuration_prusa.h" ]; then
-    cp $SCRIPT_PATH/Firmware/variants/1_75mm_MK3-EINSy10a-E3Dv6full.h $SCRIPT_PATH/Firmware/Configuration_prusa.h || exit 8
+    cp $SCRIPT_PATH/Firmware/variants/1_75mm_MK3S-EINSy10a-E3Dv6full.h $SCRIPT_PATH/Firmware/Configuration_prusa.h || exit 8
 fi
 
 $BUILD_ENV_PATH/arduino $SCRIPT_PATH/Firmware/Firmware.ino --verify --board PrusaResearchRambo:avr:rambo --pref build.path=$BUILD_PATH --pref compiler.warning_level=all || exit 9

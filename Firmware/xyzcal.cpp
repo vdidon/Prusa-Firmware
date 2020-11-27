@@ -510,6 +510,7 @@ int8_t xyzcal_find_point_center2(uint16_t delay_us)
             }
         }
     }
+    return 0;
 }
 
 int8_t xyzcal_find_point_center2A(int16_t x0, int16_t y0, int16_t z0, uint16_t delay_us){

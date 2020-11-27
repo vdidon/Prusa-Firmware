@@ -72,7 +72,7 @@
 
 #MSG_CONFIRM_CARRIAGE_AT_THE_TOP c=20 r=2
 "Are left and right Z~carriages all up?"
-"Z~carriages gauche + droite tout en haut?"
+"Z gauche et droite tout en haut?"
 
 #MSG_AUTO_DEPLETE c=17 r=1
 "SpoolJoin"

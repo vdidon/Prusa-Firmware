@@ -63,35 +63,20 @@ Sound_SaveMode();
 }
 
 //if critical is true then silend and once mode is ignored
-void Sound_MakeCustom(uint16_t ms,uint16_t tone_,bool critical){
-    backlight_wake();
-     if (!critical){
-          if (eSoundMode != e_SOUND_MODE_SILENT){
-               if(!tone_){
-                    WRITE(BEEPER, HIGH);
-                    _delay(ms);
-                    WRITE(BEEPER, LOW);
-               }
-               else{
-                    _tone(BEEPER, tone_);
-                    _delay(ms);
-                    _noTone(BEEPER);
-               }
-          }
-     }
-     else{
-          if(!tone_){
-               WRITE(BEEPER, HIGH);
-               _delay(ms);
-               WRITE(BEEPER, LOW);
-               _delay(ms);
-          }
-          else{
-               _tone(BEEPER, tone_);
-               _delay(ms);
-               _noTone(BEEPER);
-          }
-     }
+void Sound_MakeCustom(uint16_t ms, uint16_t tone_, bool critical) {
+  backlight_wake();
+  if (!critical && eSoundMode == e_SOUND_MODE_SILENT)
+    return;
+  if (!tone_) {
+    WRITE(BEEPER, HIGH);
+    _delay(ms);
+    WRITE(BEEPER, LOW);
+    _delay(ms);
+  } else {
+    _tone(BEEPER, tone_);
+    _delay(ms);
+    _noTone(BEEPER);
+  }
 }
 
 void Sound_MakeSound(eSOUND_TYPE eSoundType)

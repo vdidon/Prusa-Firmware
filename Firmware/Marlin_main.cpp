@@ -92,6 +92,7 @@
 
 #include "spi.h"
 
+
 #ifdef FILAMENT_SENSOR
 #include "fsensor.h"
 #ifdef IR_SENSOR
@@ -134,6 +135,7 @@
 #include "sound.h"
 
 #include "cmdqueue.h"
+
 
 //Macro for print fan speed
 #define FAN_PULSE_WIDTH_LIMIT ((fanSpeed > 100) ? 3 : 4) //time in ms
@@ -752,6 +754,7 @@ static void factory_reset(char level)
 		farm_mode = false;
 		eeprom_update_byte((uint8_t*)EEPROM_FARM_MODE, farm_mode);
 
+
 #ifdef FILAMENT_SENSOR
 		fsensor_enable();
 		fsensor_autoload_set(true);
@@ -768,6 +771,7 @@ static void factory_reset(char level)
 		menu_progressbar_finish();
 		softReset();
 		break;
+
 
 
 #ifdef SNMM
@@ -5719,6 +5723,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
     /*!
 	### M17 - Enable all axes <a href="https://reprap.org/wiki/G-code#M17:_Enable.2FPower_all_stepper_motors">M17: Enable/Power all stepper motors</a>
     */
+
 
     case 17:
         LCD_MESSAGERPGM(_i("No move."));////MSG_NO_MOVE c=20

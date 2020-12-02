@@ -195,9 +195,9 @@ private:
 #define LCD_STR_FOLDER      "\x05"
 #define LCD_STR_FEEDRATE    "\x06"
 #define LCD_STR_CLOCK       "\x07"
-#define LCD_STR_SMILE       "\x0B"
 #define LCD_STR_ARROW_UP    "\x0B"
-#define LCD_STR_ARROW_DOWN  "\x01"
+#define LCD_STR_ARROW_DOWN  "\x0C"
+#define LCD_STR_SMILE       "\x10"
 #define LCD_STR_ARROW_RIGHT "\x7E" //from the default character set
 
 extern void lcd_set_custom_characters(void);

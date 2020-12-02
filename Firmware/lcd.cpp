@@ -954,8 +954,8 @@ void lcd_set_custom_characters(void)
 	lcd_createChar_P(LCD_STR_FOLDER[0], lcd_chardata_folder);
 	lcd_createChar_P(LCD_STR_FEEDRATE[0], lcd_chardata_feedrate);
 	lcd_createChar_P(LCD_STR_CLOCK[0], lcd_chardata_clock);
-	//lcd_createChar_P(LCD_STR_ARROW_UP[0], lcd_chardata_arrup);
-	//lcd_createChar_P(LCD_STR_ARROW_DOWN[0], lcd_chardata_arrdown);
+	lcd_createChar_P(LCD_STR_ARROW_UP[0], lcd_chardata_arrup);
+	lcd_createChar_P(LCD_STR_ARROW_DOWN[0], lcd_chardata_arrdown);
 }
 
 void lcd_set_custom_characters_arrows(void)

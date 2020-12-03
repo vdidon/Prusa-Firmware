@@ -8937,7 +8937,17 @@ Reserved
   }
   else if (code_seen("P")) {
     pcode_in_progress = (uint16_t)code_value();
+    char* msg;
     switch (pcode_in_progress) {
+      case 117:
+        msg = strchr_pointer+5;
+        //lcd_puts_P(msg);
+        lcd_clear();
+        for (int i = 0; msg[i]!='\x00'; ++i) {
+          lcd_putc(msg[i]);
+        }
+        lcd_wait_for_click();
+        break;
       case 1000:
         lcd_show_fullscreen_message_ok(_N("test"));
         break;

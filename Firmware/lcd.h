@@ -197,8 +197,8 @@ private:
 #define LCD_STR_CLOCK       "\x07"
 #define LCD_STR_ARROW_UP    "\x0B"
 #define LCD_STR_ARROW_DOWN  "\x0C"
-#define LCD_STR_SMILE       "\x10"
-#define LCD_STR_ARROW_RIGHT "\x7E" //from the default character set
+#define LCD_STR_SMILE       "\x0D"
+#define LCD_STR_ARROW_RIGHT "\x0E" //from the default character set
 
 extern void lcd_set_custom_characters(void);
 extern void lcd_set_custom_characters_arrows(void);

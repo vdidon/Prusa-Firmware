@@ -3554,7 +3554,39 @@ int8_t lcd_show_multiscreen_message_two_choices_and_wait_P(const char *msg, bool
 		}
 	}
 }
-
+void lcd_show_fullscreen_message_ok(const char *msg) {
+  LcdUpdateDisabler lcdUpdateDisabler;
+  const char *msg_next = lcd_display_message_fullscreen_P(msg);
+  lcd_set_custom_characters_nextpage();
+  lcd_consume_click();
+  KEEPALIVE_STATE(PAUSED_FOR_USER);
+  // Until confirmed by a button click.
+  for (;;) {
+    if (msg_next == NULL) {
+      lcd_set_cursor(8,4);
+      lcd_puts_P(_N("\xFFOK\xFF"));
+    }
+    // Wait for 10 seconds before displaying the next text.
+    for (uint8_t i = 0; i < 200; ++i) {
+      delay_keep_alive(50);
+      if (lcd_clicked()) {
+        if (msg_next == NULL) {
+          KEEPALIVE_STATE(IN_HANDLER);
+          lcd_set_custom_characters();
+          lcd_update_enable(true);
+          lcd_update(2);
+          return;
+        } else {
+          break;
+        }
+      }
+    }
+    if(msg_next != NULL)
+    {
+      msg_next = lcd_display_message_fullscreen_P(msg_next);
+    }
+  }
+}
 //! @brief Show single screen message with yes and no possible choices and wait with possible timeout
 //! @param msg Message to show
 //! @param allow_timeouting if true, allows time outing of the screen

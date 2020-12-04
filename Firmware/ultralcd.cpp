@@ -2281,7 +2281,12 @@ static void mFilamentItem_PLA()
     mFilamentItem(PLA_PREHEAT_HOTEND_TEMP, PLA_PREHEAT_HPB_TEMP);
 }
 
-static void mFilamentItem_PET()
+static void mFilamentItem_PETG() {
+  bFilamentPreheatState = false;
+  mFilamentItem(PETG_PREHEAT_HOTEND_TEMP, PETG_PREHEAT_HPB_TEMP);
+}
+
+/*static void mFilamentItem_PET()
 {
     bFilamentPreheatState = false;
     mFilamentItem(PET_PREHEAT_HOTEND_TEMP, PET_PREHEAT_HPB_TEMP);
@@ -2291,7 +2296,7 @@ static void mFilamentItem_ASA()
 {
     bFilamentPreheatState = false;
     mFilamentItem(ASA_PREHEAT_HOTEND_TEMP, ASA_PREHEAT_HPB_TEMP);
-}
+}*/
 
 static void mFilamentItem_PC()
 {
@@ -2311,11 +2316,11 @@ static void mFilamentItem_HIPS()
     mFilamentItem(HIPS_PREHEAT_HOTEND_TEMP, HIPS_PREHEAT_HPB_TEMP);
 }
 
-static void mFilamentItem_PP()
+/*static void mFilamentItem_PP()
 {
     bFilamentPreheatState = false;
     mFilamentItem(PP_PREHEAT_HOTEND_TEMP, PP_PREHEAT_HPB_TEMP);
-}
+}*/
 
 static void mFilamentItem_FLEX()
 {
@@ -2323,12 +2328,36 @@ static void mFilamentItem_FLEX()
     mFilamentItem(FLEX_PREHEAT_HOTEND_TEMP, FLEX_PREHEAT_HPB_TEMP);
 }
 
-static void mFilamentItem_PVB()
+/*static void mFilamentItem_PVB()
 {
     bFilamentPreheatState = false;
     mFilamentItem(PVB_PREHEAT_HOTEND_TEMP, PVB_PREHEAT_HPB_TEMP);
+}*/
+
+static void mFilamentItem_CLEAN1() {
+  bFilamentPreheatState = false;
+  mFilamentItem(CLEAN1_PREHEAT_HOTEND_TEMP, CLEAN_PREHEAT_HPB_TEMP);
 }
 
+static void mFilamentItem_CLEAN2() {
+  bFilamentPreheatState = false;
+  mFilamentItem(CLEAN2_PREHEAT_HOTEND_TEMP, CLEAN_PREHEAT_HPB_TEMP);
+}
+
+static void mFilamentItem_VEGETAL() {
+  bFilamentPreheatState = false;
+  mFilamentItem(VEGETAL_PREHEAT_HOTEND_TEMP, VEGETAL_PREHEAT_HPB_TEMP);
+}
+
+static void mFilamentItem_PLAPERL() {
+  bFilamentPreheatState = false;
+  mFilamentItem(PLAPERL_PREHEAT_HOTEND_TEMP, PLAPERL_PREHEAT_HPB_TEMP);
+}
+
+static void mFilamentItem_PLABOIS() {
+  bFilamentPreheatState = false;
+  mFilamentItem(PLABOIS_PREHEAT_HOTEND_TEMP, PLABOIS_PREHEAT_HPB_TEMP);
+}
 void mFilamentBack()
 {
     menu_back();
@@ -2339,40 +2368,75 @@ void mFilamentBack()
         eFilamentAction = FilamentAction::None; // i.e. non-autoLoad
     }
 }
-
-void lcd_generic_preheat_menu()
+static void lcd_cooldown_buse() {
+  setAllTargetHotends(0);
+  fanSpeed = 0;
+  eFilamentAction = FilamentAction::None;
+  lcd_return_to_status();
+}
+static void lcd_cooldown_bed() {
+  setTargetBed(0);
+  fanSpeed = 0;
+  eFilamentAction = FilamentAction::None;
+  lcd_return_to_status();
+}
+static void lcd_cooldown_menu()
 {
-    MENU_BEGIN();
-    if (!eeprom_read_byte((uint8_t*)EEPROM_WIZARD_ACTIVE))
-    {
-        if (eFilamentAction == FilamentAction::Lay1Cal)
-        {
-            MENU_ITEM_FUNCTION_P(_T(MSG_BACK), mFilamentBack);
-        }
-        else
-        {
-            MENU_ITEM_FUNCTION_P(_T(MSG_MAIN), mFilamentBack);
-        }
+  MENU_BEGIN();
+  MENU_ITEM_SUBMENU_P(_N("ALL"),lcd_cooldown);
+  MENU_ITEM_SUBMENU_P(_N("BUSE"),lcd_cooldown_buse);
+  MENU_ITEM_SUBMENU_P(_N("BED"),lcd_cooldown_bed);
+  MENU_ITEM_BACK_P(_T(MSG_BACK));
+  MENU_END();
+}
+void lcd_generic_preheat_menu() {
+  MENU_BEGIN();
+    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE)) {
+      if (eFilamentAction == FilamentAction::Lay1Cal) {
+        MENU_ITEM_FUNCTION_P(_T(MSG_BACK), mFilamentBack);
+      } else {
+        MENU_ITEM_FUNCTION_P(_T(MSG_MAIN), mFilamentBack);
+      }
     }
-    if (farm_mode)
-    {
-        MENU_ITEM_FUNCTION_P(PSTR("farm   -  " STRINGIFY(FARM_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FARM_PREHEAT_HPB_TEMP)), mFilamentItem_farm);
-        MENU_ITEM_FUNCTION_P(PSTR("nozzle -  " STRINGIFY(FARM_PREHEAT_HOTEND_TEMP) "/0"), mFilamentItem_farm_nozzle);
+    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && (target_temperature[0]!=0 || target_temperature_bed!=0))
+      //MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
+      MENU_ITEM_SUBMENU_P(_T(MSG_COOLDOWN),lcd_cooldown_menu);
+    if (farm_mode) {
+      MENU_ITEM_FUNCTION_P(PSTR("farm   -  " STRINGIFY(FARM_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FARM_PREHEAT_HPB_TEMP)),
+                           mFilamentItem_farm);
+      MENU_ITEM_FUNCTION_P(PSTR("nozzle -  " STRINGIFY(FARM_PREHEAT_HOTEND_TEMP) "/0"), mFilamentItem_farm_nozzle);
+    } else {
+      MENU_ITEM_SUBMENU_P(PSTR("PLA      " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_PLA);
+      MENU_ITEM_SUBMENU_P(PSTR("PETG     " STRINGIFY(PETG_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PETG_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_PETG);
+      //MENU_ITEM_SUBMENU_P(PSTR("ASA  -  " STRINGIFY(ASA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ASA_PREHEAT_HPB_TEMP)),
+      //                    mFilamentItem_ASA);
+      MENU_ITEM_SUBMENU_P(PSTR("PC/ABS   " STRINGIFY(PC_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PC_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_PC);
+      MENU_ITEM_SUBMENU_P(PSTR("HIPS     " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_HIPS);
+      //MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),
+      //                    mFilamentItem_PP);
+      MENU_ITEM_SUBMENU_P(PSTR("FLEX     " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_FLEX);
+      MENU_ITEM_SUBMENU_P(PSTR("ABS      " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_ABS);
+      MENU_ITEM_SUBMENU_P(
+              PSTR("VEGETAL  " STRINGIFY(VEGETAL_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(VEGETAL_PREHEAT_HPB_TEMP)),
+              mFilamentItem_VEGETAL);
+      MENU_ITEM_SUBMENU_P(
+              PSTR("PLA PERL " STRINGIFY(PLAPERL_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLAPERL_PREHEAT_HPB_TEMP)),
+              mFilamentItem_PLAPERL);
+      MENU_ITEM_SUBMENU_P(
+              PSTR("PLA BOIS " STRINGIFY(PLABOIS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLABOIS_PREHEAT_HPB_TEMP)),
+              mFilamentItem_PLABOIS);
+       MENU_ITEM_SUBMENU_P(PSTR("CLEAN1   " STRINGIFY(CLEAN1_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(CLEAN_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_CLEAN1);
+      MENU_ITEM_SUBMENU_P(PSTR("CLEAN2   " STRINGIFY(CLEAN2_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(CLEAN_PREHEAT_HPB_TEMP)),
+                          mFilamentItem_CLEAN2);
     }
-    else
-    {
-        MENU_ITEM_SUBMENU_P(PSTR("PLA  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)),mFilamentItem_PLA);
-        MENU_ITEM_SUBMENU_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)),mFilamentItem_PET);
-        MENU_ITEM_SUBMENU_P(PSTR("ASA  -  " STRINGIFY(ASA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ASA_PREHEAT_HPB_TEMP)),mFilamentItem_ASA);
-        MENU_ITEM_SUBMENU_P(PSTR("PC   -  " STRINGIFY(PC_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PC_PREHEAT_HPB_TEMP)),mFilamentItem_PC);
-        MENU_ITEM_SUBMENU_P(PSTR("PVB  -  " STRINGIFY(PVB_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PVB_PREHEAT_HPB_TEMP)),mFilamentItem_PVB);
-        MENU_ITEM_SUBMENU_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)),mFilamentItem_ABS);
-        MENU_ITEM_SUBMENU_P(PSTR("HIPS -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)),mFilamentItem_HIPS);
-        MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),mFilamentItem_PP);
-        MENU_ITEM_SUBMENU_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),mFilamentItem_FLEX);
-    }
-    if (!eeprom_read_byte((uint8_t*)EEPROM_WIZARD_ACTIVE) && eFilamentAction == FilamentAction::Preheat) MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
-    MENU_END();
+  MENU_END();
 }
 
 void mFilamentItemForce()

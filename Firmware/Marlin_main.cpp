@@ -9332,7 +9332,7 @@ Sigma_Exit:
 #endif //DEBUG_DCODES
 	}
   }
-  else if (code_seen("P")) {
+  else if (code_seen('P')) {
     pcode_in_progress = (uint16_t)code_value();
     char* msg;
     switch (pcode_in_progress) {

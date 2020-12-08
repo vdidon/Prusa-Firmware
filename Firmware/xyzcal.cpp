@@ -495,22 +495,20 @@ int8_t xyzcal_find_point_center2(uint16_t delay_us)
 	xyzcal_lineXYZ_to(_X, _Y, z0 - 400, 500, 1);
 
     if (has_temperature_compensation()){
-        z0 = _Z - 20; // normal PINDA
+	    z0 = _Z - 20; // normal PINDA
         return xyzcal_find_point_center2A(x0, y0, z0, delay_us);
     } else {
         // try searching harder, each PINDA is different
-        int8_t rv = 0;
         for(z0 = _Z - 20; z0 <= _Z + 140; z0 += 20 ){ // alternate PINDA
-            rv = xyzcal_find_point_center2A(x0, y0, z0, delay_us);
+            int8_t rv = xyzcal_find_point_center2A(x0, y0, z0, delay_us);
             printf_P(PSTR(" z0=%d"), z0);
             if( rv != 0 ){
-                puts_P(PSTR("ok"));
-                break;
+                printf_P(PSTR("ok\n"));
+                return rv;
             } else {
-                puts_P(PSTR("fail"));
+                printf_P(PSTR("fail\n"));
             }
         }
-        return rv;
     }
     return 0;
 }

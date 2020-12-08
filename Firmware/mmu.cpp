@@ -9,14 +9,12 @@
 #include "Configuration_prusa.h"
 #include "fsensor.h"
 #include "cardreader.h"
-#include "cmdqueue.h"
 #include "ultralcd.h"
 #include "sound.h"
 #include "printers.h"
 #include <avr/pgmspace.h>
+#include "io_atmega2560.h"
 #include "AutoDeplete.h"
-#include "fastio.h"
-#include "pins.h"
 //-//
 #include "util.h"
 
@@ -30,6 +28,9 @@
 #define MMU_P0_TIMEOUT 3000ul //timeout for P0 command: 3seconds
 #define MMU_MAX_RESEND_ATTEMPTS 2
 
+#ifdef MMU_HWRESET
+#define MMU_RST_PIN 76
+#endif //MMU_HWRESET
 
 namespace
 {
@@ -155,8 +156,8 @@ void mmu_init(void)
 	_delay_ms(10);                             //wait 10ms for sure
 	mmu_reset();                               //reset mmu (HW or SW), do not wait for response
 	mmu_state = S::Init;
-	SET_INPUT(IR_SENSOR_PIN); //input mode
-	WRITE(IR_SENSOR_PIN, 1); //pullup
+	PIN_INP(IR_SENSOR_PIN); //input mode
+	PIN_SET(IR_SENSOR_PIN); //pullup
 }
 
 //if IR_SENSOR defined, always returns true
@@ -169,7 +170,7 @@ bool check_for_ir_sensor()
 
 	bool detected = false;
 	//if IR_SENSOR_PIN input is low and pat9125sensor is not present we detected idler sensor
-	if ((READ(IR_SENSOR_PIN) == 0) 
+	if ((PIN_GET(IR_SENSOR_PIN) == 0) 
 #ifdef PAT9125
 		&& fsensor_not_responding
 #endif //PAT9125
@@ -362,7 +363,7 @@ void mmu_loop(void)
 	case S::GetFinda: //response to command P0
         if (mmu_idl_sens)
         {
-            if (READ(IR_SENSOR_PIN) == 0 && mmu_loading_flag)
+            if (PIN_GET(IR_SENSOR_PIN) == 0 && mmu_loading_flag)
             {
 #ifdef MMU_DEBUG
                 printf_P(PSTR("MMU <= 'A'\n"));
@@ -405,7 +406,7 @@ void mmu_loop(void)
 	case S::WaitCmd: //response to mmu commands
         if (mmu_idl_sens)
         {
-            if (READ(IR_SENSOR_PIN) == 0 && mmu_loading_flag)
+            if (PIN_GET(IR_SENSOR_PIN) == 0 && mmu_loading_flag)
             {
                 DEBUG_PRINTF_P(PSTR("MMU <= 'A'\n"));
                 mmu_puts_P(PSTR("A\n")); //send 'abort' request
@@ -595,10 +596,10 @@ bool mmu_get_response(uint8_t move)
 			    mmu_loading_flag = true;
 				if (can_extrude()) mmu_load_step();
 				//don't rely on "ok" signal from mmu unit; if filament detected by idler sensor during loading stop loading movements to prevent infinite loading
-				if (READ(IR_SENSOR_PIN) == 0) move = MMU_NO_MOVE;
+				if (PIN_GET(IR_SENSOR_PIN) == 0) move = MMU_NO_MOVE;
 				break;
 			case MMU_UNLOAD_MOVE:
-				if (READ(IR_SENSOR_PIN) == 0) //filament is still detected by idler sensor, printer helps with unlading 
+				if (PIN_GET(IR_SENSOR_PIN) == 0) //filament is still detected by idler sensor, printer helps with unlading 
 				{
 				    if (can_extrude())
 				    {
@@ -616,7 +617,7 @@ bool mmu_get_response(uint8_t move)
 				}
 				break;
 			case MMU_TCODE_MOVE: //first do unload and then continue with infinite loading movements
-				if (READ(IR_SENSOR_PIN) == 0) //filament detected by idler sensor, we must unload first 
+				if (PIN_GET(IR_SENSOR_PIN) == 0) //filament detected by idler sensor, we must unload first 
 				{
                     if (can_extrude())
                     {
@@ -1459,7 +1460,7 @@ static bool can_load()
         current_position[E_AXIS] -= e_increment;
         plan_buffer_line_curposXYZE(MMU_LOAD_FEEDRATE);
         st_synchronize();
-        if(0 == READ(IR_SENSOR_PIN))
+        if(0 == PIN_GET(IR_SENSOR_PIN))
         {
             ++filament_detected_count;
             DEBUG_PUTCHAR('O');
@@ -1490,7 +1491,7 @@ static bool load_more()
 {
     for (uint8_t i = 0; i < MMU_IDLER_SENSOR_ATTEMPTS_NR; i++)
     {
-        if (READ(IR_SENSOR_PIN) == 0) return true;
+        if (PIN_GET(IR_SENSOR_PIN) == 0) return true;
         DEBUG_PRINTF_P(PSTR("Additional load attempt nr. %d\n"), i);
         mmu_command(MmuCmd::C0);
         manage_response(true, true, MMU_LOAD_MOVE);

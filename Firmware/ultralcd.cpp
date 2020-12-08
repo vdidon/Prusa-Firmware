@@ -48,7 +48,6 @@
 #include "mmu.h"
 
 #include "static_assert.h"
-#include "io_atmega2560.h"
 #include "first_lay_cal.h"
 
 #include "fsensor.h"
@@ -1012,10 +1011,40 @@ lcd_status_screen()                          // NOT static due to using inside "
     }
   }
 
-  if (lcd_status_update_delay)
-    lcd_status_update_delay--;
-  else
-    lcd_draw_update = 1;
+#ifdef ULTIPANEL_FEEDMULTIPLY
+	// Dead zone at 100% feedrate
+	if ((feedmultiply < 100 && (feedmultiply + int(lcd_encoder)) > 100) ||
+		(feedmultiply > 100 && (feedmultiply + int(lcd_encoder)) < 100))
+	{
+		lcd_encoder = 0;
+		feedmultiply = 100;
+	}
+	if (feedmultiply == 100 && int(lcd_encoder) > ENCODER_FEEDRATE_DEADZONE)
+	{
+		feedmultiply += int(lcd_encoder) - ENCODER_FEEDRATE_DEADZONE;
+		lcd_encoder = 0;
+	}
+	else if (feedmultiply == 100 && int(lcd_encoder) < -ENCODER_FEEDRATE_DEADZONE)
+	{
+		feedmultiply += int(lcd_encoder) + ENCODER_FEEDRATE_DEADZONE;
+		lcd_encoder = 0;
+	}
+	else if (feedmultiply != 100)
+	{
+		feedmultiply += int(lcd_encoder);
+		lcd_encoder = 0;
+	}
+#endif //ULTIPANEL_FEEDMULTIPLY
+
+	if (feedmultiply < 10)
+		feedmultiply = 10;
+	else if (feedmultiply > 999)
+		feedmultiply = 999;
+
+	if (lcd_status_update_delay)
+		lcd_status_update_delay--;
+	else
+		lcd_draw_update = 1;
 
 
   if (lcd_draw_update) {
@@ -1069,37 +1098,14 @@ lcd_status_screen()                          // NOT static due to using inside "
     }
   }
 
-  if (current_click
-      && (menu_block_entering_on_serious_errors == SERIOUS_ERR_NONE) // or a serious error blocks entering the menu
-          ) {
-    menu_depth = 0; //redundant, as already done in lcd_return_to_status(), just to be sure
-    menu_submenu(lcd_main_menu);
-    lcd_refresh(); // to maybe revive the LCD if static electricity killed it.
-  }
-
-#ifdef ULTIPANEL_FEEDMULTIPLY
-  // Dead zone at 100% feedrate
-  if ((feedmultiply < 100 && (feedmultiply + int(lcd_encoder)) > 100) ||
-      (feedmultiply > 100 && (feedmultiply + int(lcd_encoder)) < 100)) {
-    lcd_encoder = 0;
-    feedmultiply = 100;
-  }
-  if (feedmultiply == 100 && int(lcd_encoder) > ENCODER_FEEDRATE_DEADZONE) {
-    feedmultiply += int(lcd_encoder) - ENCODER_FEEDRATE_DEADZONE;
-    lcd_encoder = 0;
-  } else if (feedmultiply == 100 && int(lcd_encoder) < -ENCODER_FEEDRATE_DEADZONE) {
-    feedmultiply += int(lcd_encoder) + ENCODER_FEEDRATE_DEADZONE;
-    lcd_encoder = 0;
-  } else if (feedmultiply != 100) {
-    feedmultiply += int(lcd_encoder);
-    lcd_encoder = 0;
-  }
-#endif //ULTIPANEL_FEEDMULTIPLY
-
-  if (feedmultiply < 10)
-    feedmultiply = 10;
-  else if (feedmultiply > 999)
-    feedmultiply = 999;
+	if (current_click
+		&& ( menu_block_entering_on_serious_errors == SERIOUS_ERR_NONE ) // or a serious error blocks entering the menu
+	)
+	{
+		menu_depth = 0; //redundant, as already done in lcd_return_to_status(), just to be sure
+		menu_submenu(lcd_main_menu);
+		lcd_refresh(); // to maybe revive the LCD if static electricity killed it.
+	}
 }
 
 void lcd_commands() {
@@ -1556,14 +1562,16 @@ void lcd_return_to_status() {
 }
 
 //! @brief Pause print, disable nozzle heater, move to park position
-void lcd_pause_print() {
-  stop_and_save_print_to_ram(0.0, -default_retraction);
-  lcd_return_to_status();
-  isPrintPaused = true;
-  if (LcdCommands::Idle == lcd_commands_type) {
-    lcd_commands_type = LcdCommands::LongPause;
-  }
-  SERIAL_PROTOCOLLNRPGM(MSG_OCTOPRINT_PAUSED); //pause for octoprint
+void lcd_pause_print()
+{
+    SERIAL_PROTOCOLLNRPGM(MSG_OCTOPRINT_PAUSED); //pause for octoprint
+    stop_and_save_print_to_ram(0.0, -default_retraction);
+    lcd_return_to_status();
+    isPrintPaused = true;
+    if (LcdCommands::Idle == lcd_commands_type)
+    {
+        lcd_commands_type = LcdCommands::LongPause;
+    }
 }
 
 
@@ -3996,25 +4004,26 @@ static void lcd_show_sensors_state() {
   uint8_t finda_state = STATE_NA;
   uint8_t idler_state = STATE_NA;
 
-  pinda_state = READ(Z_MIN_PIN);
-  if (mmu_enabled && ((_millis() - mmu_last_finda_response) < 1000ul)) {
-    finda_state = mmu_finda;
-  }
-  if (ir_sensor_detected) {
-    idler_state = !PIN_GET(IR_SENSOR_PIN);
-  }
-  lcd_puts_at_P(0, 0, _i("Sensor state"));
-  lcd_puts_at_P(1, 1, _i("PINDA:"));
-  lcd_set_cursor(LCD_WIDTH - 4, 1);
-  lcd_print_state(pinda_state);
-
-  lcd_puts_at_P(1, 2, _i("FINDA:"));
-  lcd_set_cursor(LCD_WIDTH - 4, 2);
-  lcd_print_state(finda_state);
-
-  lcd_puts_at_P(1, 3, _i("IR:"));
-  lcd_set_cursor(LCD_WIDTH - 4, 3);
-  lcd_print_state(idler_state);
+	pinda_state = READ(Z_MIN_PIN);
+	if (mmu_enabled && ((_millis() - mmu_last_finda_response) < 1000ul) )
+	{
+		finda_state = mmu_finda;
+	}
+	if (ir_sensor_detected) {
+		idler_state = !READ(IR_SENSOR_PIN);
+	}
+	lcd_puts_at_P(0, 0, _i("Sensor state"));
+	lcd_puts_at_P(1, 1, _i("PINDA:"));
+	lcd_set_cursor(LCD_WIDTH - 4, 1);
+	lcd_print_state(pinda_state);
+	
+	lcd_puts_at_P(1, 2, _i("FINDA:"));
+	lcd_set_cursor(LCD_WIDTH - 4, 2);
+	lcd_print_state(finda_state);
+	
+	lcd_puts_at_P(1, 3, _i("IR:"));
+	lcd_set_cursor(LCD_WIDTH - 4, 3);
+	lcd_print_state(idler_state);
 }
 
 void
@@ -6678,10 +6687,12 @@ static bool fan_error_selftest() {
 //! @brief Resume paused print
 //! @todo It is not good to call restore_print_from_ram_and_continue() from function called by lcd_update(),
 //! as restore_print_from_ram_and_continue() calls lcd_update() internally.
-void lcd_resume_print() {
-  lcd_return_to_status();
-  lcd_reset_alert_level(); //for fan speed error
-  if (fan_error_selftest()) return; //abort if error persists
+void lcd_resume_print()
+{
+    lcd_return_to_status();
+    lcd_reset_alert_level(); //for fan speed error
+    if (fan_error_selftest()) return; //abort if error persists
+    cmdqueue_serial_disabled = false;
 
   lcd_setstatuspgm(_T(MSG_FINISHING_MOVEMENTS));
   st_synchronize();
@@ -7261,10 +7272,12 @@ static void lcd_sd_updir() {
   menu_top = 0;
 }
 
-void lcd_print_stop() {
-  if (!card.sdprinting) {
-    SERIAL_ECHOLNRPGM(MSG_OCTOPRINT_CANCEL);   // for Octoprint
-  }
+void lcd_print_stop()
+{
+    if (!card.sdprinting) {
+        SERIAL_ECHOLNRPGM(MSG_OCTOPRINT_CANCEL);   // for Octoprint
+    }
+    cmdqueue_serial_disabled = false; //for when canceling a print with a fancheck
 
   CRITICAL_SECTION_START;
 
@@ -8330,31 +8343,14 @@ static bool selftest_irsensor() {
 
       ~TempBackup() { setTargetHotend(m_temp, m_extruder); }
 
-  private:
-      float m_temp;
-      uint8_t m_extruder;
-  };
-  uint8_t progress;
-  {
-    TempBackup tempBackup;
-    setTargetHotend(ABS_PREHEAT_HOTEND_TEMP, active_extruder);
-    mmu_wait_for_heater_blocking();
-    progress = lcd_selftest_screen(TestScreen::Fsensor, 0, 1, true, 0);
-    mmu_filament_ramming();
-  }
-  progress = lcd_selftest_screen(TestScreen::Fsensor, progress, 1, true, 0);
-  mmu_command(MmuCmd::U0);
-  manage_response(false, false);
-
-  for (uint_least8_t i = 0; i < 200; ++i) {
-    if (0 == (i % 32)) progress = lcd_selftest_screen(TestScreen::Fsensor, progress, 1, true, 0);
-
-    mmu_load_step(false);
-    while (blocks_queued()) {
-      if (PIN_GET(IR_SENSOR_PIN) == 0) {
-        lcd_selftest_error(TestError::TriggeringFsensor, "", "");
-        return false;
-      }
+        mmu_load_step(false);
+        while (blocks_queued())
+        {
+            if (READ(IR_SENSOR_PIN) == 0)
+            {
+                lcd_selftest_error(TestError::TriggeringFsensor, "", "");
+                return false;
+            }
 #ifdef TMC2130
       manage_heater();
       // Vojtech: Don't disable motors inside the planner!
@@ -8658,28 +8654,44 @@ static void lcd_selftest_screen_step(int _row, int _col, int _state, const char 
 
 /** Menu action functions **/
 
-static bool check_file(const char *filename) {
-  if (farm_mode) return true;
-  bool result = false;
-  uint32_t filesize;
-  card.openFile((char *) filename, true);
-  filesize = card.getFileSize();
-  if (filesize > END_FILE_SECTION) {
-    card.setIndex(filesize - END_FILE_SECTION);
+static bool check_file(const char* filename) {
+	if (farm_mode) return true;
+	card.openFile((char*)filename, true);
+	bool result = false;
+	const uint32_t filesize = card.getFileSize();
+	uint32_t startPos = 0;
+	const uint16_t bytesToCheck = min(END_FILE_SECTION, filesize);
+	uint8_t blocksPrinted = 0;
+	if (filesize > END_FILE_SECTION) {
+		startPos = filesize - END_FILE_SECTION;
+		card.setIndex(startPos);
+	}
+	cmdqueue_reset();
+	cmdqueue_serial_disabled = true;
 
-  }
+	lcd_clear();
+	lcd_puts_at_P(0, 1, _i("Checking file"));////c=20 r=1
+	lcd_set_cursor(0, 2);
+	while (!card.eof() && !result) {
+		for (; blocksPrinted < (((card.get_sdpos() - startPos) * LCD_WIDTH) / bytesToCheck); blocksPrinted++)
+			lcd_print('\xFF'); //simple progress bar
 
-  while (!card.eof() && !result) {
-    card.sdprinting = true;
-    get_command();
-    result = check_commands();
+		card.sdprinting = true;
+		get_command();
+		result = check_commands();
+	}
 
-  }
-  card.printingHasFinished();
-  strncpy_P(lcd_status_message, _T(WELCOME_MSG), LCD_WIDTH);
-  lcd_finishstatus();
-  return result;
+	for (; blocksPrinted < LCD_WIDTH; blocksPrinted++)
+		lcd_print('\xFF'); //simple progress bar
+	_delay(100); //for the user to see the end of the progress bar.
 
+	
+	cmdqueue_serial_disabled = false;
+	card.printingHasFinished();
+
+	strncpy_P(lcd_status_message, _T(WELCOME_MSG), LCD_WIDTH);
+	lcd_finishstatus();
+	return result;
 }
 
 static void menu_action_sdfile(const char *filename) {
@@ -8841,6 +8853,7 @@ void lcd_ignore_click(bool b) {
 }
 
 void lcd_finishstatus() {
+  SERIAL_PROTOCOLLNRPGM(MSG_LCD_STATUS_CHANGED);
   int len = strlen(lcd_status_message);
   if (len > 0) {
     while (len < LCD_WIDTH) {

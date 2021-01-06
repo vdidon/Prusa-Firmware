@@ -7198,6 +7198,12 @@ static void mbl_probe_nr_toggle() {
       mbl_z_probe_nr = 5;
       break;
     case 5:
+      mbl_z_probe_nr = 7;
+      break;
+    case 7:
+      mbl_z_probe_nr = 10;
+      break;
+    case 10:
       mbl_z_probe_nr = 1;
       break;
     default:

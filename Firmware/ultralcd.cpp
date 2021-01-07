@@ -2415,10 +2415,10 @@ static void mFilamentItem_PETG() {
   mFilamentItem(PETG_PREHEAT_HOTEND_TEMP, PETG_PREHEAT_HPB_TEMP);
 }
 
-static void mFilamentItem_ASA() {
+/*static void mFilamentItem_ASA() {
   bFilamentPreheatState = false;
   mFilamentItem(ASA_PREHEAT_HOTEND_TEMP, ASA_PREHEAT_HPB_TEMP);
-}
+}*/
 
 static void mFilamentItem_PC() {
   bFilamentPreheatState = false;
@@ -2435,10 +2435,10 @@ static void mFilamentItem_HIPS() {
   mFilamentItem(HIPS_PREHEAT_HOTEND_TEMP, HIPS_PREHEAT_HPB_TEMP);
 }
 
-static void mFilamentItem_PP() {
+/*static void mFilamentItem_PP() {
   bFilamentPreheatState = false;
   mFilamentItem(PP_PREHEAT_HOTEND_TEMP, PP_PREHEAT_HPB_TEMP);
-}
+}*/
 
 static void mFilamentItem_FLEX() {
   bFilamentPreheatState = false;

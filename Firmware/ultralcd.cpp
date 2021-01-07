@@ -5521,6 +5521,9 @@ static void lcd_nozzle_diameter_set(void) {
       oNozzleDiameter = ClNozzleDiameter::_Diameter_400;
       nDiameter = 400;
       break;
+    default:
+      oNozzleDiameter=ClNozzleDiameter::_Diameter_400;
+      nDiameter=400;
   }
   eeprom_update_byte((uint8_t *) EEPROM_NOZZLE_DIAMETER, (uint8_t) oNozzleDiameter);
   eeprom_update_word((uint16_t *) EEPROM_NOZZLE_DIAMETER_uM, nDiameter);

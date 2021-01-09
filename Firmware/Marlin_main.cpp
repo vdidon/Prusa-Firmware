@@ -3625,6 +3625,7 @@ extern uint8_t st_backlash_y;
 //!@n M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop], stays in mm regardless of M200 setting
 //!@n M208 - set recover=unretract length S[positive mm surplus to the M207 S*] F[feedrate mm/sec]
 //!@n M209 - S<1=true/0=false> enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
+//!@n M214 - Set Arc Parameters (Use M500 to store in eeprom) P<MM_PER_ARC_SEGMENT> S<MIN_MM_PER_ARC_SEGMENT> R<MIN_ARC_SEGMENTS> F<ARC_SEGMENTS_PER_SEC>
 //!@n M218 - set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
 //!@n M220 S<factor in percent>- set speed factor override percentage
 //!@n M221 S<factor in percent>- set extrude factor override percentage
@@ -7312,6 +7313,72 @@ Sigma_Exit:
 
     }break;
     #endif // FWRETRACT
+    /*!
+    ### M214 - Set Arc configuration values (Use M500 to store in eeprom)
+
+    #### Usage
+
+        M214 [P] [S] [R] [F]
+
+    #### Parameters
+    - `P` - A float representing the max and default millimeters per arc segment.  Must be greater than 0.
+    - `S` - A float representing the minimum allowable millimeters per arc segment.  Set to 0 to disable
+    - `R` - An int representing the minimum number of segments per arcs of any radius,
+            except when the results in segment lengths greater than or less than the minimum
+            and maximum segment length.  Set to 0 to disable.
+    - 'F' - An int representing the number of segments per second, unless this results in segment lengths
+            greater than or less than the minimum and maximum segment length.  Set to 0 to disable.
+    */
+    case 214: //!@n M214 - Set Arc Parameters (Use M500 to store in eeprom) P<MM_PER_ARC_SEGMENT> S<MIN_MM_PER_ARC_SEGMENT> R<MIN_ARC_SEGMENTS> F<ARC_SEGMENTS_PER_SEC>
+    {
+        // Extract N
+        float p = cs.mm_per_arc_segment;
+        float s = cs.min_mm_per_arc_segment;
+        uint16_t r = cs.min_arc_segments;
+        uint16_t f = cs.arc_segments_per_sec;
+
+        // Extract N
+        if (code_seen('P'))
+        {
+            p = code_value_float();
+            if (p <= 0 || (s != 0 && p <= s))
+            {
+                break;
+            }
+        }
+        // Extract S
+        if (code_seen('S'))
+        {
+            s = code_value_float();
+            if (s < 0 || s >= p)
+            {
+                break;
+            }
+        }
+        // Extract R
+        if (code_seen('R'))
+        {
+
+            r = code_value();
+            if (r < 0)
+            {
+                break;
+            }
+        }
+        // Extract F
+        if (code_seen('F'))
+        {
+            f = code_value();
+            if (f < 0)
+            {
+                break;
+            }
+        }
+        cs.mm_per_arc_segment = p;
+        cs.min_mm_per_arc_segment = s;
+        cs.min_arc_segments = r;
+        cs.arc_segments_per_sec = f;
+    }break;
     #if EXTRUDERS > 1
 
     /*!
@@ -9402,18 +9469,14 @@ void prepare_move()
 }
 
 void prepare_arc_move(char isclockwise) {
-  float r = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
-
-  // Trace the arc
-  mc_arc(current_position, destination, offset, X_AXIS, Y_AXIS, Z_AXIS, feedrate*feedmultiply/60/100.0, r, isclockwise, active_extruder);
-
-  // As far as the parser is concerned, the position is now == target. In reality the
-  // motion control system might still be processing the action and the real tool position
-  // in any intermediate location.
-  for(int8_t i=0; i < NUM_AXIS; i++) {
-    current_position[i] = destination[i];
-  }
-  previous_millis_cmd = _millis();
+    float r = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
+    // Trace the arc
+    mc_arc(current_position, destination, offset, feedrate * feedmultiply * (1. / (60.f * 100.f)), r, isclockwise, active_extruder);
+    // As far as the parser is concerned, the position is now == target. In reality the
+    // motion control system might still be processing the action and the real tool position
+    // in any intermediate location.
+    set_current_to_destination();
+    previous_millis_cmd = _millis();
 }
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1

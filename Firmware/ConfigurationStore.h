@@ -38,6 +38,11 @@ typedef struct
     float max_feedrate_silent[4]; //!< max speeds for silent mode
     unsigned long max_acceleration_units_per_sq_second_silent[4];
     unsigned char axis_ustep_resolution[4];
+    // Arc Interpolation Settings, configurable via M214
+    float mm_per_arc_segment;
+    float min_mm_per_arc_segment;
+    uint16_t min_arc_segments; // If less than or equal to zero, this is disabled
+    uint16_t arc_segments_per_sec; // If less than or equal to zero, this is disabled
 } M500_conf;
 
 extern M500_conf cs;
@@ -62,4 +67,6 @@ inline uint8_t calibration_status() { return eeprom_read_byte((uint8_t*)EEPROM_C
 inline void calibration_status_store(uint8_t status) { eeprom_update_byte((uint8_t*)EEPROM_CALIBRATION_STATUS, status); }
 inline bool calibration_status_pinda() { return eeprom_read_byte((uint8_t*)EEPROM_CALIBRATION_STATUS_PINDA); }
 
+bool is_setting_initialized(float setting_value);
+bool is_setting_initialized(uint16_t setting_value);
 #endif//CONFIG_STORE_H

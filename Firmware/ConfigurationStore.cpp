@@ -169,6 +169,10 @@ void Config_PrintSettings(uint8_t level)
                  echomagic, echomagic, extruder_advance_K);
 #endif //LIN_ADVANCE
 	}
+    // Arc Interpolation Settings
+    printf_P(PSTR(
+        "%SArc Settings: P=Arc segment length max (mm) S=Arc segment length Min (mm), R=Min arc segments, F=Arc segments per second.\n%S  M214 P%.2f S%.2f R%d F%d\n"),
+        echomagic, echomagic, cs.mm_per_arc_segment, cs.min_mm_per_arc_segment, cs.min_arc_segments, cs.arc_segments_per_sec);
 }
 #endif
 
@@ -184,7 +188,7 @@ static_assert (false, "zprobe_zoffset was not initialized in printers in field t
         "0.0, if this is not acceptable, increment EEPROM_VERSION to force use default_conf");
 #endif
 
-static_assert (sizeof(M500_conf) == 192, "sizeof(M500_conf) has changed, ensure that EEPROM_VERSION has been incremented, "
+static_assert (sizeof(M500_conf) == 204, "sizeof(M500_conf) has changed, ensure that EEPROM_VERSION has been incremented, "
         "or if you added members in the end of struct, ensure that historically uninitialized values will be initialized."
         "If this is caused by change to more then 8bit processor, decide whether make this struct packed to save EEPROM,"
         "leave as it is to keep fast code, or reorder struct members to pack more tightly.");
@@ -232,6 +236,10 @@ static const M500_conf default_conf PROGMEM =
 #else // TMC2130
     {16,16,16,16},
 #endif
+    DEFAULT_MM_PER_ARC_SEGMENT,
+    DEFAULT_MIN_MM_PER_ARC_SEGMENT,
+    DEFAULT_MIN_ARC_SEGMENTS,
+    DEFAULT_ARC_SEGMENTS_PER_SEC
 };
 
 //! @brief Read M500 configuration
@@ -257,17 +265,20 @@ bool Config_RetrieveSettings()
         for (uint8_t i = 0; i < (sizeof(cs.max_feedrate_silent)/sizeof(cs.max_feedrate_silent[0])); ++i)
         {
             const uint32_t erased = 0xffffffff;
-            bool initialized = false;
-
-            for(uint8_t j = 0; j < sizeof(float); ++j)
-            {
-                if(0xff != reinterpret_cast<uint8_t*>(&(cs.max_feedrate_silent[i]))[j]) initialized = true;
+            // 20200417 - FormerLurker - use is_setting_initialized for consistency
+            if (!is_setting_initialized(cs.max_feedrate_silent[i])) {
+                memcpy_P(&cs.max_feedrate_silent[i], &default_conf.max_feedrate_silent[i], sizeof(cs.max_feedrate_silent[i]));
             }
-            if (!initialized) memcpy_P(&cs.max_feedrate_silent[i],&default_conf.max_feedrate_silent[i], sizeof(cs.max_feedrate_silent[i]));
             if (erased == cs.max_acceleration_units_per_sq_second_silent[i]) {
                 memcpy_P(&cs.max_acceleration_units_per_sq_second_silent[i],&default_conf.max_acceleration_units_per_sq_second_silent[i],sizeof(cs.max_acceleration_units_per_sq_second_silent[i]));
             }
         }
+        // Initialize arc interpolation settings if they are not already (Not sure about this bit, please review)
+        if (!is_setting_initialized(cs.mm_per_arc_segment)) cs.mm_per_arc_segment = DEFAULT_MM_PER_ARC_SEGMENT;
+        if (!is_setting_initialized(cs.min_mm_per_arc_segment)) cs.min_mm_per_arc_segment = DEFAULT_MIN_MM_PER_ARC_SEGMENT;
+        if (!is_setting_initialized(cs.min_arc_segments)) cs.min_arc_segments = DEFAULT_MIN_ARC_SEGMENTS;
+        if (!is_setting_initialized(cs.arc_segments_per_sec)) cs.arc_segments_per_sec = DEFAULT_ARC_SEGMENTS_PER_SEC;
+
 
 #ifdef TMC2130
 		for (uint8_t j = X_AXIS; j <= Y_AXIS; j++)
@@ -338,4 +349,24 @@ void Config_ResetDefault()
 SERIAL_ECHO_START;
 SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 
+}
+
+// Returns true if the setting_value has been initialized, false if not.
+bool is_setting_initialized(float setting_value)
+{
+    // Look at each byte of the arc float settings and see if any byte is initialized
+    for (uint8_t j = 0; j < sizeof(float); ++j)
+    {
+        // If any part of the current byte is not == 0xff, the setting_value has been
+        // initialized
+        if (0xff != reinterpret_cast<uint8_t*>(&setting_value)[j]) return true;
+    }
+    // Every byte of the setting_value == 0xff, not initialized
+    return false;
+}
+
+// Returns true if the setting_value has been initialized, false if not.
+bool is_setting_initialized(uint16_t setting_value)
+{
+    return (0xFFFF != setting_value);
 }

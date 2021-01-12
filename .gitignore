@@ -52,7 +52,3 @@ Firmware/Doc
 /Firmware/Firmware.vcxproj
 /Firmware/Configuration_prusa_bckp.h
 /Firmware/variants/printers.h
-/.vs
-/out/build
-/Firmware/Firmware.ino.prusa_einsy_rambo.hex
-/Firmware/Firmware.ino.with_bootloader.prusa_einsy_rambo.hex

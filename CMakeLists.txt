@@ -59,6 +59,8 @@ add_executable(Prusa_Firmware_3_9_2
         Firmware/Marlin_main.cpp
         Firmware/MarlinSerial.cpp
         Firmware/MarlinSerial.h
+        Firmware/meatpack.cpp
+        Firmware/MeatPack.h
         Firmware/menu.cpp
         Firmware/menu.h
         Firmware/mesh_bed_calibration.cpp
@@ -114,6 +116,7 @@ add_executable(Prusa_Firmware_3_9_2
         Firmware/stepper.cpp
         Firmware/stepper.h
         Firmware/stk500.h
+        Firmware/strtod.c
         Firmware/swi2c.c
         Firmware/swi2c.h
         Firmware/swspi.cpp

@@ -2075,10 +2075,10 @@ static void lcd_preheat_menu() {
 //! @endcode
 static void lcd_support_menu() {
   typedef struct {  // 22bytes total
-      int8_t status;                 // 1byte
-      bool is_flash_air;             // 1byte
-      uint8_t ip[4];                 // 4bytes
-      char ip_str[3 * 4 + 3 + 1];          // 16bytes
+    int8_t status;                 // 1byte
+    bool is_flash_air;             // 1byte
+    uint8_t ip[4];                 // 4bytes
+    char ip_str[3 * 4 + 3 + 1];          // 16bytes
   } _menu_data_t;
   static_assert(sizeof(menu_data) >= sizeof(_menu_data_t), "_menu_data_t doesn't fit into menu_data");
   _menu_data_t *_md = (_menu_data_t *) &(menu_data[0]);
@@ -2117,6 +2117,7 @@ static void lcd_support_menu() {
     MENU_ITEM_BACK_P(STR_SEPARATOR);
     MENU_ITEM_BACK_P(PSTR("Firmware:"));
     MENU_ITEM_BACK_P(PSTR(" " FW_VERSION_FULL));
+    MENU_ITEM_BACK_P(PSTR(" " MEATPACK_VERSION));
 #if (FW_DEV_VERSION != FW_VERSION_GOLD) && (FW_DEV_VERSION != FW_VERSION_RC)
     MENU_ITEM_BACK_P(PSTR(" repo " FW_REPOSITORY));
 #endif
@@ -2888,28 +2889,35 @@ static void _lcd_move(const char *name, int axis, int min, int max) {
 }
 
 
-static void lcd_move_e() {
-  if (degHotend0() > EXTRUDE_MINTEMP) {
-    if (lcd_encoder != 0) {
-      refresh_cmd_timeout();
-      if (!planner_queue_full()) {
-        current_position[E_AXIS] += float((int) lcd_encoder) * move_menu_scale;
-        lcd_encoder = 0;
-        plan_buffer_line_curposXYZE(manual_feedrate[E_AXIS] / 60);
-        lcd_draw_update = 1;
-      }
-    }
-    if (lcd_draw_update) {
-      lcd_set_cursor(0, 1);
-      // Note: the colon behind the text is necessary to greatly shorten
-      // the implementation of menu_draw_float31
-      menu_draw_float31(PSTR("Extruder:"), current_position[E_AXIS]);
-    }
-    if (LCD_CLICKED) menu_back();
-  } else {
-    show_preheat_nozzle_warning();
-    lcd_return_to_status();
-  }
+void lcd_move_e()
+{
+	if (degHotend0() > EXTRUDE_MINTEMP)
+	{
+		if (lcd_encoder != 0)
+		{
+			refresh_cmd_timeout();
+			if (! planner_queue_full())
+			{
+				current_position[E_AXIS] += float((int)lcd_encoder) * move_menu_scale;
+				lcd_encoder = 0;
+				plan_buffer_line_curposXYZE(manual_feedrate[E_AXIS] / 60);
+				lcd_draw_update = 1;
+			}
+		}
+		if (lcd_draw_update)
+		{
+		    lcd_set_cursor(0, 1);
+			// Note: the colon behind the text is necessary to greatly shorten
+			// the implementation of menu_draw_float31
+			menu_draw_float31(PSTR("Extruder:"), current_position[E_AXIS]);
+		}
+		if (LCD_CLICKED) menu_back();
+	}
+	else
+	{
+		show_preheat_nozzle_warning();
+		lcd_return_to_status();
+	}
 }
 
 

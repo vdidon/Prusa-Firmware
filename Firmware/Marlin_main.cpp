@@ -453,6 +453,7 @@ static uint8_t get_PRUSA_SN(char* SN);
 
 uint16_t gcode_in_progress = 0;
 uint16_t mcode_in_progress = 0;
+uint16_t pcode_in_progress = 0;
 
 void serial_echopair_P(const char *s_P, float v)
     { serialprintPGM(s_P); SERIAL_ECHO(v); }
@@ -9157,9 +9158,32 @@ Sigma_Exit:
         printf_P(MSG_UNKNOWN_CODE, 'D', cmdbuffer + bufindr + CMDHDRSIZE);
 	}
   }
-
-  else
-  {
+  else if (code_seen('P')) {
+    pcode_in_progress = (uint16_t)code_value();
+    char* msg;
+    switch (pcode_in_progress) {
+      case 117:
+        msg = strchr_pointer+5;
+        //lcd_puts_P(msg);
+        lcd_clear();
+        for (int i = 0; msg[i]!='\x00'; ++i) {
+          lcd_putc(msg[i]);
+        }
+        lcd_wait_for_click();
+        break;
+      case 1000:
+        lcd_show_fullscreen_message_ok(_N("test"));
+        break;
+      case 300:
+        int beepS = code_seen('S') ? code_value() : 110;
+        int beepP = code_seen('P') ? code_value() : 1000;
+        bool beepC = !code_seen('C') || code_value();
+        Sound_MakeCustom(beepP, beepS, beepC);
+        break;
+    }
+    pcode_in_progress = 0;
+  }
+  else {
     SERIAL_ECHO_START;
     SERIAL_ECHORPGM(MSG_UNKNOWN_COMMAND);
     SERIAL_ECHO(CMDBUFFER_CURRENT_STRING);

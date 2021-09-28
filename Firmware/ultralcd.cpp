@@ -160,7 +160,7 @@ static void lcd_selftest_v();
 #ifdef TMC2130
 static void reset_crash_det(unsigned char axis);
 static bool lcd_selfcheck_axis_sg(unsigned char axis);
-static bool lcd_selfcheck_axis(int _axis, int _travel);
+//static bool lcd_selfcheck_axis(int _axis, int _travel);
 #else
 static bool lcd_selfcheck_axis(int _axis, int _travel);
 static bool lcd_selfcheck_pulleys(int axis);
@@ -1801,206 +1801,7 @@ static void lcd_preheat_menu()
     lcd_generic_preheat_menu();
 }
 
-//! @brief Show Support Menu
-//!
-//! @code{.unparsed}
-//! |01234567890123456789|
-//! | Main               |	MSG_MAIN c=18
-//! | Firmware:          |	c=18
-//! |  3.7.2.-2363       |	c=16
-//! | prusa3d.com        |	MSG_PRUSA3D
-//! | forum.prusa3d.com  |	MSG_PRUSA3D_FORUM
-//! | howto.prusa3d.com  |	MSG_PRUSA3D_HOWTO
-//! | --------------     |	STR_SEPARATOR
-//! | 1_75mm_MK3         |	FILAMENT_SIZE
-//! | howto.prusa3d.com  |	ELECTRONICS
-//! | howto.prusa3d.com  |	NOZZLE_TYPE
-//! | --------------     |	STR_SEPARATOR
-//! | Date:              |	c=17
-//! | MMM DD YYYY        |	__DATE__
-//! | --------------     |	STR_SEPARATOR
-//! @endcode
-//! 
-//! If MMU is connected
-//! 
-//! 	@code{.unparsed}
-//! 	| MMU2 connected     |	c=18
-//! 	|  FW: 1.0.6-7064523 |
-//! 	@endcode
-//! 
-//! If MMU is not connected
-//! 
-//! 	@code{.unparsed}
-//! 	| MMU2       N/A     |	c=18
-//! 	@endcode
-//! 
-//! If Flash Air is connected
-//! 
-//! 	@code{.unparsed}
-//! 	| --------------     |	STR_SEPARATOR
-//! 	| FlashAir IP Addr:  |	c=18
-//! 	|  192.168.1.100     |
-//! 	@endcode
-//! 
-//! @code{.unparsed}
-//! | --------------     |	STR_SEPARATOR
-//! | XYZ cal. details   |	MSG_XYZ_DETAILS c=18
-//! | Extruder info      |	MSG_INFO_EXTRUDER
-//! | XYZ cal. details   |	MSG_INFO_SENSORS
-//! @endcode
-//! 
-//! If TMC2130 defined
-//! 
-//! 	@code{.unparsed}
-//! 	| Belt status        |	MSG_BELT_STATUS
-//! @endcode
-//! 
-//! @code{.unparsed}
-//! | Temperatures       |	MSG_MENU_TEMPERATURES
-//! @endcode
-//! 
-//! If Voltage Bed and PWR Pin are defined
-//! 
-//! 	@code{.unparsed}
-//! 	| Voltages           |	MSG_MENU_VOLTAGES
-//! 	@endcode
-//! 
-//! 
-//! If DEBUG_BUILD is defined
-//! 
-//! 	@code{.unparsed}
-//! 	| Debug              |	c=18
-//! 	@endcode
-//! ----------------------
-//! @endcode
-static void lcd_support_menu()
-{
-	typedef struct
-	{	// 22bytes total
-		int8_t status;                 // 1byte
-		bool is_flash_air;             // 1byte
-		uint32_t ip;                   // 4bytes
-		char ip_str[IP4_STR_SIZE];     // 16bytes
-	} _menu_data_t;
-    static_assert(sizeof(menu_data)>= sizeof(_menu_data_t),"_menu_data_t doesn't fit into menu_data");
-	_menu_data_t* _md = (_menu_data_t*)&(menu_data[0]);
-    if (_md->status == 0 || lcd_draw_update == 2)
-	{
-        // Menu was entered or SD card status has changed (plugged in or removed).
-        // Initialize its status.
-        _md->status = 1;
-        _md->is_flash_air = card.ToshibaFlashAir_isEnabled();
-        if (_md->is_flash_air) {
-            card.ToshibaFlashAir_GetIP((uint8_t*)(&_md->ip)); // ip == 0 if it failed
-        }
-    } else if (_md->is_flash_air && _md->ip == 0 && ++ _md->status == 16)
-    {
-        // Waiting for the FlashAir card to get an IP address from a router. Force an update.
-        _md->status = 0;
-    }
 
-  MENU_BEGIN();
-
-  MENU_ITEM_BACK_P(_T(MSG_MAIN));
-
-  MENU_ITEM_BACK_P(PSTR("Firmware:"));
-  MENU_ITEM_BACK_P(PSTR(" " FW_VERSION_FULL));
-#if (FW_DEV_VERSION != FW_VERSION_GOLD) && (FW_DEV_VERSION != FW_VERSION_RC)
-  MENU_ITEM_BACK_P(PSTR(" repo " FW_REPOSITORY));
-#endif
-  // Ideally this block would be optimized out by the compiler.
-/*  const uint8_t fw_string_len = strlen_P(FW_VERSION_STR_P());
-  if (fw_string_len < 6) {
-      MENU_ITEM_BACK_P(PSTR(MSG_FW_VERSION " - " FW_version));
-  } else {
-      MENU_ITEM_BACK_P(PSTR("FW - " FW_version));
-  }*/
-      
-  MENU_ITEM_BACK_P(_n("prusa3d.com"));////MSG_PRUSA3D c=18
-  MENU_ITEM_BACK_P(_n("forum.prusa3d.com"));////MSG_PRUSA3D_FORUM c=18
-  MENU_ITEM_BACK_P(_n("howto.prusa3d.com"));////MSG_PRUSA3D_HOWTO c=18
-  MENU_ITEM_BACK_P(STR_SEPARATOR);
-  MENU_ITEM_BACK_P(PSTR(FILAMENT_SIZE));
-  MENU_ITEM_BACK_P(PSTR(ELECTRONICS));
-  MENU_ITEM_BACK_P(PSTR(NOZZLE_TYPE));
-  MENU_ITEM_BACK_P(STR_SEPARATOR);
-  MENU_ITEM_BACK_P(_i("Date:"));////MSG_DATE c=17
-  MENU_ITEM_BACK_P(PSTR(__DATE__));
-
-#ifdef IR_SENSOR_ANALOG
-  MENU_ITEM_BACK_P(STR_SEPARATOR);
-  MENU_ITEM_BACK_P(PSTR("Fil. sensor v.:"));
-  MENU_ITEM_BACK_P(FsensorIRVersionText());
-#endif // IR_SENSOR_ANALOG
-
-	MENU_ITEM_BACK_P(STR_SEPARATOR);
-	if (mmu_enabled)
-	{
-		MENU_ITEM_BACK_P(_i("MMU2 connected"));  ////MSG_MMU_CONNECTED c=18
-		MENU_ITEM_BACK_P(PSTR(" FW:"));  ////c=17
-		if (((menu_item - 1) == menu_line) && lcd_draw_update)
-		{
-		    lcd_set_cursor(6, menu_row);
-			if ((mmu_version > 0) && (mmu_buildnr > 0))
-				lcd_printf_P(PSTR("%d.%d.%d-%d"), mmu_version/100, mmu_version%100/10, mmu_version%10, mmu_buildnr);
-			else
-				lcd_puts_P(_i("unknown"));  ////MSG_UNKNOWN c=13
-		}
-	}
-	else
-		MENU_ITEM_BACK_P(PSTR("MMU2       N/A"));
-
-
-  // Show the FlashAir IP address, if the card is available.
-  if (_md->is_flash_air) {
-      MENU_ITEM_BACK_P(STR_SEPARATOR);
-      MENU_ITEM_BACK_P(PSTR("FlashAir IP Addr:"));  ////MSG_FLASHAIR c=18
-      MENU_ITEM_BACK_P(PSTR(" "));
-      if (((menu_item - 1) == menu_line) && lcd_draw_update) {
-          lcd_set_cursor(2, menu_row);
-          ip4_to_str(_md->ip_str, (uint8_t*)(&_md->ip));
-          lcd_printf_P(PSTR("%s"), _md->ip_str);
-      }
-  }
-  
-  // Show the printer IP address, if it is available.
-  if (IP_address) {
-      
-      MENU_ITEM_BACK_P(STR_SEPARATOR);
-      MENU_ITEM_BACK_P(PSTR("Printer IP Addr:"));  ////MSG_PRINTER_IP c=18
-      MENU_ITEM_BACK_P(PSTR(" "));
-      if (((menu_item - 1) == menu_line) && lcd_draw_update) {
-          lcd_set_cursor(2, menu_row);
-          ip4_to_str(_md->ip_str, (uint8_t*)(&IP_address));
-          lcd_printf_P(PSTR("%s"), _md->ip_str);
-      }
-  }
-
-  #ifndef MK1BP
-  MENU_ITEM_BACK_P(STR_SEPARATOR);
-  MENU_ITEM_SUBMENU_P(_i("XYZ cal. details"), lcd_menu_xyz_y_min);////MSG_XYZ_DETAILS c=18
-  MENU_ITEM_SUBMENU_P(_i("Extruder info"), lcd_menu_extruder_info);////MSG_INFO_EXTRUDER c=18
-  MENU_ITEM_SUBMENU_P(_i("Sensor info"), lcd_menu_show_sensors_state);////MSG_INFO_SENSORS c=18
-
-#ifdef TMC2130
-  MENU_ITEM_SUBMENU_P(_T(MSG_BELT_STATUS), lcd_menu_belt_status);////MSG_BELT_STATUS c=18
-#endif //TMC2130
-    
-  MENU_ITEM_SUBMENU_P(_i("Temperatures"), lcd_menu_temperatures);////MSG_MENU_TEMPERATURES c=18
-
-#if defined (VOLT_BED_PIN) || defined (VOLT_PWR_PIN)
-  MENU_ITEM_SUBMENU_P(_i("Voltages"), lcd_menu_voltages);////MSG_MENU_VOLTAGES c=18
-#endif //defined VOLT_BED_PIN || defined VOLT_PWR_PIN
-
-
-#ifdef DEBUG_BUILD
-  MENU_ITEM_SUBMENU_P(PSTR("Debug"), lcd_menu_debug);////MSG_DEBUG c=18
-#endif /* DEBUG_BUILD */
-
-  #endif //MK1BP
-
-  MENU_END();
-}
 
 void lcd_set_fan_check() {
 	fans_check_enabled = !fans_check_enabled;
@@ -5455,6 +5256,102 @@ do\
     MENU_ITEM_TOGGLE(_T(MSG_NOZZLE_DIAMETER), ftostr12ns(fNozzleDiam), lcd_nozzle_diameter_cycle);\
 }\
 while (0)
+
+static void lcd_support_menu() {
+    typedef struct {  // 22bytes total
+        int8_t status;                 // 1byte
+        bool is_flash_air;             // 1byte
+        uint8_t ip[4];                 // 4bytes
+        char ip_str[3 * 4 + 3 + 1];          // 16bytes
+    } _menu_data_t;
+    static_assert(sizeof(menu_data) >= sizeof(_menu_data_t), "_menu_data_t doesn't fit into menu_data");
+    _menu_data_t *_md = (_menu_data_t *) &(menu_data[0]);
+    if (_md->status == 0 || lcd_draw_update == 2) {
+        // Menu was entered or SD card status has changed (plugged in or removed).
+        // Initialize its status.
+        _md->status = 1;
+        _md->is_flash_air = card.ToshibaFlashAir_isEnabled() && card.ToshibaFlashAir_GetIP(_md->ip);
+        if (_md->is_flash_air)
+            sprintf_P(_md->ip_str, PSTR("%d.%d.%d.%d"),
+                      _md->ip[0], _md->ip[1],
+                      _md->ip[2], _md->ip[3]);
+
+    } else if (_md->is_flash_air &&
+               _md->ip[0] == 0 && _md->ip[1] == 0 &&
+               _md->ip[2] == 0 && _md->ip[3] == 0 &&
+               ++_md->status == 16) {
+        // Waiting for the FlashAir card to get an IP address from a router. Force an update.
+        _md->status = 0;
+    }
+
+    MENU_BEGIN();
+
+        MENU_ITEM_BACK_P(_T(MSG_MAIN));
+
+        SETTINGS_NOZZLE;
+        MENU_ITEM_SUBMENU_P(_i("Temperatures"), lcd_menu_temperatures);////MSG_MENU_TEMPERATURES c=18 r=1
+        MENU_ITEM_SUBMENU_P(_i("Sensor info"), lcd_menu_show_sensors_state);////MSG_INFO_SENSORS c=18 r=1
+        MENU_ITEM_SUBMENU_P(_i("XYZ cal. details"), lcd_menu_xyz_y_min);////MSG_XYZ_DETAILS c=18
+#ifdef TMC2130
+        MENU_ITEM_SUBMENU_P(_i("Belt status"), lcd_menu_belt_status);////MSG_MENU_BELT_STATUS c=18
+#endif //TMC2130
+#if defined (VOLT_BED_PIN) || defined (VOLT_PWR_PIN)
+        MENU_ITEM_SUBMENU_P(_i("Voltages"), lcd_menu_voltages);////MSG_MENU_VOLTAGES c=18 r=1
+#endif //defined VOLT_BED_PIN || defined VOLT_PWR_PIN
+
+        MENU_ITEM_BACK_P(STR_SEPARATOR);
+        MENU_ITEM_BACK_P(PSTR("Firmware:"));
+        MENU_ITEM_BACK_P(PSTR(" " FW_VERSION_FULL));
+//        MENU_ITEM_BACK_P(PSTR(" " MEATPACK_VERSION));
+#if (FW_DEV_VERSION != FW_VERSION_GOLD) && (FW_DEV_VERSION != FW_VERSION_RC)
+        MENU_ITEM_BACK_P(PSTR(" repo " FW_REPOSITORY));
+#endif
+        // Ideally this block would be optimized out by the compiler.
+/*  const uint8_t fw_string_len = strlen_P(FW_VERSION_STR_P());
+  if (fw_string_len < 6) {
+      MENU_ITEM_BACK_P(PSTR(MSG_FW_VERSION " - " FW_version));
+  } else {
+      MENU_ITEM_BACK_P(PSTR("FW - " FW_version));
+  }*/
+
+        MENU_ITEM_BACK_P(STR_SEPARATOR);
+        MENU_ITEM_BACK_P(PSTR(FILAMENT_SIZE));
+        MENU_ITEM_BACK_P(PSTR(ELECTRONICS));
+        MENU_ITEM_BACK_P(PSTR(NOZZLE_TYPE));
+
+#ifdef IR_SENSOR_ANALOG
+        MENU_ITEM_BACK_P(STR_SEPARATOR);
+        MENU_ITEM_BACK_P(PSTR("Fil. sensor v.:"));
+        MENU_ITEM_BACK_P(FsensorIRVersionText());
+#endif // IR_SENSOR_ANALOG
+
+        MENU_ITEM_BACK_P(STR_SEPARATOR);
+        if (mmu_enabled) {
+            MENU_ITEM_BACK_P(_i("MMU2S connected"));  ////c=18 r=1
+            MENU_ITEM_BACK_P(PSTR(" FW:"));  ////c=17 r=1
+            if (((menu_item - 1) == menu_line) && lcd_draw_update) {
+                lcd_set_cursor(6, menu_row);
+                if ((mmu_version > 0) && (mmu_buildnr > 0))
+                    lcd_printf_P(PSTR("%d.%d.%d-%d"), mmu_version / 100, mmu_version % 100 / 10, mmu_version % 10, mmu_buildnr);
+                else
+                    lcd_puts_P(_i("unknown"));
+            }
+        } else
+            MENU_ITEM_BACK_P(PSTR("MMU2S      N/A"));
+
+
+        // Show the FlashAir IP address, if the card is available.
+        if (_md->is_flash_air) {
+            MENU_ITEM_BACK_P(STR_SEPARATOR);
+            MENU_ITEM_BACK_P(PSTR("FlashAir IP Addr:"));  //c=18 r=1
+///!      MENU_ITEM(back_RAM, _md->ip_str, 0);
+        }
+#ifdef DEBUG_BUILD
+            MENU_ITEM_SUBMENU_P(PSTR("Debug"), lcd_menu_debug);////c=18 r=1
+#endif /* DEBUG_BUILD */
+
+    MENU_END();
+}
 
 static void lcd_check_model_set(void)
 {

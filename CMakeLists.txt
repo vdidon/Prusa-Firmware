@@ -47,7 +47,7 @@ add_executable(Prusa_Firmware_3_10_0
         Firmware/fsensor.cpp
         Firmware/fsensor.h
         Firmware/heatbed_pwm.cpp
-        Firmware/io_atmega2560.h
+#        Firmware/io_atmega2560.h
         Firmware/la10compat.cpp
         Firmware/la10compat.h
         Firmware/language.c
@@ -71,8 +71,8 @@ add_executable(Prusa_Firmware_3_10_0
         Firmware/mmu.h
         Firmware/motion_control.cpp
         Firmware/motion_control.h
-        Firmware/optiboot_w25x20cl.cpp
-        Firmware/optiboot_w25x20cl.h
+  #      Firmware/optiboot_w25x20cl.cpp
+  #      Firmware/optiboot_w25x20cl.h
         Firmware/pat9125.c
         Firmware/pat9125.h
         Firmware/pins.h
@@ -140,8 +140,8 @@ add_executable(Prusa_Firmware_3_10_0
         Firmware/util.h
         Firmware/vector_3.cpp
         Firmware/vector_3.h
-        Firmware/w25x20cl.c
-        Firmware/w25x20cl.h
+ #       Firmware/w25x20cl.c
+ #       Firmware/w25x20cl.h
         Firmware/xyzcal.cpp
         Firmware/xyzcal.h
         lang/po/new/cs.po

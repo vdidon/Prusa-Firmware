@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(Prusa_Firmware_3_9_2)
+project(Prusa_Firmware_3_10_0)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -9,7 +9,7 @@ include_directories(Firmware)
 include_directories(lang)
 include_directories(Tests)
 
-add_executable(Prusa_Firmware_3_9_2
+add_executable(Prusa_Firmware_3_10_0
         Catch2/catch.hpp
         Firmware/Configuration_prusa.h
         Firmware/adc.c

@@ -7013,14 +7013,28 @@ static void mbl_mesh_toggle() {
 }
 
 static void mbl_probe_nr_toggle() {
-	mbl_z_probe_nr = eeprom_read_byte((uint8_t*)EEPROM_MBL_PROBE_NR);
-	switch (mbl_z_probe_nr) {
-		case 1: mbl_z_probe_nr = 3; break;
-		case 3: mbl_z_probe_nr = 5; break;
-		case 5: mbl_z_probe_nr = 1; break;
-		default: mbl_z_probe_nr = 3; break;
-	}
-	eeprom_update_byte((uint8_t*)EEPROM_MBL_PROBE_NR, mbl_z_probe_nr);
+  mbl_z_probe_nr = eeprom_read_byte((uint8_t *) EEPROM_MBL_PROBE_NR);
+  switch (mbl_z_probe_nr) {
+    case 1:
+      mbl_z_probe_nr = 3;
+      break;
+    case 3:
+      mbl_z_probe_nr = 5;
+      break;
+    case 5:
+      mbl_z_probe_nr = 7;
+      break;
+    case 7:
+      mbl_z_probe_nr = 10;
+      break;
+    case 10:
+      mbl_z_probe_nr = 1;
+      break;
+    default:
+      mbl_z_probe_nr = 3;
+      break;
+  }
+  eeprom_update_byte((uint8_t *) EEPROM_MBL_PROBE_NR, mbl_z_probe_nr);
 }
 
 static void lcd_mesh_bed_leveling_settings()

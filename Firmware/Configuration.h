@@ -22,6 +22,7 @@ extern PGM_P sPrinterName;
 // The firmware should only be checked into github with this symbol.
 #define FW_DEV_VERSION FW_VERSION_UNKNOWN
 #define FW_REPOSITORY "VDIDON"
+#define MEATPACK_VERSION "MP1.1.0"
 #define FW_VERSION_FULL FW_VERSION "-" STR(FW_COMMIT_NR) "-" "Perso"
 
 // G-code language level
@@ -79,6 +80,9 @@ extern PGM_P sPrinterName;
 
 // This determines the communication speed of the printer
 #define BAUDRATE 115200
+
+// Enable g-code compression (see https://github.com/scottmudge/OctoPrint-MeatPack)
+#define ENABLE_MEATPACK
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices

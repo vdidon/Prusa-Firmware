@@ -3494,6 +3494,7 @@ extern uint8_t st_backlash_y;
 //!@n M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop], stays in mm regardless of M200 setting
 //!@n M208 - set recover=unretract length S[positive mm surplus to the M207 S*] F[feedrate mm/sec]
 //!@n M209 - S<1=true/0=false> enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
+//!@n M214 - Set Arc Parameters (Use M500 to store in eeprom) P<MM_PER_ARC_SEGMENT> S<MIN_MM_PER_ARC_SEGMENT> R<MIN_ARC_SEGMENTS> F<ARC_SEGMENTS_PER_SEC>
 //!@n M218 - set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
 //!@n M220 S<factor in percent>- set speed factor override percentage
 //!@n M221 S<factor in percent>- set extrude factor override percentage
@@ -4158,6 +4159,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
 	#### Parameters
 	  - `X` - The position to move to on the X axis
 	  - `Y` - The position to move to on the Y axis
+      - 'Z' - The position to move to on the Z axis
 	  - `I` - The point in X space from the current X position to maintain a constant distance from
 	  - `J` - The point in Y space from the current Y position to maintain a constant distance from
 	  - `E` - The amount to extrude between the starting point and ending point
@@ -7163,12 +7165,50 @@ Sigma_Exit:
             }
           }
 
-        }
-          break;
-#endif // FWRETRACT
-#if EXTRUDERS > 1
+        
+        }break;
+    #endif // FWRETRACT
+    /*!
+    ### M214 - Set Arc configuration values (Use M500 to store in eeprom)
 
-                                                                                                                                  /*!
+    #### Usage
+
+        M214 [P] [S] [N] [R] [F]
+
+    #### Parameters
+    - `P` - A float representing the max and default millimeters per arc segment.  Must be greater than 0.
+    - `S` - A float representing the minimum allowable millimeters per arc segment.  Set to 0 to disable
+    - `N` - An int representing the number of arcs to draw before correcting the small angle approximation.  Set to 0 to disable.
+    - `R` - An int representing the minimum number of segments per arcs of any radius,
+            except when the results in segment lengths greater than or less than the minimum
+            and maximum segment length.  Set to 0 to disable.
+    - 'F' - An int representing the number of segments per second, unless this results in segment lengths
+            greater than or less than the minimum and maximum segment length.  Set to 0 to disable.
+    */
+    case 214: //!@n M214 - Set Arc Parameters (Use M500 to store in eeprom) P<MM_PER_ARC_SEGMENT> S<MIN_MM_PER_ARC_SEGMENT> R<MIN_ARC_SEGMENTS> F<ARC_SEGMENTS_PER_SEC>
+    {
+        // Extract all possible parameters if they appear
+        float p = code_seen('P') ? code_value_float() : cs.mm_per_arc_segment;
+        float s = code_seen('S') ? code_value_float() : cs.min_mm_per_arc_segment;
+        uint8_t n = code_seen('N') ? code_value() : cs.n_arc_correction;
+        uint16_t r = code_seen('R') ? code_value() : cs.min_arc_segments;
+        uint16_t f = code_seen('F') ? code_value() : cs.arc_segments_per_sec;
+
+        // Ensure mm_per_arc_segment is greater than 0, and that min_mm_per_arc_segment is sero or greater than or equal to mm_per_arc_segment
+        if (p <=0 || s < 0 || p < s)
+        {
+            break;
+        }
+
+        cs.mm_per_arc_segment = p;
+        cs.min_mm_per_arc_segment = s;
+        cs.n_arc_correction = n;
+        cs.min_arc_segments = r;
+        cs.arc_segments_per_sec = f;
+    }break;
+    #if EXTRUDERS > 1
+
+    /*!
 	### M218 - Set hotend offset <a href="https://reprap.org/wiki/G-code#M218:_Set_Hotend_Offset">M218: Set Hotend Offset</a>
 	In Prusa Firmware this G-code is only active if `EXTRUDERS` is higher then 1 in the source code. On Original i3 Prusa MK2/s MK2.5/s MK3/s it is not active.
     #### Usage
@@ -9177,21 +9217,15 @@ void prepare_move() {
   set_current_to_destination();
 }
 
-void prepare_arc_move(bool isclockwise) {
-  float r = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
-
-  // Trace the arc
-  mc_arc(current_position, destination, offset, X_AXIS, Y_AXIS, Z_AXIS, feedrate * feedmultiply / 60 / 100.0, r,
-         isclockwise, active_extruder);
-
-  // As far as the parser is concerned, the position is now == target. In reality the
-  // motion control system might still be processing the action and the real tool position
-  // in any intermediate location.
-  /*for (int8_t i = 0; i < NUM_AXIS; i++) {
-    current_position[i] = destination[i];
-  }*/
-  set_current_to_destination();
-  previous_millis_cmd = _millis();
+void prepare_arc_move(char isclockwise) {
+    float r = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
+    // Trace the arc
+    mc_arc(current_position, destination, offset, feedrate * feedmultiply * (1. / (60.f * 100.f)), r, isclockwise, active_extruder);
+    // As far as the parser is concerned, the position is now == target. In reality the
+    // motion control system might still be processing the action and the real tool position
+    // in any intermediate location.
+    set_current_to_destination();
+    previous_millis_cmd = _millis();
 }
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1

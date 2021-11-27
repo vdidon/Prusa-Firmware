@@ -5515,6 +5515,7 @@ static void lcd_support_menu() {
     MENU_ITEM_BACK_P(PSTR("Firmware:"));
     MENU_ITEM_BACK_P(PSTR(" " FW_VERSION_FULL));
     MENU_ITEM_BACK_P(PSTR(" " MEATPACK_VERSION));
+    MENU_ITEM_BACK_P(PSTR(" G2/G3 Fix"));
 #if (FW_DEV_VERSION != FW_VERSION_GOLD) && (FW_DEV_VERSION != FW_VERSION_RC)
     MENU_ITEM_BACK_P(PSTR(" repo " FW_REPOSITORY));
 #endif

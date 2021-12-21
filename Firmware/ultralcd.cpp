@@ -5682,7 +5682,17 @@ void lcd_hw_setup_menu(void)                      // can not be "static"
 
     MENU_END();
 }
-
+static void lcd_gcode_menu()
+{
+    MENU_BEGIN();
+    MENU_ITEM_BACK_P(_T(MSG_MAIN));
+    if (!isPrintPaused) {
+       MENU_ITEM_GCODE_P(_N("Fast home"), PSTR("G28 W"));
+       MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
+       MENU_ITEM_GCODE_P(_N("Clean extrude"), PSTR("G1 E5"));
+    }
+    MENU_END();
+}
 static void lcd_settings_menu()
 {
 	EEPROM_read(EEPROM_SILENT, (uint8_t*)&SilentModeMenu, sizeof(SilentModeMenu));
@@ -5697,10 +5707,7 @@ static void lcd_settings_menu()
 	    MENU_ITEM_GCODE_P(_i("Disable steppers"), PSTR("M84"));////MSG_DISABLE_STEPPERS c=18
     }
     MENU_ITEM_EDIT_int3_P(_T(MSG_FAN_SPEED), &fanSpeed, 0, 255);
-    if (!isPrintPaused) {
-        MENU_ITEM_GCODE_P(_N("Fast home"), PSTR("G28 W"));
-        MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
-    }
+
     MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);
 
 	SETTINGS_FILAMENT_SENSOR;
@@ -6765,6 +6772,7 @@ static void lcd_main_menu()
             MENU_ITEM_SUBMENU_P(_T(MSG_UNLOAD_FILAMENT), lcd_unLoadFilament);
         }
     MENU_ITEM_SUBMENU_P(_T(MSG_SETTINGS), lcd_settings_menu);
+    MENU_ITEM_SUBMENU_P(_N("Gcode"), lcd_gcode_menu);
     if(!isPrintPaused) MENU_ITEM_SUBMENU_P(_T(MSG_MENU_CALIBRATION), lcd_calibration_menu);
     }
 

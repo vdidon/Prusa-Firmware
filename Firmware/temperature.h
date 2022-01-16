@@ -170,7 +170,7 @@ static inline void setAllTargetHotends(const float &celsius)
 }
 
 FORCE_INLINE void setTargetBed(const float &celsius) {  
-  target_temperature_bed = celsius;
+  //target_temperature_bed = celsius;
 };
 
 FORCE_INLINE bool isHeatingHotend(uint8_t extruder){  

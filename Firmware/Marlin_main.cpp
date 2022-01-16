@@ -6734,55 +6734,6 @@ Sigma_Exit:
     If no parameter is supplied, waits for heating or cooling to previously set temperature.
 	*/
     case 190: 
-    #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
-    {
-        bool CooldownNoWait = false;
-        LCD_MESSAGERPGM(_T(MSG_BED_HEATING));
-		heating_status = 3;
-		if (farm_mode) { prusa_statistics(1); };
-        if (code_seen('S')) 
-		{
-          setTargetBed(code_value());
-          CooldownNoWait = true;
-        } 
-		else if (code_seen('R')) 
-		{
-          setTargetBed(code_value());
-        }
-        codenum = _millis();
-        
-        cancel_heatup = false;
-        target_direction = isHeatingBed(); // true if heating, false if cooling
-
-		KEEPALIVE_STATE(NOT_BUSY);
-        while ( (!cancel_heatup) && (target_direction ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false))) )
-        {
-          if(( _millis() - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
-          {
-			  if (!farm_mode) {
-				  float tt = degHotend(active_extruder);
-				  SERIAL_PROTOCOLPGM("T:");
-				  SERIAL_PROTOCOL(tt);
-				  SERIAL_PROTOCOLPGM(" E:");
-				  SERIAL_PROTOCOL((int)active_extruder);
-				  SERIAL_PROTOCOLPGM(" B:");
-				  SERIAL_PROTOCOL_F(degBed(), 1);
-				  SERIAL_PROTOCOLLN();
-			  }
-				  codenum = _millis();
-			  
-          }
-          manage_heater();
-          manage_inactivity();
-          lcd_update(0);
-        }
-        LCD_MESSAGERPGM(_T(MSG_BED_DONE));
-		KEEPALIVE_STATE(IN_HANDLER);
-		heating_status = 4;
-
-        previous_millis_cmd = _millis();
-    }
-    #endif
         break;
 
     #if defined(FAN_PIN) && FAN_PIN > -1

@@ -5691,6 +5691,7 @@ static void lcd_gcode_menu()
        MENU_ITEM_GCODE_P(_N("Fast home"), PSTR("G28 W"));
        MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
        MENU_ITEM_GCODE_P(_N("Clean extrude"), PSTR("G1 E5"));
+       MENU_ITEM_GCODE_P(_N("Change nozzle"), PSTR("G1 X125 Z190"));
     }
     MENU_END();
 }

@@ -3,8 +3,6 @@
 #include "ultralcd.h"
 #include "meatpack.h"
 
-extern bool Stopped;
-
 // Reserve BUFSIZE lines of length MAX_CMD_SIZE plus CMDBUFFER_RESERVE_FRONT.
 char cmdbuffer[BUFSIZE * (MAX_CMD_SIZE + 1) + CMDBUFFER_RESERVE_FRONT];
 // Head of the circular buffer, where to read.
@@ -24,11 +22,10 @@ bool cmdbuffer_front_already_processed = false;
 bool cmdqueue_serial_disabled = false;
 
 int serial_count = 0;  //index of character read from serial line
-boolean comment_mode = false;
+bool comment_mode = false;
 char *strchr_pointer; // just a pointer to find chars in the command string like X, Y, Z, E, etc
 
-unsigned long TimeSent = _millis();
-unsigned long TimeNow = _millis();
+ShortTimer serialTimeoutTimer;
 
 long gcode_N = 0;
 long gcode_LastN = 0;
@@ -395,6 +392,15 @@ void get_command()
 
   // start of serial line processing loop
   while (((MYSERIAL.available() > 0 && !saved_printing) || (MYSERIAL.available() > 0 && isPrintPaused)) && !cmdqueue_serial_disabled) {  //is print is saved (crash detection or filament detection), dont process data from serial line
+	
+    char serial_char = MYSERIAL.read();
+/*    if (selectedSerialPort == 1)
+    {
+        selectedSerialPort = 0; 
+        MYSERIAL.write(serial_char); // for debuging serial line 2 in farm_mode
+        selectedSerialPort = 1; 
+    } */ //RP - removed
+      serialTimeoutTimer.start();
 
 #ifdef ENABLE_MEATPACK
     // MeatPack Changes
@@ -557,22 +563,11 @@ void get_command()
 #endif
   } // end of serial line processing loop
 
-    if(farm_mode){
-        TimeNow = _millis();
-        if ( ((TimeNow - TimeSent) > 800) && (serial_count > 0) ) {
-            cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0;
-            
-            bufindw += strlen(cmdbuffer+bufindw+CMDHDRSIZE) + (1 + CMDHDRSIZE);
-            if (bufindw == sizeof(cmdbuffer))
-                bufindw = 0;
-            ++ buflen;
-            
-            serial_count = 0;
-            
-            SERIAL_ECHOPGM("TIMEOUT:");
-            //memset(cmdbuffer, 0 , sizeof(cmdbuffer));
-            return;
-        }
+    if (serial_count > 0 && serialTimeoutTimer.expired(farm_mode ? 800 : 2000)) {
+        comment_mode = false;
+        serial_count = 0;
+        SERIAL_ECHOLNPGM("RX timeout");
+        return;
     }
 
   #ifdef SDSUPPORT

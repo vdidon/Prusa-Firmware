@@ -425,8 +425,7 @@ void get_command()
 	        MYSERIAL.write(serial_char); // for debuging serial line 2 in farm_mode
 	        selectedSerialPort = 1; 
 	    } */ //RP - removed
-	      TimeSent = _millis();
-	      TimeNow = _millis();
+	    serialTimeoutTimer.start();
 	
 	    if (serial_char < 0)
 	        // Ignore extended ASCII characters. These characters have no meaning in the G-code apart from the file names

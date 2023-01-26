@@ -9,7 +9,7 @@ if [ -z "$CONFIG_OK" -o "$CONFIG_OK" -eq 0 ]; then echo "$(tput setaf 1)Config N
 if [ ! -z "$COMMUNITY_LANGUAGES" ]; then
     LANGUAGES+=" $COMMUNITY_LANGUAGES"
 fi
-
+LANGUAGES=fr
 color 2 "fw-build.sh started" >&2
 echo -n "fw-build languages: " >&2
 color 2 "$LANGUAGES" >&2
@@ -73,7 +73,7 @@ if grep -q '^#define \+PRINTER_TYPE \+PRINTER_\(MK25\|MK25S\)\b' "$SRCDIR/Firmwa
 else
     has_xflash=1
 fi
-
+has_xflash=0
 if [ "$has_xflash" = 1 ]; then
     # Build the final hex file with XFLASH support (catalogs appended to a single hex file)
     OUTHEX="${INTLHEX}.hex"

@@ -1,1 +1,1 @@
-rm -r lang/tmp && rm lang/*.hex && rm -r ../PF-build-env-*-build ../Prusa-Firmware-build
+rm -fr lang/tmp && rm -f lang/*.hex && rm -fr ../PF-build-env-*-build ../Prusa-Firmware-build

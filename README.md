@@ -1,3 +1,13 @@
+# Add same improvements from 3.12.1 stock
+- Add a global cleaning script
+- Add "Pxxx" gcode to send customs orders
+- New preheat menu with same new materials, cooldown on top and option to cooldown only bed or hotend
+- New nozzle sizes
+- Add 7 and 10 samples per point in bed leveling
+- A gcode menu to send preconfigured gcode
+- Change support menu order
+- Add babystep in setup menu to change babystep when no printing
+
 # Prusa Firmware MK3
 
 This repository contains the source code and the development versions of the firmware running on the [Original Prusa i3](https://prusa3d.com/) MK3S/MK3/MK2.5S/MK2.5 line of printers.

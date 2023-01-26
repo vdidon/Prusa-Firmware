@@ -24,3 +24,7 @@ __pycache__
 # Generated files
 /build-env/
 /Firmware/Doc/
+
+#Perso
+.idea
+cmake-build-debug

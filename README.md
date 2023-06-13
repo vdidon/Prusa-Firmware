@@ -1,4 +1,4 @@
-# Add same improvements from 3.12.1 stock
+# Add same improvements from 3.12.2 stock
 - Add a global cleaning script
 - Add "Pxxx" gcode to send customs orders
 - New preheat menu with same new materials, cooldown on top and option to cooldown only bed or hotend

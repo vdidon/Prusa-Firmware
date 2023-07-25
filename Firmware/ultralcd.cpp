@@ -1988,7 +1988,6 @@ void mFilamentItem(uint16_t nTemp, uint16_t nTempBed)
             // modified elsewhere and needs to be redrawn in full.
 
             // reset bFilamentWaitingFlag immediately to avoid re-entry from raise_z_above()!
-            bool once = !bFilamentWaitingFlag;
             bFilamentWaitingFlag = true;
 
             // also force-enable lcd_draw_update (might be 0 when called from outside a menu)
@@ -2005,12 +2004,10 @@ void mFilamentItem(uint16_t nTemp, uint16_t nTempBed)
             case FilamentAction::MmuLoad:
             case FilamentAction::MmuLoadingTest:
                 lcd_puts_P(_T(MSG_PREHEATING_TO_LOAD));
-                if (once) raise_z_above(MIN_Z_FOR_LOAD);
                 break;
             case FilamentAction::UnLoad:
             case FilamentAction::MmuUnLoad:
                 lcd_puts_P(_T(MSG_PREHEATING_TO_UNLOAD));
-                if (once) raise_z_above(MIN_Z_FOR_UNLOAD);
                 break;
             case FilamentAction::MmuEject:
                 lcd_puts_P(_T(MSG_PREHEATING_TO_EJECT));

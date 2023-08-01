@@ -1,12 +1,12 @@
 # Add same improvements from 3.12.2 stock
-- Add a global cleaning script
-- Add "Pxxx" gcode to send customs orders
 - New preheat menu with same new materials, cooldown on top and option to cooldown only bed or hotend
+- Add gcode menu to send preconfigured gcode
+- Add "Pxxx" gcode to send customs orders
+- Add babystep option in setup menu when no printing
 - New nozzle sizes
 - Add 7 and 10 samples per point in bed leveling
-- A gcode menu to send preconfigured gcode
 - Change support menu order
-- Add babystep in setup menu to change babystep when no printing
+- Add a global cleaning script
 
 # Prusa Firmware MK3
 

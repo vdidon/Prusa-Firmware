@@ -1603,6 +1603,39 @@ static void lcd_support_menu()
 
   MENU_ITEM_BACK_P(_T(MSG_MAIN));
 
+  MENU_ITEM_SUBMENU_P(_i("XYZ cal. details"), lcd_menu_xyz_y_min);////MSG_XYZ_DETAILS c=18
+  MENU_ITEM_SUBMENU_P(_i("Extruder info"), lcd_menu_extruder_info);////MSG_INFO_EXTRUDER c=18
+  MENU_ITEM_SUBMENU_P(_i("Sensor info"), lcd_menu_show_sensors_state);////MSG_INFO_SENSORS c=18
+
+#ifdef TMC2130
+  MENU_ITEM_SUBMENU_P(_T(MSG_BELT_STATUS), lcd_menu_belt_status);
+#endif //TMC2130
+    
+  MENU_ITEM_SUBMENU_P(_i("Temperatures"), lcd_menu_temperatures);////MSG_MENU_TEMPERATURES c=18
+
+#if defined (VOLT_BED_PIN) || defined (VOLT_PWR_PIN)
+  MENU_ITEM_SUBMENU_P(_i("Voltages"), lcd_menu_voltages);////MSG_MENU_VOLTAGES c=18
+#endif //defined VOLT_BED_PIN || defined VOLT_PWR_PIN
+
+#ifdef MENU_DUMP
+  MENU_ITEM_FUNCTION_P(_n("Dump memory"), lcd_dump_memory);
+#endif //MENU_DUMP
+#ifdef MENU_SERIAL_DUMP
+  if (emergency_serial_dump)
+    MENU_ITEM_FUNCTION_P(_n("Dump to serial"), lcd_serial_dump);
+#endif
+#ifdef DEBUG_BUILD
+#ifdef EMERGENCY_HANDLERS
+#ifdef WATCHDOG
+    MENU_ITEM_FUNCTION_P(PSTR("WDR crash"), lcd_wdr_crash);
+#endif //WATCHDOG
+    MENU_ITEM_FUNCTION_P(PSTR("Stack crash"), lcd_stack_crash);
+#endif //EMERGENCY_HANDLERS
+  MENU_ITEM_SUBMENU_P(PSTR("Debug"), lcd_menu_debug);////MSG_DEBUG c=18
+#endif /* DEBUG_BUILD */
+
+  MENU_ITEM_BACK_P(STR_SEPARATOR);
+
   MENU_ITEM_BACK_P(PSTR("Firmware:"));
   MENU_ITEM_BACK_P(PSTR(" " FW_VERSION_FULL));
   MENU_ITEM_BACK_P(PSTR(" Repo:" FW_REPOSITORY));
@@ -1667,39 +1700,6 @@ static void lcd_support_menu()
           lcd_print(_md->ip_str);
       }
   }
-
-  MENU_ITEM_BACK_P(STR_SEPARATOR);
-  MENU_ITEM_SUBMENU_P(_i("XYZ cal. details"), lcd_menu_xyz_y_min);////MSG_XYZ_DETAILS c=18
-  MENU_ITEM_SUBMENU_P(_i("Extruder info"), lcd_menu_extruder_info);////MSG_INFO_EXTRUDER c=18
-  MENU_ITEM_SUBMENU_P(_i("Sensor info"), lcd_menu_show_sensors_state);////MSG_INFO_SENSORS c=18
-
-#ifdef TMC2130
-  MENU_ITEM_SUBMENU_P(_T(MSG_BELT_STATUS), lcd_menu_belt_status);
-#endif //TMC2130
-
-  MENU_ITEM_SUBMENU_P(_i("Temperatures"), lcd_menu_temperatures);////MSG_MENU_TEMPERATURES c=18
-
-#if defined (VOLT_BED_PIN) || defined (VOLT_PWR_PIN)
-  MENU_ITEM_SUBMENU_P(_i("Voltages"), lcd_menu_voltages);////MSG_MENU_VOLTAGES c=18
-#endif //defined VOLT_BED_PIN || defined VOLT_PWR_PIN
-
-#ifdef MENU_DUMP
-    MENU_ITEM_FUNCTION_P(_n("Dump memory"), lcd_dump_memory);
-#endif //MENU_DUMP
-#ifdef MENU_SERIAL_DUMP
-    if (emergency_serial_dump)
-        MENU_ITEM_FUNCTION_P(_n("Dump to serial"), lcd_serial_dump);
-#endif
-#ifdef DEBUG_BUILD
-#ifdef EMERGENCY_HANDLERS
-#ifdef WATCHDOG
-    MENU_ITEM_FUNCTION_P(PSTR("WDR crash"), lcd_wdr_crash);
-#endif //WATCHDOG
-    MENU_ITEM_FUNCTION_P(PSTR("Stack crash"), lcd_stack_crash);
-#endif //EMERGENCY_HANDLERS
-  MENU_ITEM_SUBMENU_P(PSTR("Debug"), lcd_menu_debug);////MSG_DEBUG c=18
-#endif /* DEBUG_BUILD */
-
   MENU_END();
 }
 

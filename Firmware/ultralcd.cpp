@@ -2114,6 +2114,24 @@ static void mFilamentItem_PLABOIS() {
     mFilamentItem(PLABOIS_PREHEAT_HOTEND_TEMP, PLABOIS_PREHEAT_HPB_TEMP);
 }
 
+static void lcd_cooldown_buse() {
+  setTargetHotend(0);
+  fanSpeed = 0;
+  lcd_return_to_status();
+}
+static void lcd_cooldown_bed() {
+  setTargetBed(0);
+  lcd_return_to_status();
+}
+static void lcd_cooldown_menu()
+{
+    MENU_BEGIN();
+        MENU_ITEM_SUBMENU_P(_N("ALL"),lcd_cooldown);
+        MENU_ITEM_SUBMENU_P(_N("BUSE"),lcd_cooldown_buse);
+        MENU_ITEM_SUBMENU_P(_N("BED"),lcd_cooldown_bed);
+        MENU_ITEM_BACK_P(_T(MSG_BACK));
+    MENU_END();
+}
 void lcd_generic_preheat_menu()
 {
     MENU_BEGIN();
@@ -2124,6 +2142,9 @@ void lcd_generic_preheat_menu()
         );
         MENU_ITEM_BACK_P(_T(eFilamentAction == FilamentAction::Lay1Cal ? MSG_BACK : MSG_MAIN));
     }
+    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && (target_temperature[0]!=0 || target_temperature_bed!=0))
+        //MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
+        MENU_ITEM_SUBMENU_P(_T(MSG_COOLDOWN),lcd_cooldown_menu);
     if (farm_mode)
     {
         MENU_ITEM_FUNCTION_P(PSTR("farm   -  " STRINGIFY(FARM_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FARM_PREHEAT_HPB_TEMP)), mFilamentItem_farm);
@@ -2148,7 +2169,6 @@ void lcd_generic_preheat_menu()
         MENU_ITEM_SUBMENU_P(bPreheatOnlyNozzle ? PSTR("CLEAN1 -  " STRINGIFY(CLEAN1_PREHEAT_HOTEND_TEMP)): PSTR("CLEAN1 -  " STRINGIFY(CLEAN1_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(CLEAN_PREHEAT_HPB_TEMP)), mFilamentItem_CLEAN1);
         MENU_ITEM_SUBMENU_P(bPreheatOnlyNozzle ? PSTR("CLEAN2 -  " STRINGIFY(CLEAN2_PREHEAT_HOTEND_TEMP)): PSTR("CLEAN2 -  " STRINGIFY(CLEAN2_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(CLEAN_PREHEAT_HPB_TEMP)), mFilamentItem_CLEAN2);
     }
-    if (!eeprom_read_byte((uint8_t*)EEPROM_WIZARD_ACTIVE) && eFilamentAction == FilamentAction::Preheat) MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
     MENU_END();
 }
 

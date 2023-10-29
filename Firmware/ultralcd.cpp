@@ -4297,24 +4297,66 @@ do\
 while (0)
 
 static void lcd_nozzle_diameter_cycle(void) {
-    uint16_t nDiameter;
-    switch(oNozzleDiameter){
+  uint16_t nDiameter;
+
+  switch (oNozzleDiameter) {
+    case ClNozzleDiameter::_Diameter_100:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_200;
+      nDiameter = 200;
+      break;
+    case ClNozzleDiameter::_Diameter_200:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_250;
+      nDiameter = 250;
+      break;
     case ClNozzleDiameter::_Diameter_250:
-        oNozzleDiameter=ClNozzleDiameter::_Diameter_400;
-        nDiameter=400;
-        break;
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_300;
+      nDiameter = 300;
+      break;
+    case ClNozzleDiameter::_Diameter_300:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_350;
+      nDiameter = 350;
+      break;
+    case ClNozzleDiameter::_Diameter_350:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_400;
+      nDiameter = 400;
+      break;
     case ClNozzleDiameter::_Diameter_400:
-        oNozzleDiameter=ClNozzleDiameter::_Diameter_600;
-        nDiameter=600;
-        break;
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_500;
+      nDiameter = 500;
+      break;
+    case ClNozzleDiameter::_Diameter_500:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_600;
+      nDiameter = 600;
+      break;
     case ClNozzleDiameter::_Diameter_600:
-        oNozzleDiameter=ClNozzleDiameter::_Diameter_800;
-        nDiameter=800;
-        break;
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_700;
+      nDiameter = 700;
+      break;
+    case ClNozzleDiameter::_Diameter_700:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_800;
+      nDiameter = 800;
+      break;
     case ClNozzleDiameter::_Diameter_800:
-        oNozzleDiameter=ClNozzleDiameter::_Diameter_250;
-        nDiameter=250;
-        break;
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_900;
+      nDiameter = 900;
+      break;
+    case ClNozzleDiameter::_Diameter_900:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_1000;
+      nDiameter = 1000;
+      break;
+    case ClNozzleDiameter::_Diameter_1000:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_1100;
+      nDiameter = 1100;
+      break;
+    case ClNozzleDiameter::_Diameter_1100:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_1200;
+      nDiameter = 1200;
+      break;
+    case ClNozzleDiameter::_Diameter_1200:
+      oNozzleDiameter = ClNozzleDiameter::_Diameter_100;
+      nDiameter = 100;
+      break;
+    case ClNozzleDiameter::_Diameter_Undef:
     default:
         oNozzleDiameter=ClNozzleDiameter::_Diameter_400;
         nDiameter=400;
@@ -4328,11 +4370,22 @@ do\
 {\
     switch(oNozzleDiameter)\
     {\
-        case ClNozzleDiameter::_Diameter_250: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.25"), lcd_nozzle_diameter_cycle); break;\
-        case ClNozzleDiameter::_Diameter_Undef: \
-        case ClNozzleDiameter::_Diameter_400: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.40"), lcd_nozzle_diameter_cycle); break;\
-        case ClNozzleDiameter::_Diameter_600: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.60"), lcd_nozzle_diameter_cycle); break;\
-        case ClNozzleDiameter::_Diameter_800: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.80"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_100: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.10"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_200: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.20"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_250: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.25"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_300: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.30"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_350: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.35"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_Undef: \
+    case ClNozzleDiameter::_Diameter_400: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.40"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_500: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.50"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_600: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.60"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_700: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.70"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_800: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.80"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_900: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.90"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_1000: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("1.00"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_1100: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("1.10"), lcd_nozzle_diameter_cycle); break;\
+    case ClNozzleDiameter::_Diameter_1200: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("1.20"), lcd_nozzle_diameter_cycle); break;\
+    default: MENU_ITEM_TOGGLE_P(_T(MSG_NOZZLE_DIAMETER), PSTR("0.40"), lcd_nozzle_diameter_cycle); break;\
     }\
 }\
 while (0)

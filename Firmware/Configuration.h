@@ -41,7 +41,10 @@ extern const char _sPrinterMmuName[] PROGMEM;
 #ifndef CMAKE_CONTROL
 #define FW_COMMIT_HASH_LENGTH 1
 #define FW_COMMIT_HASH "0"
-#define FW_REPOSITORY "Unknown"
+#define FW_REPOSITORY "VDIDON"
+#ifndef FW_VERSION_FULL
+#define FW_VERSION_FULL FW_VERSION "-" FW_REPOSITORY
+#endif //END FW_VERSION_FULL
 #endif
 
 // G-code language level

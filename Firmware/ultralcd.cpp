@@ -2139,12 +2139,12 @@ void lcd_wait_interact() {
 
   lcd_clear();
 
-  lcd_puts_at_P(0, 1, _T(MSG_INSERT_FILAMENT));
+  lcd_puts_at_P(0, 0, _T(MSG_INSERT_FILAMENT));
 #ifdef FILAMENT_SENSOR
   if (!fsensor.getAutoLoadEnabled())
 #endif //FILAMENT_SENSOR
   {
-    lcd_puts_at_P(0, 2, _T(MSG_PRESS));
+    lcd_puts_at_P(0, 1, _T(MSG_PRESS));
   }
 }
 

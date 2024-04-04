@@ -4582,7 +4582,7 @@ static void lcd_calibration_menu()
     // MK2
     MENU_ITEM_FUNCTION_P(_T(MSG_CALIBRATE_BED), lcd_mesh_calibration);
     // "Calibrate Z" with storing the reference values to EEPROM.
-    MENU_ITEM_SUBMENU_P(_T(MSG_HOMEYZ), lcd_mesh_calibration_z);
+    MENU_ITEM_FUNCTION_P(_T(MSG_HOMEYZ), lcd_mesh_calibration_z);
 
     MENU_ITEM_SUBMENU_P(_T(MSG_MESH_BED_LEVELING), lcd_mesh_bedleveling); ////MSG_MESH_BED_LEVELING c=18
 
@@ -4598,7 +4598,7 @@ static void lcd_calibration_menu()
 #endif
 
 #ifdef THERMAL_MODEL
-    MENU_ITEM_SUBMENU_P(_n("Thermal Model cal."), lcd_thermal_model_cal);
+    MENU_ITEM_FUNCTION_P(_n("Thermal Model cal."), lcd_thermal_model_cal);
 #endif //THERMAL_MODEL
 
     MENU_END();

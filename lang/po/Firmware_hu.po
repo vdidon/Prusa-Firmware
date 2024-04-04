@@ -2535,12 +2535,12 @@ msgid "Preload to MMU"
 msgstr "Betöltés az MMUba"
 
 #. MSG_FW_MK3_DETECTED c=20 r=4
-#: ../../Firmware/Marlin_main.cpp:920
+#: ../../Firmware/messages.cpp:367 ../../Firmware/Marlin_main.cpp:920
 msgid "MK3 firmware detected on MK3S printer"
 msgstr "MK3 firmver telepitve MK3S nyomtatora"
 
 #. MSG_FW_MK3S_DETECTED c=20 r=4
-#: ../../Firmware/Marlin_main.cpp:920
+#: ../../Firmware/messages.cpp:367 ../../Firmware/Marlin_main.cpp:920
 msgid "MK3S firmware detected on MK3 printer"
 msgstr "MK3S firmver eszlelve MK3 nyomtaton"
 

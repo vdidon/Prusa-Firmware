@@ -365,6 +365,7 @@ extern const char MSG_FILE_INCOMPLETE [];
 extern const char MSG_SD_REMOVED [];
 extern const char MSG_NEW_FIRMWARE_AVAILABLE [];
 extern const char MSG_NEW_FIRMWARE_PLEASE_UPGRADE [];
+extern const char MSG_FW_MK3_DETECTED [];
 
 //not internationalized messages
 #if 0

@@ -364,7 +364,7 @@ extern const char MSG_FILE_INCOMPLETE [] PROGMEM_I1 = ISTR("File incomplete. Con
 extern const char MSG_SD_REMOVED [] PROGMEM_I1 = ISTR("Card removed"); ////MSG_SD_REMOVED c=20
 extern const char MSG_NEW_FIRMWARE_AVAILABLE [] PROGMEM_I1 = ISTR("New firmware version available:"); ////MSG_NEW_FIRMWARE_AVAILABLE c=20 r=2
 extern const char MSG_NEW_FIRMWARE_PLEASE_UPGRADE [] PROGMEM_I1 = ISTR("Please upgrade."); ////MSG_NEW_FIRMWARE_PLEASE_UPGRADE c=20
-
+extern const char MSG_FW_MK3_DETECTED [] PROGMEM_I1 = ISTR(PRINTER_NAME " firmware detected on " PRINTER_NAME_ALTERNATE " printer"); ////MSG_FW_MK3_DETECTED c=20 r=4
 //not internationalized messages
 #if 0
 const char MSG_FW_VERSION_BETA[] PROGMEM_N1 = "You are using a BETA firmware version! It is in a development state! Use this version with CAUTION as it may DAMAGE the printer!"; ////MSG_FW_VERSION_BETA c=20 r=8

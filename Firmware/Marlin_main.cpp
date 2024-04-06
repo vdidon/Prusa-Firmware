@@ -1657,7 +1657,7 @@ void setup()
         if (saved_printing_type == PowerPanic::PRINT_TYPE_HOST) {
           recover_print(0);
         } else {
-          const uint8_t btn = lcd_show_fullscreen_message_yes_no_and_wait_P(_T(MSG_RECOVER_PRINT), false);
+          const uint8_t btn = lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_RECOVER_PRINT), false);
           if ( btn == LCD_LEFT_BUTTON_CHOICE) {
             recover_print(0);
           } else { // LCD_MIDDLE_BUTTON_CHOICE
@@ -3235,7 +3235,7 @@ bool gcode_M45(bool onlyZ, int8_t verbosity_level)
 		{
 			KEEPALIVE_STATE(PAUSED_FOR_USER);
 			#ifdef STEEL_SHEET
-			uint8_t result = lcd_show_fullscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false);
+			uint8_t result = lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false);
 			if(result == LCD_LEFT_BUTTON_CHOICE) {
 				lcd_show_fullscreen_message_and_wait_P(_T(MSG_REMOVE_STEEL_SHEET));
 			}
@@ -3514,7 +3514,7 @@ static void gcode_M600(const bool automatic, const float x_position, const float
         {
             KEEPALIVE_STATE(PAUSED_FOR_USER);
             uint8_t choice =
-                lcd_show_fullscreen_message_yes_no_and_wait_P(_T(MSG_UNLOAD_SUCCESSFUL), false, LCD_LEFT_BUTTON_CHOICE);
+                lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_UNLOAD_SUCCESSFUL), false, LCD_LEFT_BUTTON_CHOICE);
             lcd_update_enable(false);
             if (choice == LCD_MIDDLE_BUTTON_CHOICE) {
                 lcd_clear();
@@ -4742,7 +4742,7 @@ void process_commands()
             break;
         }
         lcd_show_fullscreen_message_and_wait_P(_T(MSG_TEMP_CAL_WARNING));
-        uint8_t result = lcd_show_fullscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false);
+        uint8_t result = lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false);
 
         if (result == LCD_LEFT_BUTTON_CHOICE)
         {

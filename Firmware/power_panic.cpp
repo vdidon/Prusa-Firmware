@@ -195,6 +195,9 @@ void uvlo_() {
     if (did_pause_print) {
         eeprom_update_byte_notify((uint8_t*)EEPROM_UVLO_Z_LIFTED, 1);
     }
+#ifdef PREVENT_DANGEROUS_EXTRUDE
+    eeprom_update_word_notify((uint16_t*)EEPROM_UVLO_EXTRUDE_MINTEMP, extrude_min_temp);
+#endif //PREVENT_DANGEROUS_EXTRUDE
     eeprom_update_byte_notify((uint8_t*)EEPROM_UVLO, PowerPanic::PENDING_RECOVERY);
 
     // Increment power failure counter
@@ -422,6 +425,9 @@ bool recover_machine_state_after_power_panic() {
     extruder_advance_K = eeprom_read_float((float*)EEPROM_UVLO_LA_K);
 #endif
 
+#ifdef PREVENT_DANGEROUS_EXTRUDE
+    extrude_min_temp = eeprom_read_word((uint16_t*)EEPROM_UVLO_EXTRUDE_MINTEMP);
+#endif //PREVENT_DANGEROUS_EXTRUDE
      return mbl_was_active;
 }
 

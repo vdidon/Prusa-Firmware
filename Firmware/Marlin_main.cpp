@@ -7449,7 +7449,7 @@ Sigma_Exit:
       set_extrude_min_temp(temp);
     }
     break;
-	#endif
+	#endif //PREVENT_DANGEROUS_EXTRUDE
 
     /*!
 	### M303 - PID autotune <a href="https://reprap.org/wiki/G-code#M303:_Run_PID_tuning">M303: Run PID tuning</a>

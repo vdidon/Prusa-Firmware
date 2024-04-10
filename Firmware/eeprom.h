@@ -385,14 +385,34 @@ static_assert(sizeof(Sheets) == EEPROM_SHEETS_SIZEOF, "Sizeof(Sheets) is not EEP
 | 0x0C7F 3199 | bool    | EEPROM_UVLO_Z_LIFTED                  | 00h 0        | 00h                   | Power Panic Z axis NOT lifted                     | Power Panic  | D3 Ax0c7f C1
 | ^           | ^       | ^                                     | 01h 1        | 01h                   | Power Panic Z axis lifted                         | ^            | ^
 | 0x0C7d 3197 | uint16  | EEPROM_UVLO_EXTRUDE_MINTEMP           | 0-305        | afh 175               | Power Panic Extrude mintemp                       | Power Panic  | D3 Ax0c7d C2
-| 0x0C6D 3181 | float*4 | EEPROM_UVLO_ACCELL_MM_S2_NORMAL       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 normal         | Power Panic  | D3 Ax0c6d C16
-| 0x0C5D 3165 | float*4 | EEPROM_UVLO_ACCELL_MM_S2_SILENT       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 silent         | Power Panic  | D3 Ax0c5d C16
-| 0x0C4D 3149 | float*4 | EEPROM_UVLO_MAX_FEEDRATE_NORMAL       | ???          | ff ff ff ffh          | Power Panic max feedrate normal                   | Power Panic  | D3 Ax0c4d C16
-| 0x0C3D 3133 | float*4 | EEPROM_UVLO_MAX_FEEDRATE_SILENT       | ???          | ff ff ff ffh          | Power Panic max feedrate silent                   | Power Panic  | D3 Ax0c3d C16
+| 0x0C6D 3181 | float   | EEPROM_UVLO_ACCELL_MM_S2_NORMAL       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 normal         | Power Panic  | D3 Ax0c6d C16
+| ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0c79 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0c75 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0c71 C4
+| ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c6d C4
+| 0x0C5D 3165 | float   | EEPROM_UVLO_ACCELL_MM_S2_SILENT       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 silent         | Power Panic  | D3 Ax0c5d C16
+| ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0c69 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0c65 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0c61 C4
+| ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c5d C4
+| 0x0C4D 3149 | float   | EEPROM_UVLO_MAX_FEEDRATE_NORMAL       | ???          | ff ff ff ffh          | Power Panic max feedrate normal                   | Power Panic  | D3 Ax0c4d C16
+| ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0d59 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0d55 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0d51 C4
+| ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c4d C4
+| 0x0C3D 3133 | float   | EEPROM_UVLO_MAX_FEEDRATE_SILENT       | ???          | ff ff ff ffh          | Power Panic max feedrate silent                   | Power Panic  | D3 Ax0c3d C16
+| ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0d49 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0d45 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0d41 C4
+| ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c3d C4
 | 0x0C39 3129 | float   | EEPROM_UVLO_MIN_FEEDRATE              | ???          | ff ff ff ffh          | Power Panic min feedrate                          | Power Panic  | D3 Ax0c39 C4
 | 0x0C35 3125 | float   | EEPROM_UVLO_MIN_TRAVEL_FEEDRATE       | ???          | ff ff ff ffh          | Power Panic min travel feedrate                   | Power Panic  | D3 Ax0c35 C4
 | 0x0C31 3121 | uint32  | EEPROM_UVLO_MIN_SEGMENT_TIME_US       | ???          | ff ff ff ffh          | Power Panic min segment time us                   | Power Panic  | D3 Ax0c31 C4
-| 0x0C21 3105 | float*4 | EEPROM_UVLO_MAX_JERK                  | ???          | ff ff ff ffh          | Power Panic max jerk                              | Power Panic  | D3 Ax0c21 C16
+| 0x0C21 3105 | float   | EEPROM_UVLO_MAX_JERK                  | ???          | ff ff ff ffh          | Power Panic max jerk                              | Power Panic  | D3 Ax0c21 C16
+| ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0d2d C4
+| ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0d29 C4
+| ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0d25 C4
+| ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c21 C4
 
 
 |Address begin|Bit/Type | Name                                  | Valid values | Default/FactoryReset  | Description                                       |Gcode/Function| Debug code

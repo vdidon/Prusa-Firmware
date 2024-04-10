@@ -196,31 +196,16 @@ void uvlo_() {
     eeprom_update_word_notify((uint16_t*)EEPROM_UVLO_EXTRUDE_MINTEMP, extrude_min_temp);
 #endif //PREVENT_DANGEROUS_EXTRUDE
     // Save max acceleration mm per s2
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 0), cs.max_acceleration_mm_per_s2_normal[X_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 4), cs.max_acceleration_mm_per_s2_normal[Y_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 8), cs.max_acceleration_mm_per_s2_normal[Z_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL +12), cs.max_acceleration_mm_per_s2_normal[E_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 0), cs.max_acceleration_mm_per_s2_silent[X_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 4), cs.max_acceleration_mm_per_s2_silent[Y_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 8), cs.max_acceleration_mm_per_s2_silent[Z_AXIS]);
-    eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT +12), cs.max_acceleration_mm_per_s2_silent[E_AXIS]);
+    eeprom_update_block_notify(cs.max_acceleration_mm_per_s2_normal, (uint32_t *)EEPROM_UVLO_ACCELL_MM_S2_NORMAL, sizeof(cs.max_acceleration_mm_per_s2_normal));
+    eeprom_update_block_notify(cs.max_acceleration_mm_per_s2_silent, (uint32_t *)EEPROM_UVLO_ACCELL_MM_S2_SILENT, sizeof(cs.max_acceleration_mm_per_s2_silent));
     // Save feedrates
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 0), cs.max_feedrate_normal[X_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 4), cs.max_feedrate_normal[Y_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 8), cs.max_feedrate_normal[Z_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL +12), cs.max_feedrate_normal[E_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 0), cs.max_feedrate_silent[X_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 4), cs.max_feedrate_silent[Y_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 8), cs.max_feedrate_silent[Z_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT +12), cs.max_feedrate_silent[E_AXIS]);
+    eeprom_update_block_notify(cs.max_feedrate_normal, (float *)EEPROM_UVLO_MAX_FEEDRATE_NORMAL, sizeof(cs.max_feedrate_normal));
+    eeprom_update_block_notify(cs.max_feedrate_silent, (float *)EEPROM_UVLO_MAX_FEEDRATE_SILENT, sizeof(cs.max_feedrate_silent));
     // Save Jerk
     eeprom_update_float_notify((float *)(EEPROM_UVLO_MIN_FEEDRATE), cs.minimumfeedrate);
     eeprom_update_float_notify((float *)(EEPROM_UVLO_MIN_TRAVEL_FEEDRATE), cs.mintravelfeedrate);
     eeprom_update_dword_notify((uint32_t *)(EEPROM_UVLO_MIN_SEGMENT_TIME_US), cs.min_segment_time_us);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_JERK + 0), cs.max_jerk[X_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_JERK + 4), cs.max_jerk[Y_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_JERK + 8), cs.max_jerk[Z_AXIS]);
-    eeprom_update_float_notify((float *)(EEPROM_UVLO_MAX_JERK +12), cs.max_jerk[E_AXIS]);
+    eeprom_update_block_notify(cs.max_jerk, (float *)EEPROM_UVLO_MAX_JERK, sizeof(cs.max_jerk));
     // Finally store the "power outage" flag.
     if (did_pause_print) {
         eeprom_update_byte_notify((uint8_t*)EEPROM_UVLO_Z_LIFTED, 1);
@@ -458,31 +443,16 @@ bool recover_machine_state_after_power_panic() {
     extrude_min_temp = eeprom_read_word((uint16_t*)EEPROM_UVLO_EXTRUDE_MINTEMP);
 #endif //PREVENT_DANGEROUS_EXTRUDE
     // Recover max acceleration mm per s2
-    cs.max_acceleration_mm_per_s2_normal[X_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 0));
-    cs.max_acceleration_mm_per_s2_normal[Y_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 4));
-    cs.max_acceleration_mm_per_s2_normal[Z_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL + 8));
-    cs.max_acceleration_mm_per_s2_normal[E_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_NORMAL +12));
-    cs.max_acceleration_mm_per_s2_silent[X_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 0));
-    cs.max_acceleration_mm_per_s2_silent[Y_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 4));
-    cs.max_acceleration_mm_per_s2_silent[Z_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT + 8));
-    cs.max_acceleration_mm_per_s2_silent[E_AXIS] = eeprom_read_dword((uint32_t *)(EEPROM_UVLO_ACCELL_MM_S2_SILENT +12));
+    eeprom_read_block(cs.max_acceleration_mm_per_s2_normal, (uint32_t *)EEPROM_UVLO_ACCELL_MM_S2_NORMAL, sizeof(cs.max_acceleration_mm_per_s2_normal));
+    eeprom_read_block(cs.max_acceleration_mm_per_s2_silent, (uint32_t *)EEPROM_UVLO_ACCELL_MM_S2_SILENT, sizeof(cs.max_acceleration_mm_per_s2_silent));
     // Recover feedrates
-    cs.max_feedrate_normal[X_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 0));
-    cs.max_feedrate_normal[Y_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 4));
-    cs.max_feedrate_normal[Z_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL + 8));
-    cs.max_feedrate_normal[E_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_NORMAL +12));
-    cs.max_feedrate_silent[X_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 0));
-    cs.max_feedrate_silent[Y_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 4));
-    cs.max_feedrate_silent[Z_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT + 8));
-    cs.max_feedrate_silent[E_AXIS] = eeprom_read_float((float *)(EEPROM_UVLO_MAX_FEEDRATE_SILENT +12));
+    eeprom_read_block(cs.max_feedrate_normal, (float *)EEPROM_UVLO_MAX_FEEDRATE_NORMAL, sizeof(cs.max_feedrate_normal));
+    eeprom_read_block(cs.max_feedrate_silent, (float *)EEPROM_UVLO_MAX_FEEDRATE_SILENT, sizeof(cs.max_feedrate_silent));
     // Recover jerk
     cs.minimumfeedrate = eeprom_read_float((float *)EEPROM_UVLO_MIN_FEEDRATE);
     cs.mintravelfeedrate = eeprom_read_float((float *)EEPROM_UVLO_MIN_TRAVEL_FEEDRATE);
     cs.min_segment_time_us = eeprom_read_dword((uint32_t *)EEPROM_UVLO_MIN_SEGMENT_TIME_US);
-    cs.max_jerk[X_AXIS] = eeprom_read_float((float *)EEPROM_UVLO_MAX_JERK + 0);
-    cs.max_jerk[Y_AXIS] = eeprom_read_float((float *)EEPROM_UVLO_MAX_JERK + 4);
-    cs.max_jerk[Z_AXIS] = eeprom_read_float((float *)EEPROM_UVLO_MAX_JERK + 8);
-    cs.max_jerk[E_AXIS] = eeprom_read_float((float *)EEPROM_UVLO_MAX_JERK +12);
+    eeprom_read_block(cs.max_jerk, (float *)EEPROM_UVLO_MAX_JERK, sizeof(cs.max_jerk));
      return mbl_was_active;
 }
 

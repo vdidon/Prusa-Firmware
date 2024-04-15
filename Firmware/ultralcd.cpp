@@ -5716,23 +5716,26 @@ void lcd_print_stop_finish()
 
         // restore the auto hotend state
         hotendDefaultAutoFanState();
-    }
 
-    if (MMU2::mmu2.Enabled() && MMU2::mmu2.FindaDetectsFilament())
-    {
-        // The print was aborted while when the nozzle was cold:
-        //     1. in a paused state                      => a partial backup in RAM is always available
-        //     2. after a recoverable thermal/fan error had paused the print => only extruder temperature is saved to RAM
-        if (printingIsPaused())
-        {
-            // Restore temperature saved in ram after pausing print
-            restore_extruder_temperature_from_ram();
-        }
+        if (MMU2::mmu2.Enabled() && MMU2::mmu2.FindaDetectsFilament()
+#ifdef FANCHECK
+            && fan_check_error != EFCE_REPORTED
+#endif //FANCHECK
+        ) {
+            // The print was aborted while when the nozzle was cold:
+            //     1. in a paused state                      => a partial backup in RAM is always available
+            //     2. after a recoverable thermal/fan error had paused the print => only extruder temperature is saved to RAM
+            if (printingIsPaused())
+            {
+                // Restore temperature saved in ram after pausing print
+                restore_extruder_temperature_from_ram();
+            }
 
-        // If the pause state was cleared previously or the target temperature is 0°C in the case
-        // of an unconditional stop. In that scenario we do not want to unload.
-        if (target_temperature[0] >= extrude_min_temp) {
-            MMU2::mmu2.unload(); // M702
+            // If the pause state was cleared previously or the target temperature is 0°C in the case
+            // of an unconditional stop. In that scenario we do not want to unload.
+            if (target_temperature[0] >= extrude_min_temp) {
+                MMU2::mmu2.unload(); // M702
+            }
         }
     }
 

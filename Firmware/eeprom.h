@@ -385,12 +385,12 @@ static_assert(sizeof(Sheets) == EEPROM_SHEETS_SIZEOF, "Sizeof(Sheets) is not EEP
 | 0x0C7F 3199 | bool    | EEPROM_UVLO_Z_LIFTED                  | 00h 0        | 00h                   | Power Panic Z axis NOT lifted                     | Power Panic  | D3 Ax0c7f C1
 | ^           | ^       | ^                                     | 01h 1        | 01h                   | Power Panic Z axis lifted                         | ^            | ^
 | 0x0C7d 3197 | uint16  | EEPROM_UVLO_EXTRUDE_MINTEMP           | 0-305        | afh 175               | Power Panic Extrude mintemp                       | Power Panic  | D3 Ax0c7d C2
-| 0x0C6D 3181 | float   | EEPROM_UVLO_ACCELL_MM_S2_NORMAL       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 normal         | Power Panic  | D3 Ax0c6d C16
+| 0x0C6D 3181 | uint32  | EEPROM_UVLO_ACCELL_MM_S2_NORMAL       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 normal         | Power Panic  | D3 Ax0c6d C16
 | ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0c79 C4
 | ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0c75 C4
 | ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0c71 C4
 | ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c6d C4
-| 0x0C5D 3165 | float   | EEPROM_UVLO_ACCELL_MM_S2_SILENT       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 silent         | Power Panic  | D3 Ax0c5d C16
+| 0x0C5D 3165 | uint32  | EEPROM_UVLO_ACCELL_MM_S2_SILENT       | ???          | ff ff ff ffh          | Power Panic acceleration mm per s2 silent         | Power Panic  | D3 Ax0c5d C16
 | ^           | ^       | ^                                     | ???          | ^                     | E-axis                                            | ^            | D3 Ax0c69 C4
 | ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0c65 C4
 | ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0c61 C4
@@ -656,12 +656,12 @@ static Sheets * const EEPROM_Sheets_base = (Sheets*)(EEPROM_SHEETS_BASE);
 #define EEPROM_UVLO_Z_LIFTED (EEPROM_CUSTOM_MENDEL_NAME-1) //bool
 #define EEPROM_UVLO_EXTRUDE_MINTEMP (EEPROM_UVLO_Z_LIFTED-2) //uint16_t
 #define EEPROM_UVLO_ACCELL_MM_S2_NORMAL (EEPROM_UVLO_EXTRUDE_MINTEMP-4*4) // 4 x float
-#define EEPROM_UVLO_ACCELL_MM_S2_SILENT (EEPROM_UVLO_ACCELL_MM_S2_NORMAL-4*4) // 4 x float
-#define EEPROM_UVLO_MAX_FEEDRATE_NORMAL (EEPROM_UVLO_ACCELL_MM_S2_SILENT-4*4) // 4 x float
+#define EEPROM_UVLO_ACCELL_MM_S2_SILENT (EEPROM_UVLO_ACCELL_MM_S2_NORMAL-4*4) // 4 x uint32_t
+#define EEPROM_UVLO_MAX_FEEDRATE_NORMAL (EEPROM_UVLO_ACCELL_MM_S2_SILENT-4*4) // 4 x uint32_t
 #define EEPROM_UVLO_MAX_FEEDRATE_SILENT (EEPROM_UVLO_MAX_FEEDRATE_NORMAL-4*4) // 4 x float
 #define EEPROM_UVLO_MIN_FEEDRATE (EEPROM_UVLO_MAX_FEEDRATE_SILENT-4) //float
 #define EEPROM_UVLO_MIN_TRAVEL_FEEDRATE (EEPROM_UVLO_MIN_FEEDRATE-4) //float
-#define EEPROM_UVLO_MIN_SEGMENT_TIME_US (EEPROM_UVLO_MIN_TRAVEL_FEEDRATE-4) //unit32_t
+#define EEPROM_UVLO_MIN_SEGMENT_TIME_US (EEPROM_UVLO_MIN_TRAVEL_FEEDRATE-4) //uint32_t
 #define EEPROM_UVLO_MAX_JERK (EEPROM_UVLO_MIN_SEGMENT_TIME_US-4*4) // 4 x float
 //This is supposed to point to last item to allow EEPROM overrun check. Please update when adding new items.
 #define EEPROM_LAST_ITEM EEPROM_UVLO_MAX_JERK

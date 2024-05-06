@@ -472,7 +472,7 @@ void tuneIdlerStallguardThreshold() {
         // To save the print, make the Tune button unresponsive for now.
         return;
     }
-    
+
     putErrorScreenToSleep = true;
     menu_submenu(tuneIdlerStallguardThresholdMenu);
 }

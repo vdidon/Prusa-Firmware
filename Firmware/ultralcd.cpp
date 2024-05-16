@@ -3881,15 +3881,17 @@ void lcd_wizard(WizState state)
 				state = S::Failed;
 			} else {
 				raise_z_above(MIN_Z_FOR_SWAP);
-				//current filament needs to be unloaded and then new filament should be loaded
-				//start to preheat nozzle for unloading remaining PLA filament
-				setTargetHotend(PLA_PREHEAT_HOTEND_TEMP);
-				lcd_display_message_fullscreen_P(_T(MSG_WIZARD_WILL_PREHEAT));
-				wait_preheat();
-				unload_filament(FILAMENTCHANGE_FINALRETRACT); // unload current filament
-				lcd_wizard_load(); // load filament
-				setTargetHotend(0); //we are finished, cooldown nozzle
-				state = S::Restore;
+				if(!MMU2::mmu2.Enabled()) {
+					//current filament needs to be unloaded and then new filament should be loaded
+					//start to preheat nozzle for unloading remaining PLA filament
+					setTargetHotend(PLA_PREHEAT_HOTEND_TEMP);
+					lcd_display_message_fullscreen_P(_T(MSG_WIZARD_WILL_PREHEAT));
+					wait_preheat();
+					unload_filament(FILAMENTCHANGE_FINALRETRACT); // unload current filament
+					lcd_wizard_load(); // load filament
+					setTargetHotend(0); //we are finished, cooldown nozzle
+				}
+			state = S::Restore;
 			}
 			break;
 #ifdef THERMAL_MODEL

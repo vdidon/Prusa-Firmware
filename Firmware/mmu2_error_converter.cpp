@@ -67,17 +67,17 @@ uint8_t PrusaErrorCodeIndex(ErrorCode ec) {
     case ErrorCode::STALLED_PULLEY:
     case ErrorCode::MOVE_PULLEY_FAILED:
         return FindErrorIndex(ERR_MECHANICAL_PULLEY_CANNOT_MOVE);
-        
+
     case ErrorCode::HOMING_SELECTOR_FAILED:
         return FindErrorIndex(ERR_MECHANICAL_SELECTOR_CANNOT_HOME);
     case ErrorCode::MOVE_SELECTOR_FAILED:
         return FindErrorIndex(ERR_MECHANICAL_SELECTOR_CANNOT_MOVE);
-        
+
     case ErrorCode::HOMING_IDLER_FAILED:
         return FindErrorIndex(ERR_MECHANICAL_IDLER_CANNOT_HOME);
     case ErrorCode::MOVE_IDLER_FAILED:
         return FindErrorIndex(ERR_MECHANICAL_IDLER_CANNOT_MOVE);
-        
+
     case ErrorCode::MMU_NOT_RESPONDING:
         return FindErrorIndex(ERR_CONNECT_MMU_NOT_RESPONDING);
     case ErrorCode::PROTOCOL_ERROR:
@@ -98,7 +98,7 @@ uint8_t PrusaErrorCodeIndex(ErrorCode ec) {
         return FindErrorIndex(ERR_ELECTRICAL_MMU_MCU_ERROR);
     default: break;
     }
-    
+
     // Electrical issues which can be detected somehow.
     // Need to be placed before TMC-related errors in order to process couples of error bits between single ones
     // and to keep the code size down.
@@ -199,7 +199,7 @@ Buttons ButtonPressed(ErrorCode ec) {
 
 Buttons ButtonAvailable(ErrorCode ec) {
     uint8_t ei = PrusaErrorCodeIndex(ec);
-    
+
     // The list of responses which occur in mmu error dialogs
     // Return button index or perform some action on the MK3 by itself (like Reset MMU)
     // Based on Prusa-Error-Codes errors_list.h
@@ -266,23 +266,23 @@ Buttons ButtonAvailable(ErrorCode ec) {
             break;
         }
         break;
-        
+
     case ERR_TEMPERATURE_TMC_PULLEY_OVERHEAT_ERROR:
     case ERR_TEMPERATURE_TMC_SELECTOR_OVERHEAT_ERROR:
     case ERR_TEMPERATURE_TMC_IDLER_OVERHEAT_ERROR:
-        
+
     case ERR_ELECTRICAL_TMC_PULLEY_DRIVER_ERROR:
     case ERR_ELECTRICAL_TMC_SELECTOR_DRIVER_ERROR:
     case ERR_ELECTRICAL_TMC_IDLER_DRIVER_ERROR:
-        
+
     case ERR_ELECTRICAL_TMC_PULLEY_DRIVER_RESET:
     case ERR_ELECTRICAL_TMC_SELECTOR_DRIVER_RESET:
     case ERR_ELECTRICAL_TMC_IDLER_DRIVER_RESET:
-        
+
     case ERR_ELECTRICAL_TMC_PULLEY_UNDERVOLTAGE_ERROR:
     case ERR_ELECTRICAL_TMC_SELECTOR_UNDERVOLTAGE_ERROR:
     case ERR_ELECTRICAL_TMC_IDLER_UNDERVOLTAGE_ERROR:
-        
+
     case ERR_ELECTRICAL_TMC_PULLEY_DRIVER_SHORTED:
     case ERR_ELECTRICAL_TMC_SELECTOR_DRIVER_SHORTED:
     case ERR_ELECTRICAL_TMC_IDLER_DRIVER_SHORTED:
@@ -323,7 +323,7 @@ Buttons ButtonAvailable(ErrorCode ec) {
             break;
         }
         break;
-        
+
     case ERR_SYSTEM_INVALID_TOOL:
         switch (buttonSelectedOperation) {
         case ButtonOperations::StopPrint: // "Stop print"
@@ -338,7 +338,7 @@ Buttons ButtonAvailable(ErrorCode ec) {
     default:
         break;
     }
-    
+
     return Buttons::NoButton;
 }
 

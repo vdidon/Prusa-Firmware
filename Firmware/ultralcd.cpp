@@ -6982,7 +6982,7 @@ static uint8_t lcd_selftest_screen(TestScreen screen, uint8_t _progress, uint8_t
 
 	lcd_update_enable(false);
 	const char _indicator = (_progress >= _progress_scale) ? '-' : '|';
-	if (_clear) 
+	if (_clear)
 		lcd_clear();
 	else
 		lcd_home();

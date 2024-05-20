@@ -206,7 +206,7 @@ bool Config_RetrieveSettings()
         eeprom_init_default_byte(&EEPROM_M500_base->n_arc_correction, pgm_read_byte(&default_conf.n_arc_correction));
         eeprom_init_default_word(&EEPROM_M500_base->min_arc_segments, pgm_read_word(&default_conf.min_arc_segments));
         eeprom_init_default_word(&EEPROM_M500_base->arc_segments_per_sec, pgm_read_word(&default_conf.arc_segments_per_sec));
-        
+
         // Initialize the travel_acceleration in eeprom if not already
         eeprom_init_default_float(&EEPROM_M500_base->travel_acceleration, pgm_read_float(&default_conf.travel_acceleration));
 
@@ -271,7 +271,7 @@ void Config_ResetDefault()
 
   // steps per sq second need to be updated to agree with the units per sq second
     reset_acceleration_rates();
-    
+
 #ifdef PIDTEMP
     updatePID();
 #endif//PIDTEMP

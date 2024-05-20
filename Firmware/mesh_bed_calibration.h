@@ -133,7 +133,7 @@ inline bool world2machine_clamp(float &x, float &y)
         tmpx = X_MAX_POS;
         clamped = true;
     }
-    
+
     if (tmpy < Y_MIN_POS) {
         tmpy = Y_MIN_POS;
         clamped = true;
@@ -169,7 +169,7 @@ enum BedSkewOffsetDetectionResultType {
 	BED_SKEW_OFFSET_DETECTION_POINT_NOT_FOUND   = -1, //!< Point not found.
 	BED_SKEW_OFFSET_DETECTION_FITTING_FAILED    = -2, //!< Fitting failed
 	BED_SKEW_OFFSET_DETECTION_POINT_SCAN_FAILED = -3, //!< Point scan failed, try again
-	
+
 	// Detection finished with success.
 	BED_SKEW_OFFSET_DETECTION_PERFECT 			= 0,  //!< Perfect.
 	BED_SKEW_OFFSET_DETECTION_SKEW_MILD			= 1,  //!< Mildly skewed.
@@ -195,7 +195,7 @@ extern bool is_bed_z_jitter_data_valid();
 // Useful for visualizing the behavior of the bed induction detector.
 extern bool scan_bed_induction_points(int8_t verbosity_level);
 
-// Load Z babystep value from the EEPROM into babystepLoadZ, 
+// Load Z babystep value from the EEPROM into babystepLoadZ,
 // but don't apply it through the planner. This is useful on wake up
 // after power panic, when it is expected, that the baby step has been already applied.
 extern void babystep_load();

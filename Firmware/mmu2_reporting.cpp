@@ -157,7 +157,7 @@ static uint8_t ReportErrorHookMonitor(uint8_t ei) {
         //! |                    |
         //! |>(left)             |
         //! ----------------------
-        //! Three choices 
+        //! Three choices
         //! |>(left)>(mid)>(righ)|
         //! ----------------------
         //! Two choices
@@ -236,7 +236,7 @@ bool TuneMenuEntered() {
 
 void ReportErrorHook(CommandInProgress /*cip*/, ErrorCode ec, uint8_t /*es*/) {
     if (putErrorScreenToSleep) return;
-    
+
     if (mmu2.MMUCurrentErrorCode() == ErrorCode::OK && mmu2.MMULastErrorSource() == MMU2::ErrorSourceMMU) {
         // If the error code suddenly changes to OK, that means
         // a button was pushed on the MMU and the LCD should
@@ -472,7 +472,7 @@ void tuneIdlerStallguardThreshold() {
         // To save the print, make the Tune button unresponsive for now.
         return;
     }
-    
+
     putErrorScreenToSleep = true;
     menu_submenu(tuneIdlerStallguardThresholdMenu);
 }

@@ -283,7 +283,7 @@ ISR(TIMER1_COMPA_vect) {
   // Is there a 8us time left before the next interrupt triggers?
   if (OCR1A < TCNT1 + 16) {
 #ifdef DEBUG_STEPPER_TIMER_MISSED
-    // Verify whether the next planned timer interrupt has not been missed already.  
+    // Verify whether the next planned timer interrupt has not been missed already.
     // This debugging test takes < 1.125us
     // This skews the profiling slightly as the fastest stepper timer
     // interrupt repeats at a 100us rate (10kHz).
@@ -297,7 +297,7 @@ ISR(TIMER1_COMPA_vect) {
     }
 #endif
     // Fix the next interrupt to be executed after 8us from now.
-    OCR1A = TCNT1 + 16; 
+    OCR1A = TCNT1 + 16;
   }
 }
 
@@ -464,7 +464,7 @@ FORCE_INLINE void stepper_next_block()
 // Check limit switches.
 FORCE_INLINE void stepper_check_endstops()
 {
-  if(check_endstops) 
+  if(check_endstops)
   {
     uint8_t _endstop_hit = endstop_hit;
     uint8_t _endstop = endstop;
@@ -492,7 +492,7 @@ FORCE_INLINE void stepper_check_endstops()
         }
       #endif
     } else { // +direction
-      #if ( (defined(X_MAX_PIN) && (X_MAX_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_XMAXLIMIT)          
+      #if ( (defined(X_MAX_PIN) && (X_MAX_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_XMAXLIMIT)
         #ifdef TMC2130_SG_HOMING
         // Stall guard homing turned on
           SET_BIT_TO(_endstop, X_AXIS + 4, (!READ(X_TMC2130_DIAG)));
@@ -516,7 +516,7 @@ FORCE_INLINE void stepper_check_endstops()
     if ((((out_bits & (1<<X_AXIS)) != 0)&&(out_bits & (1<<Y_AXIS)) == 0)) // -Y occurs for -A and +B
     #endif
     {
-      #if ( (defined(Y_MIN_PIN) && (Y_MIN_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_YMINLIMIT)          
+      #if ( (defined(Y_MIN_PIN) && (Y_MIN_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_YMINLIMIT)
       #ifdef TMC2130_SG_HOMING
       // Stall guard homing turned on
         SET_BIT_TO(_endstop, Y_AXIS, (!READ(Y_TMC2130_DIAG)));
@@ -533,7 +533,7 @@ FORCE_INLINE void stepper_check_endstops()
         }
       #endif
     } else { // +direction
-      #if ( (defined(Y_MAX_PIN) && (Y_MAX_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_YMAXLIMIT)                
+      #if ( (defined(Y_MAX_PIN) && (Y_MAX_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_YMAXLIMIT)
         #ifdef TMC2130_SG_HOMING
         // Stall guard homing turned on
           SET_BIT_TO(_endstop, Y_AXIS + 4, (!READ(Y_TMC2130_DIAG)));
@@ -666,7 +666,7 @@ FORCE_INLINE void stepper_tick_lowres()
       STEP_NC_LO(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_LO(Y_DUP_AXIS);
-#endif //DEBUG_YSTEP_DUP_PIN    
+#endif //DEBUG_YSTEP_DUP_PIN
     }
     // Step in Z axis
     counter[Z_AXIS].lo += current_block->steps[Z_AXIS].lo;
@@ -710,7 +710,7 @@ FORCE_INLINE void stepper_tick_highres()
       STEP_NC_HI(X_DUP_AXIS);
 #endif //DEBUG_XSTEP_DUP_PIN
       counter[X_AXIS].wide -= current_block->step_event_count.wide;
-      count_position[X_AXIS]+=count_direction[X_AXIS];   
+      count_position[X_AXIS]+=count_direction[X_AXIS];
       STEP_NC_LO(X_AXIS);
 #ifdef DEBUG_XSTEP_DUP_PIN
       STEP_NC_LO(X_DUP_AXIS);
@@ -728,7 +728,7 @@ FORCE_INLINE void stepper_tick_highres()
       STEP_NC_LO(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_LO(Y_DUP_AXIS);
-#endif //DEBUG_YSTEP_DUP_PIN    
+#endif //DEBUG_YSTEP_DUP_PIN
     }
     // Step in Z axis
     counter[Z_AXIS].wide += current_block->steps[Z_AXIS].wide;
@@ -808,7 +808,7 @@ FORCE_INLINE void isr() {
   if (current_block == NULL)
     stepper_next_block();
 
-  if (current_block != NULL) 
+  if (current_block != NULL)
   {
     stepper_check_endstops();
     if (current_block->flag & BLOCK_FLAG_DDA_LOWRES)
@@ -1078,7 +1078,7 @@ void st_init()
   #endif
   #if defined(Y_DIR_PIN) && Y_DIR_PIN > -1
     SET_OUTPUT(Y_DIR_PIN);
-		
+
 	#if defined(Y_DUAL_STEPPER_DRIVERS) && defined(Y2_DIR_PIN) && (Y2_DIR_PIN > -1)
 	  SET_OUTPUT(Y2_DIR_PIN);
 	#endif
@@ -1107,7 +1107,7 @@ void st_init()
   #if defined(Y_ENABLE_PIN) && Y_ENABLE_PIN > -1
     SET_OUTPUT(Y_ENABLE_PIN);
     if(!Y_ENABLE_ON) WRITE(Y_ENABLE_PIN,HIGH);
-	
+
 	#if defined(Y_DUAL_STEPPER_DRIVERS) && defined(Y2_ENABLE_PIN) && (Y2_ENABLE_PIN > -1)
 	  SET_OUTPUT(Y2_ENABLE_PIN);
 	  if(!Y_ENABLE_ON) WRITE(Y2_ENABLE_PIN,HIGH);
@@ -1350,7 +1350,7 @@ float st_get_position_mm(uint8_t axis)
 void quickStop()
 {
   DISABLE_STEPPER_DRIVER_INTERRUPT();
-  while (blocks_queued()) plan_discard_current_block(); 
+  while (blocks_queued()) plan_discard_current_block();
   current_block = NULL;
 #ifdef LIN_ADVANCE
   nextAdvanceISR = ADV_NEVER;
@@ -1523,13 +1523,13 @@ void microstep_init()
 
   #if defined(E1_MS1_PIN) && E1_MS1_PIN > -1
   SET_OUTPUT(E1_MS1_PIN);
-  SET_OUTPUT(E1_MS2_PIN); 
+  SET_OUTPUT(E1_MS2_PIN);
   #endif
 
   #if defined(X_MS1_PIN) && X_MS1_PIN > -1
   const uint8_t microstep_modes[] = MICROSTEP_MODES;
   SET_OUTPUT(X_MS1_PIN);
-  SET_OUTPUT(X_MS2_PIN);  
+  SET_OUTPUT(X_MS2_PIN);
   SET_OUTPUT(Y_MS1_PIN);
   SET_OUTPUT(Y_MS2_PIN);
   SET_OUTPUT(Z_MS1_PIN);

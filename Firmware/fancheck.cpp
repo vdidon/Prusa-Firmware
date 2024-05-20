@@ -194,7 +194,7 @@ ISR(INT7_vect) {
 		if ((millis_nc() - t_fan_rising_edge) >= FAN_PULSE_WIDTH_LIMIT) {//this pulse was from sensor and not from pwm
 			fan_edge_counter[1] += 2; //we are currently counting all edges so lets count two edges for one pulse
 		}
-	}	
+	}
 	EICRB ^= (1 << 6); //change edge
 }
 #endif //(defined(FANCHECK) && defined(TACH_1) && (TACH_1 >-1))

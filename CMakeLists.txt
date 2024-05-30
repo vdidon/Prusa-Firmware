@@ -568,7 +568,7 @@ function(fw_add_variant variant_name)
         COMMAND ${CMAKE_COMMAND} -E copy ${FW_LANG_PATCH}.bin ${FW_LANG_FINAL}.bin
         COMMAND "${Python3_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/lang/lang-patchsec.py ${FW_LANG_BASE} ${LANG_BIN}
                 ${FW_LANG_FINAL}.bin
-        DEPENDS ${FW_LANG_BASE} ${LANG_BIN}
+        DEPENDS ${FW_LANG_BASE} ${FW_LANG_PATCH}.bin ${LANG_BIN}
         COMMENT "Generating ${FW_LANG_FINAL}.bin"
         )
 

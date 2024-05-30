@@ -106,7 +106,7 @@ uint8_t sm4_get_dir_bits(void)
 	if (portL & 2) dir_bits |= 2;
 	if (portL & 4) dir_bits |= 4;
 	if (portL & 64) dir_bits |= 8;
-	dir_bits ^= dir_mask; 
+	dir_bits ^= dir_mask;
 #endif
 	return dir_bits;
 }
@@ -123,7 +123,7 @@ void sm4_set_dir_bits(uint8_t dir_bits)
 	if (dir_bits & 4) portL |= 4;  //set Z direction bit
 	if (dir_bits & 8) portL |= 64; //set E direction bit
 #elif ((MOTHERBOARD == BOARD_EINSY_1_0a))
-	dir_bits ^= dir_mask; 
+	dir_bits ^= dir_mask;
 	if (dir_bits & 1) portL |= 1;  //set X direction bit
 	if (dir_bits & 2) portL |= 2;  //set Y direction bit
 	if (dir_bits & 4) portL |= 4;  //set Z direction bit

@@ -136,7 +136,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_y() ;
 #endif
 
-#if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1 
+#if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1
 	#if defined(Z_AXIS_ALWAYS_ON)
 		  #ifdef Z_DUAL_STEPPER_DRIVERS
 			#define  poweron_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
@@ -351,7 +351,7 @@ bool babystep_allowed_strict();
 
 extern void calculate_extruder_multipliers();
 
-// Similar to the default Arduino delay function, 
+// Similar to the default Arduino delay function,
 // but it keeps the background tasks running.
 extern void delay_keep_alive(unsigned int ms);
 

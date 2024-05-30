@@ -11,12 +11,12 @@
 
 static const char duplicate_Tcode_ignored[] PROGMEM = "Duplicate T-code ignored.";
 
-inline bool IsInvalidTCode(char *const s, uint8_t i) { 
-    return ((s[i] < '0' || s[i] > '4') && s[i] != '?' && s[i] != 'x' && s[i] != 'c'); 
+inline bool IsInvalidTCode(char *const s, uint8_t i) {
+    return ((s[i] < '0' || s[i] > '4') && s[i] != '?' && s[i] != 'x' && s[i] != 'c');
 }
 
-inline void TCodeInvalid() { 
-    SERIAL_ECHOLNPGM("Invalid T code."); 
+inline void TCodeInvalid() {
+    SERIAL_ECHOLNPGM("Invalid T code.");
 }
 
 void TCodes(char *const strchr_pointer, const uint8_t codeValue) {
@@ -40,7 +40,7 @@ void TCodes(char *const strchr_pointer, const uint8_t codeValue) {
         }
     } else { // Process T0 ... T4
         if (MMU2::mmu2.Enabled()) {
-            if (codeValue == MMU2::mmu2.get_current_tool()){ 
+            if (codeValue == MMU2::mmu2.get_current_tool()){
                 // don't execute the same T-code twice in a row
                 puts_P(duplicate_Tcode_ignored);
             } else {

@@ -118,7 +118,7 @@ void lcd_escape_write(uint8_t chr);
 #endif
 
 static void lcd_pulseEnable(void)
-{  
+{
 	WRITE(LCD_PINS_ENABLE,HIGH);
 	_delay_us(1);    // enable pulse must be >450ns
 	WRITE(LCD_PINS_ENABLE,LOW);
@@ -136,7 +136,7 @@ static void lcd_writebits(uint8_t value)
 	WRITE(LCD_PINS_D5, value & 0x20);
 	WRITE(LCD_PINS_D6, value & 0x40);
 	WRITE(LCD_PINS_D7, value & 0x80);
-	
+
 	lcd_pulseEnable();
 }
 
@@ -199,7 +199,7 @@ static void lcd_begin(uint8_t clear)
 	// finally, set # lines, font size, etc.0
 	lcd_command(LCD_FUNCTIONSET | lcd_displayfunction);
 	// turn the display on with no cursor or blinking default
-	lcd_displaycontrol = LCD_CURSOROFF | LCD_BLINKOFF;  
+	lcd_displaycontrol = LCD_CURSOROFF | LCD_BLINKOFF;
 	lcd_display();
 	// clear it off
 	if (clear) lcd_clear();
@@ -207,7 +207,7 @@ static void lcd_begin(uint8_t clear)
 	lcd_displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
 	// set the entry mode
 	lcd_command(LCD_ENTRYMODESET | lcd_displaymode);
-	
+
 	#ifdef VT100
 	lcd_escape[0] = 0;
 	#endif
@@ -235,12 +235,12 @@ void lcd_init(void)
 	SET_OUTPUT(LCD_PINS_D5);
 	SET_OUTPUT(LCD_PINS_D6);
 	SET_OUTPUT(LCD_PINS_D7);
-	
+
 #ifdef LCD_8BIT
 	lcd_displayfunction |= LCD_8BITMODE;
 #endif
 	lcd_displayfunction |= LCD_2LINE;
-	_delay_us(50000); 
+	_delay_us(50000);
 	lcd_begin(1); //first time init
 	fdev_setup_stream(lcdout, lcd_putchar, NULL, _FDEV_SETUP_WRITE); //setup lcdout stream
 }
@@ -394,10 +394,10 @@ void lcd_createChar_P(uint8_t location, const CustomCharacter *char_p)
 	// The LCD expects the CGRAM data to be sent as pixel data, row by row. Since there are 8 rows per character, 8 bytes need to be sent.
 	// However, storing the data in the flash as the LCD expects it is wasteful since 3 bits per row are don't care and are not used.
 	// Therefore, flash can be saved if the character data is packed. For the AVR to unpack efficiently and quickly, the following scheme was used:
-	// 
+	//
 	// colbyte data0 data1 data2 data3
 	//    a      b     c     d     e
-	// 
+	//
 	// ** ** ** b7 b6 b5 b4 a0
 	// ** ** ** b3 b2 b1 b0 a1
 	// ** ** ** c7 c6 c5 c4 a2
@@ -406,7 +406,7 @@ void lcd_createChar_P(uint8_t location, const CustomCharacter *char_p)
 	// ** ** ** d3 d2 d1 d0 a5
 	// ** ** ** e7 e6 e5 e4 a6
 	// ** ** ** e3 e2 e1 e0 a7
-	// 
+	//
 	// The bits marked as ** in the unpacked data are don't care and they will contain garbage.
 
 	uint8_t temp;
@@ -414,7 +414,7 @@ void lcd_createChar_P(uint8_t location, const CustomCharacter *char_p)
 	__asm__ __volatile__ (
 		// load colByte
 		"lpm %1, Z+" "\n\t"
-		
+
 		// begin for loop
 		"ldi %0, 8" "\n\t"
 		"mov __zero_reg__, %0" "\n\t"		// use zero_reg as loop counter
@@ -431,7 +431,7 @@ void lcd_createChar_P(uint8_t location, const CustomCharacter *char_p)
 		// end for loop
 		"dec __zero_reg__" "\n\t"
 		"brne forBegin_%=" "\n\t"
-		
+
 		: "=&d" (temp), "=&r" (colByte)
 		: "z" (char_p), "e" (charmap)
 	);
@@ -690,13 +690,13 @@ void lcd_print(unsigned long n, int base)
 
 void lcd_printNumber(unsigned long n, uint8_t base)
 {
-	unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars. 
+	unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars.
 	uint8_t i = 0;
 	if (n == 0)
 	{
 		lcd_print('0');
 		return;
-	} 
+	}
 	while (n > 0)
 	{
 		buf[i++] = n % base;
@@ -869,7 +869,7 @@ void lcd_buttons_update(void)
 	uint8_t enc_bits = 0;
     if (!READ(BTN_EN1)) enc_bits |= _BV(0);
     if (!READ(BTN_EN2)) enc_bits |= _BV(1);
-    
+
 	if (enc_bits != enc_bits_old)
     {
 		int8_t newDiff = pgm_read_byte(&encrot_table[(enc_bits_old << 2) | enc_bits]);
@@ -956,9 +956,9 @@ void lcd_frame_start() {
 #endif // DEBUG_CUSTOM_CHARACTERS
 			lcd_custom_characters[i] = 0x7F;
 		}
-		
+
 	}
-	
+
 #ifdef DEBUG_CUSTOM_CHARACTERS
 	printf_P(PSTR("frame start:"));
 	for (uint8_t i = 0; i < 8; i++) {

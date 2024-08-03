@@ -372,15 +372,11 @@ extern const char MSG_NEW_FIRMWARE_AVAILABLE [] PROGMEM_I1 = ISTR("New firmware 
 extern const char MSG_NEW_FIRMWARE_PLEASE_UPGRADE [] PROGMEM_I1 = ISTR("Please upgrade."); ////MSG_NEW_FIRMWARE_PLEASE_UPGRADE c=20
 extern const char MSG_FW_MK3_DETECTED [] PROGMEM_I1 = ISTR(PRINTER_NAME " firmware detected on " PRINTER_NAME_ALTERNATE " printer"); ////MSG_FW_MK3_DETECTED c=20 r=4
 //not internationalized messages
-#if 0
-const char MSG_FW_VERSION_BETA[] PROGMEM_N1 = "You are using a BETA firmware version! It is in a development state! Use this version with CAUTION as it may DAMAGE the printer!"; ////MSG_FW_VERSION_BETA c=20 r=8
-#endif
 const char MSG_SPOOL_JOIN[] PROGMEM_N1 = "SpoolJoin"; ////MSG_SPOOL_JOIN c=13
 const char MSG_FIRMWARE[] PROGMEM_N1 = "Firmware"; ////MSG_FIRMWARE c=8
 const char MSG_TOSHIBA_FLASH_AIR_COMPATIBILITY[] PROGMEM_N1 = "FlashAir"; ////MSG_TOSHIBA_FLASH_AIR_COMPATIBILITY c=8
 const char MSG_PINDA[] PROGMEM_N1 = "PINDA"; ////MSG_PINDA c=5
 const char MSG_WELCOME[] PROGMEM_N1 = WELCOME_MSG;
-const char MSG_SD_WORKDIR_FAIL[] PROGMEM_N1 = "workDir open failed"; ////
 const char MSG_BROWNOUT_RESET[] PROGMEM_N1 = " Brown out Reset"; ////
 const char MSG_EXTERNAL_RESET[] PROGMEM_N1 = " External Reset"; ////
 const char MSG_FILE_SAVED[] PROGMEM_N1 = "Done saving file."; ////
@@ -396,7 +392,6 @@ const char MSG_ZPROBE_ZOFFSET[] PROGMEM_N1 = "Z Offset"; ////
 #endif
 const char MSG_TMC_OVERTEMP[] PROGMEM_N1 = "TMC DRIVER OVERTEMP"; ////
 const char MSG_Enqueing[] PROGMEM_N1 = "enqueing \""; ////
-const char MSG_ENDSTOPS_HIT[] PROGMEM_N1 = "endstops hit: "; ////
 const char MSG_SD_ERR_WRITE_TO_FILE[] PROGMEM_N1 = "error writing to file"; ////
 const char MSG_OK[] PROGMEM_N1 = "ok"; ////
 const char MSG_OK_CAPS[] PROGMEM_N1 = "OK"; ////

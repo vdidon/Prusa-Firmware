@@ -4578,7 +4578,7 @@ static void lcd_gcode_menu()
 {
     MENU_BEGIN();
     MENU_ITEM_BACK_P(_T(MSG_MAIN));
-    if (!isPrintPaused) {
+    if (!printJobOngoing()) {
        MENU_ITEM_GCODE_P(_N("Fast home"), PSTR("G28 W"));
        MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
        MENU_ITEM_GCODE_P(_N("Clean extrude"), PSTR("G1 E5"));
@@ -5519,7 +5519,7 @@ static void lcd_main_menu()
         }
     MENU_ITEM_SUBMENU_P(_T(MSG_SETTINGS), lcd_settings_menu);
     MENU_ITEM_SUBMENU_P(_N("Gcode"), lcd_gcode_menu);
-    if(!isPrintPaused) MENU_ITEM_SUBMENU_P(_T(MSG_CALIBRATION), lcd_calibration_menu);
+    if(!printer_active()) MENU_ITEM_SUBMENU_P(_T(MSG_CALIBRATION), lcd_calibration_menu);
     }
 
         MENU_ITEM_SUBMENU_P(_T(MSG_STATISTICS), lcd_menu_statistics);

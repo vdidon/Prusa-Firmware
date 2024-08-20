@@ -21,7 +21,6 @@
 #include "Configuration.h"
 #include "pins.h"
 #include "Timer.h"
-#include "mmu2.h"
 #include "printer_state.h"
 
 #ifndef AT90USB
@@ -63,8 +62,6 @@
 #else
   #define MYSERIAL MSerial
 #endif
-
-#include "lcd.h"
 
 #define SERIAL_PROTOCOL(x) (MYSERIAL.print(x))
 #define SERIAL_PROTOCOL_F(x,y) (MYSERIAL.print(x,y))

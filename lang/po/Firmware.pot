@@ -674,13 +674,6 @@ msgstr ""
 msgid "Fil. sensor"
 msgstr ""
 
-#. MSG_FILAMENT c=17
-#: ../../Firmware/Marlin_main.cpp:3453 ../../Firmware/Tcodes.cpp:34
-#: ../../Firmware/messages.cpp:37 ../../Firmware/ultralcd.cpp:3613
-#: ../../Firmware/ultralcd.cpp:6822
-msgid "Filament"
-msgstr ""
-
 #. MSG_DESC_UNLOAD_MANUALLY c=20 r=8
 #: ../../Firmware/mmu2/errors_list.h:284 ../../Firmware/mmu2/errors_list.h:339
 msgid ""
@@ -2187,6 +2180,16 @@ msgid ""
 "The printer will start printing a zig-zag line. Rotate the knob until you "
 "reach the optimal height. Check the pictures in the handbook (Calibration "
 "chapter)."
+msgstr ""
+
+#. MSG_MISSING_FILAMENT_CONTINUE c=20 r=3
+#: ../../Firmware/messages.cpp:157 ../../Firmware/util.cpp:388
+msgid "There is no filament loaded. Continue?"
+msgstr ""
+
+#. MSG_MISSING_FILAMENT_CANCELLED c=20 r=8
+#: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
+msgid "There is no filament loaded. Print cancelled."
 msgstr ""
 
 #. MSG_FOLLOW_Z_CALIBRATION_FLOW c=20 r=8

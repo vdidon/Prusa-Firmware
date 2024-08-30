@@ -687,13 +687,6 @@ msgstr "Tomt filament"
 msgid "Fil. sensor"
 msgstr "Fil. Sensor"
 
-#. MSG_FILAMENT c=17
-#: ../../Firmware/Marlin_main.cpp:3453 ../../Firmware/Tcodes.cpp:34
-#: ../../Firmware/messages.cpp:37 ../../Firmware/ultralcd.cpp:3613
-#: ../../Firmware/ultralcd.cpp:6822
-msgid "Filament"
-msgstr "Filament"
-
 #. MSG_FILAMENT_CLEAN c=20 r=3
 #: ../../Firmware/messages.cpp:41 ../../Firmware/ultralcd.cpp:2261
 #: ../../Firmware/ultralcd.cpp:2265
@@ -2597,6 +2590,16 @@ msgstr "Dysen er varm! Vent på nedkjøling."
 #: ../../Firmware/messages.cpp:199
 msgid "Nozzle changed?"
 msgstr "Har du byttet dyse?"
+
+#. MSG_MISSING_FILAMENT_CONTINUE c=20 r=3
+#: ../../Firmware/messages.cpp:157 ../../Firmware/util.cpp:388
+msgid "There is no filament loaded. Continue?"
+msgstr "Det er ingen filament lastet. Fortsette?"
+
+#. MSG_MISSING_FILAMENT_CANCELLED c=20 r=8
+#: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
+msgid "There is no filament loaded. Print cancelled."
+msgstr "Det er ingen filament lastet. Print avbrutt."
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Ta bort det gamle filamentet og trykk valghjulet for å laste et nytt."

@@ -3376,7 +3376,7 @@ static void mmu_M600_load_filament(bool automatic) {
         slot = SpoolJoin::spooljoin.nextSlot();
     } else {
         // Only ask for the slot if automatic/SpoolJoin is off
-        slot = choose_menu_P(_T(MSG_SELECT_FILAMENT), _T(MSG_FILAMENT));
+        slot = choose_menu_P(_T(MSG_SELECT_FILAMENT), MSG_FILAMENT);
     }
 
     setTargetHotend(saved_extruder_temperature);
@@ -5224,6 +5224,11 @@ void process_commands()
       lcd_resume_print();
     else
     {
+      if (!filament_presence_check()) {
+        // Print was aborted
+        break;
+      }
+
       if (!card.get_sdpos())
       {
               // A new print has started from scratch, reset stats
@@ -5854,6 +5859,11 @@ Sigma_Exit:
     */
     case 75:
     {
+        if (!filament_presence_check()) {
+          // Print was aborted
+          break;
+        }
+
         print_job_timer.start();
         break;
     }

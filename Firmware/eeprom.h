@@ -414,6 +414,9 @@ static_assert(sizeof(Sheets) == EEPROM_SHEETS_SIZEOF, "Sizeof(Sheets) is not EEP
 | ^           | ^       | ^                                     | ???          | ^                     | Z-axis                                            | ^            | D3 Ax0d29 C4
 | ^           | ^       | ^                                     | ???          | ^                     | Y-axis                                            | ^            | D3 Ax0d25 C4
 | ^           | ^       | ^                                     | ???          | ^                     | X-axis                                            | ^            | D3 Ax0c21 C4
+| 0x0C11 3089 | uint8   | EEPROM_CHECK_FILAMENT                 | 01h 1        | ffh 255               | Check mode for filament is: __warn__              | LCD menu     | D3 Ax0c11 C1
+| ^           | ^       | ^                                     | 02h 2        | ^                     | Check mode for filament is: __strict__            | ^            | ^
+| ^           | ^       | ^                                     | 00h 0        | ^                     | Check mode for filament is: __none__              | ^            | ^
 
 
 |Address begin|Bit/Type | Name                                  | Valid values | Default/FactoryReset  | Description                                       |Gcode/Function| Debug code
@@ -664,8 +667,9 @@ static Sheets * const EEPROM_Sheets_base = (Sheets*)(EEPROM_SHEETS_BASE);
 #define EEPROM_UVLO_MIN_TRAVEL_FEEDRATE (EEPROM_UVLO_MIN_FEEDRATE-4) //float
 #define EEPROM_UVLO_MIN_SEGMENT_TIME_US (EEPROM_UVLO_MIN_TRAVEL_FEEDRATE-4) //uint32_t
 #define EEPROM_UVLO_MAX_JERK (EEPROM_UVLO_MIN_SEGMENT_TIME_US-4*4) // 4 x float
+#define EEPROM_CHECK_FILAMENT (EEPROM_UVLO_MAX_JERK-1) // uint8_t
 //This is supposed to point to last item to allow EEPROM overrun check. Please update when adding new items.
-#define EEPROM_LAST_ITEM EEPROM_UVLO_MAX_JERK
+#define EEPROM_LAST_ITEM EEPROM_CHECK_FILAMENT
 // !!!!!
 // !!!!! this is end of EEPROM section ... all updates MUST BE inserted before this mark !!!!!
 // !!!!!

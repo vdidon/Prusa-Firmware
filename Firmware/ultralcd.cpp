@@ -4494,29 +4494,18 @@ static void lcd_settings_menu()
 }
 
 #ifdef TMC2130
-static void lcd_ustep_linearity_menu_save()
-{
-    eeprom_update_byte_notify((uint8_t*)EEPROM_TMC2130_WAVE_X_FAC, tmc2130_wave_fac[X_AXIS]);
-    eeprom_update_byte_notify((uint8_t*)EEPROM_TMC2130_WAVE_Y_FAC, tmc2130_wave_fac[Y_AXIS]);
-    eeprom_update_byte_notify((uint8_t*)EEPROM_TMC2130_WAVE_Z_FAC, tmc2130_wave_fac[Z_AXIS]);
-    eeprom_update_byte_notify((uint8_t*)EEPROM_TMC2130_WAVE_E_FAC, tmc2130_wave_fac[E_AXIS]);
-}
-#endif //TMC2130
+static void lcd_settings_linearity_correction_menu_save() {
+    for (uint8_t axis = 0; axis < NUM_AXIS; axis++) {
 
-#ifdef TMC2130
-static void lcd_settings_linearity_correction_menu_save()
-{
-    bool changed = false;
-    if (tmc2130_wave_fac[X_AXIS] < TMC2130_WAVE_FAC1000_MIN) tmc2130_wave_fac[X_AXIS] = 0;
-    if (tmc2130_wave_fac[Y_AXIS] < TMC2130_WAVE_FAC1000_MIN) tmc2130_wave_fac[Y_AXIS] = 0;
-    if (tmc2130_wave_fac[Z_AXIS] < TMC2130_WAVE_FAC1000_MIN) tmc2130_wave_fac[Z_AXIS] = 0;
-    if (tmc2130_wave_fac[E_AXIS] < TMC2130_WAVE_FAC1000_MIN) tmc2130_wave_fac[E_AXIS] = 0;
-    changed |= (eeprom_read_byte((uint8_t*)EEPROM_TMC2130_WAVE_X_FAC) != tmc2130_wave_fac[X_AXIS]);
-    changed |= (eeprom_read_byte((uint8_t*)EEPROM_TMC2130_WAVE_Y_FAC) != tmc2130_wave_fac[Y_AXIS]);
-    changed |= (eeprom_read_byte((uint8_t*)EEPROM_TMC2130_WAVE_Z_FAC) != tmc2130_wave_fac[Z_AXIS]);
-    changed |= (eeprom_read_byte((uint8_t*)EEPROM_TMC2130_WAVE_E_FAC) != tmc2130_wave_fac[E_AXIS]);
-    lcd_ustep_linearity_menu_save();
-    if (changed) tmc2130_init(TMCInitParams(false, FarmOrUserECool()));
+        if (tmc2130_wave_fac[axis] < TMC2130_WAVE_FAC1000_MIN) {
+            tmc2130_wave_fac[axis] = 0;
+        }
+
+        eeprom_update_byte_notify((uint8_t*)EEPROM_TMC2130_WAVE_X_FAC - axis, tmc2130_wave_fac[axis]);
+    }
+
+    // Re-init the TMC2130 driver to apply changes, if any
+    tmc2130_init(TMCInitParams(false, FarmOrUserECool()));
 }
 #endif //TMC2130
 

@@ -3748,6 +3748,22 @@ static void wizard_lay1cal_message(bool cold)
             _T(MSG_WIZARD_V2_CAL_2));
 }
 
+void lcd_z_calibration_prompt(bool allowTimeouting) {
+    uint8_t result = lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_Z_CALIBRATION_PROMPT), allowTimeouting, 0);
+    if (result == LCD_LEFT_BUTTON_CHOICE) {
+        lcd_mesh_calibration_z();
+    }
+}
+
+void prompt_steel_sheet_on_bed(bool wantedState) {
+#ifdef STEEL_SHEET
+    bool sheetIsOnBed = !lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false, !wantedState);
+    if (sheetIsOnBed != wantedState) {
+        lcd_show_fullscreen_message_and_wait_P(_T(wantedState ? MSG_PLACE_STEEL_SHEET : MSG_REMOVE_STEEL_SHEET));
+    }
+#endif //STEEL_SHEET
+}
+
 //! @brief Printer first run wizard (Selftest and calibration)
 //!
 //!
@@ -3865,10 +3881,6 @@ void lcd_wizard(WizState state)
 		case S::Z:
 			lcd_show_fullscreen_message_and_wait_P(_T(MSG_REMOVE_SHIPPING_HELPERS));
 			lcd_show_fullscreen_message_and_wait_P(_T(MSG_REMOVE_TEST_PRINT));
-			wizard_event = lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_STEEL_SHEET_CHECK), false);
-			if (wizard_event == LCD_MIDDLE_BUTTON_CHOICE) {
-				lcd_show_fullscreen_message_and_wait_P(_T(MSG_PLACE_STEEL_SHEET));
-			}
 			lcd_show_fullscreen_message_and_wait_P(_T(MSG_WIZARD_Z_CAL));
 			wizard_event = gcode_M45(true, 0);
 			if (!wizard_event) {
@@ -5533,10 +5545,16 @@ static void lcd_mesh_bed_leveling_settings()
 
 	bool magnet_elimination = (eeprom_read_byte((uint8_t*)EEPROM_MBL_MAGNET_ELIMINATION) > 0);
 	uint8_t points_nr = eeprom_read_byte((uint8_t*)EEPROM_MBL_POINTS_NR);
-    uint8_t mbl_z_probe_nr = eeprom_read_byte((uint8_t*)EEPROM_MBL_PROBE_NR);
+	uint8_t mbl_z_probe_nr = eeprom_read_byte((uint8_t*)EEPROM_MBL_PROBE_NR);
 	char sToggle[4]; //enough for nxn format
 
 	MENU_BEGIN();
+	ON_MENU_LEAVE(
+		// Prompt user to run Z calibration for best results with region MBL.
+		if (points_nr == 7) {
+            lcd_z_calibration_prompt(true);
+		}
+	);
 	MENU_ITEM_BACK_P(_T(MSG_SETTINGS));
 	sToggle[0] = points_nr + '0';
 	sToggle[1] = 'x';

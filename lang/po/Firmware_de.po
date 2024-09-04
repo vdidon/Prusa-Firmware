@@ -2579,10 +2579,10 @@ msgstr ""
 msgid "Sensitivity"
 msgstr "Sensitivität"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "MeshBett Ausgleich fehlgeschlagen. Z Kalibrierung ausführen."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "MeshBett Ausgleich fehlgeschlagen. Druck abgebrochen."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2629,6 +2629,11 @@ msgstr "Kein Filament geladen. Fortfahren?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "Kein Filament geladen. Druck abgebrochen."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Z-Kalibrierung empfohlen. Jetzt ausführen?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Entferne das alte Fil. und drücke den Knopf, um das neue zu laden."

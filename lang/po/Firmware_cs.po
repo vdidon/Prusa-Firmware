@@ -2551,10 +2551,10 @@ msgstr "Výměna filamentu M600. Vložte nový filament nebo vysuňte starý."
 msgid "Sensitivity"
 msgstr "Citlivost"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "Mesh Bed Leveling selhal. Spusťte kalibraci osy Z."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "Mesh Bed Leveling selhal. Tisk zrušen."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2601,6 +2601,11 @@ msgstr "Není vložen filament. Pokračovat?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "Není vložen filament. Tisk zrušen."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Doporučujeme kalibraci osy Z. Spustit nyní?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Vyjmete stary filament a stisknete tlacitko pro zavedeni noveho."

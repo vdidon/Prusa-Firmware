@@ -2573,10 +2573,10 @@ msgstr ""
 msgid "Sensitivity"
 msgstr "Érzékenység"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "Sikertelen asztal szintezés. Kérjük, futtasd a Z kalibrálást."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "Sikertelen asztal szintezés. Nyomtatas megallitva."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2623,6 +2623,11 @@ msgstr "Nincs befűzve filament. Folytassam?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "Nincs befűzve filament. Nyomtatás megállítva."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Z kalibráció javasolt. Futtassam most?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Vedd ki a regi fil., majd nyomd meg a gombot az uj fil. betoltesehez."

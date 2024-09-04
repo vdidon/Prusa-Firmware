@@ -125,6 +125,7 @@ const char MSG_SILENT[] PROGMEM_I1 = ISTR("Silent"); ////MSG_SILENT c=7
 const char MSG_NORMAL[] PROGMEM_I1 = ISTR("Normal"); ////MSG_NORMAL c=7
 const char MSG_STEALTH[] PROGMEM_I1 = ISTR("Stealth"); ////MSG_STEALTH c=7
 const char MSG_STEEL_SHEET_CHECK[] PROGMEM_I1 = ISTR("Is steel sheet on heatbed?"); ////MSG_STEEL_SHEET_CHECK c=20 r=3
+const char MSG_Z_CALIBRATION_PROMPT[] PROGMEM_I1 = ISTR("Z calibration recommended. Run it now?"); ////MSG_Z_CALIBRATION_PROMPT c=20 r=3
 const char MSG_STOP_PRINT[] PROGMEM_I1 = ISTR("Stop print"); ////MSG_STOP_PRINT c=18
 const char MSG_STOPPED[] PROGMEM_I1 = ISTR("STOPPED."); ////MSG_STOPPED c=20
 const char MSG_PINDA_CALIBRATION[] PROGMEM_I1 = ISTR("PINDA cal."); ////MSG_PINDA_CALIBRATION c=13
@@ -211,7 +212,7 @@ extern const char MSG_CHANGED_PRINTER [] PROGMEM_I1 = ISTR("Warning: printer typ
 extern const char MSG_CHANGED_BOTH [] PROGMEM_I1 = ISTR("Warning: both printer type and motherboard type changed."); ////MSG_CHANGED_BOTH c=20 r=4
 extern const char MSG_DEFAULT_SETTINGS_LOADED [] PROGMEM_I1 = ISTR("Old settings found. Default PID, Esteps etc. will be set."); ////MSG_DEFAULT_SETTINGS_LOADED c=20 r=6
 extern const char MSG_FORCE_SELFTEST [] PROGMEM_I1 = ISTR("Selftest will be run to calibrate accurate sensorless rehoming."); ////MSG_FORCE_SELFTEST c=20 r=8
-extern const char MSG_MBL_FAILED_Z_CAL [] PROGMEM_I1 = ISTR("Mesh bed leveling failed. Please run Z calibration."); ////MSG_MBL_FAILED_Z_CAL c=20 r=4
+extern const char MSG_MBL_FAILED [] PROGMEM_I1 = ISTR("Mesh bed leveling failed. Print canceled."); ////MSG_MBL_FAILED c=20 r=4
 extern const char MSG_ZLEVELING_ENFORCED [] PROGMEM_I1 = ISTR("Some problem encountered, Z-leveling enforced ..."); ////MSG_ZLEVELING_ENFORCED c=20 r=4
 extern const char MSG_UNLOAD_SUCCESSFUL [] PROGMEM_I1 = ISTR("Was filament unload successful?"); ////MSG_UNLOAD_SUCCESSFUL c=20 r=3
 extern const char MSG_CHECK_IDLER [] PROGMEM_I1 = ISTR("Please open idler and remove filament manually."); ////MSG_CHECK_IDLER c=20 r=4

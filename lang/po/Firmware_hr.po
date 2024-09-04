@@ -2568,10 +2568,10 @@ msgstr "Promjena filamenta M600. Stavite novu nit ili izbacite staru."
 msgid "Sensitivity"
 msgstr "Osjetljivost"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "Niveliranje podloge nije uspijelo. Pokrenite Z kalibraciju."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "Niveliranje podloge nije uspijelo. Print je otkazan."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2618,6 +2618,11 @@ msgstr "Nema umetnute niti. Nastavite?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "Nema umetnute niti. Print je otkazan."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Preporuča se Z kalibracija. Pokrenuti ga sada?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Uklonite stari fil. i pritisnite gumb za pocetak stavljanja novog."

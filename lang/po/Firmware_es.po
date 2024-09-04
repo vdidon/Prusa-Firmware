@@ -2574,10 +2574,10 @@ msgstr ""
 msgid "Sensitivity"
 msgstr "Sensibilidad"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "Nivelación fallida. Ejecute la calibración Z."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "Nivelación fallida. Impresión cancelada."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2624,6 +2624,11 @@ msgstr "No hay ningún filamento cargado. ¿Continuar?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "No hay ningún filamento cargado. Impresión cancelada."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Se recomienda calibrar Z. ¿Ejecutarlo ahora?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr ""

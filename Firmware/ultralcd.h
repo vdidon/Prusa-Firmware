@@ -220,6 +220,9 @@ void lcd_temp_calibration_set();
 void lcd_language();
 #endif
 
+void lcd_z_calibration_prompt(bool allowTimeouting);
+void prompt_steel_sheet_on_bed(bool wantedState);
+
 void lcd_wizard();
 
 //! @brief Wizard state

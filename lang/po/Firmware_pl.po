@@ -2566,10 +2566,10 @@ msgstr "Załaduj nowy filament lub wyładuj poprzedni."
 msgid "Sensitivity"
 msgstr "Czułość"
 
-#. MSG_MBL_FAILED_Z_CAL c=20 r=4
+#. MSG_MBL_FAILED c=20 r=4
 #: ../../Firmware/Marlin_main.cpp:3038 ../../Firmware/messages.cpp:203
-msgid "Mesh bed leveling failed. Please run Z calibration."
-msgstr "Poziomowanie stołu nieudane. Proszę uruchomić kalibrację Z."
+msgid "Mesh bed leveling failed. Print canceled."
+msgstr "Poziomowanie stołu nieudane. Druk anulowany."
 
 #. MSG_SET_READY c=18
 #: ../../Firmware/messages.cpp:105 ../../Firmware/ultralcd.cpp:5265
@@ -2616,6 +2616,11 @@ msgstr "Nie ma załadowanego filamentu. Kontynuować?"
 #: ../../Firmware/messages.cpp:158 ../../Firmware/util.cpp:389
 msgid "There is no filament loaded. Print cancelled."
 msgstr "Nie ma załadowanego filamentu. Druk anulowany."
+
+#. MSG_Z_CALIBRATION_PROMPT c=20 r=3
+#: ../../Firmware/messages.cpp:128 ../../Firmware/ultralcd.cpp:3752
+msgid "Z calibration recommended. Run it now?"
+msgstr "Zalecana kalibracja Z. Uruchomić teraz?"
 
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Wyciągnij poprzedni filament i naciśnij pokrętło aby załadować nowy."

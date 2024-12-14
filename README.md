@@ -1,11 +1,12 @@
-# Add same improvements from 3.13.2 stock
-- Add "Pxxx" gcode to send customs orders
-- New preheat menu with same new materials, cooldown on top and option to cooldown only bed or hotend
-- New nozzle sizes
-- Add 7 and 10 samples per point in bed leveling
-- A gcode menu to send preconfigured gcode
-- Change support menu order
-- Add babystep in setup menu to change babystep when no printing
+# Add same improvements from 3.14.1 stock
+- Add `Pxxx` G-code to send custom orders.
+- New preheat menu with additional materials, cooldown at the top, and an option to cool down either the bed or the hotend.
+- New nozzle sizes.
+- Add 7 and 10 samples per point for bed leveling.
+- A G-code menu to send preconfigured G-code.
+- Change support menu order.
+- Add babystep to the setup menu to adjust babystep settings when not printing.
+- Unlock build any single language on MK3/S
 
 # Prusa Firmware MK3
 

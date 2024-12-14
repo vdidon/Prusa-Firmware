@@ -551,52 +551,52 @@ function(fw_add_variant variant_name)
 
     add_custom_target(${FW_LANG_FINAL} DEPENDS ${FW_LANG_FINAL}.hex)
     add_dependencies(ALL_MULTILANG ${FW_LANG_FINAL})
-  else()
-    set(ALL_VARIANT_HEXES "")
-    # Non-xflash, e.g. MK2.5
-    foreach(LANG IN LISTS SELECTED_LANGUAGES)
-      set(FW_LANG_FINAL ${variant_name}_en-${LANG})
-      set(LANG_HEX ${CMAKE_BINARY_DIR}/${variant_name}_${FN_VERSION_SUFFIX}_en-${LANG}.hex)
-      set(LANG_DEBUG_HEX ${CMAKE_BINARY_DIR}/${variant_name}_${FN_VERSION_DEBUG_SUFFIX}_en-${LANG}.hex)
-      set(LANG_BIN ${LANG_TMP_DIR}/${variant_name}_${LANG}.bin)
-
-      # Patched binary with pre-baked secondary language
-      add_custom_command(
-        OUTPUT ${FW_LANG_FINAL}.bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${FW_LANG_PATCH}.bin ${FW_LANG_FINAL}.bin
-        COMMAND "${Python3_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/lang/lang-patchsec.py ${FW_LANG_BASE} ${LANG_BIN}
-                ${FW_LANG_FINAL}.bin
-        DEPENDS ${FW_LANG_BASE} ${FW_LANG_PATCH}.bin ${LANG_BIN}
-        COMMENT "Generating ${FW_LANG_FINAL}.bin"
-        )
-
-      # Final hex files
-      add_custom_command(
-        OUTPUT ${FW_LANG_FINAL}.hex
-        COMMAND ${CMAKE_OBJCOPY} -I binary -O ihex ${FW_LANG_FINAL}.bin ${FW_LANG_FINAL}.hex
-        COMMAND ${CMAKE_COMMAND} -E create_hardlink ${FW_LANG_FINAL}.hex ${LANG_HEX}
-        BYPRODUCTS ${LANG_HEX}
-        COMMAND ${CMAKE_COMMAND} -E create_hardlink ${FW_LANG_FINAL}.hex ${LANG_DEBUG_HEX}
-        BYPRODUCTS ${LANG_DEBUG_HEX}
-        DEPENDS ${FW_LANG_FINAL}.bin
-        COMMENT "Creating ${FW_LANG_FINAL}.hex"
-        )
-
-      add_custom_target(${FW_LANG_FINAL} DEPENDS ${FW_LANG_FINAL}.hex)
-      list(APPEND ALL_VARIANT_HEXES ${FW_LANG_FINAL})
-    endforeach()
-    add_custom_target("${variant_name}-All-Languages" DEPENDS ${ALL_VARIANT_HEXES})
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-      add_custom_command(TARGET "${variant_name}-All-Languages"
-        POST_BUILD
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ${CMAKE_COMMAND} -E make_directory "release"
-        COMMAND ${CMAKE_COMMAND} -E tar "cfv" "release/${variant_name}_${FN_VERSION_SUFFIX}.zip" --format=zip ${variant_name}_${FN_VERSION_SUFFIX}_en*.hex
-        BYPRODUCTS "${CMAKE_BINARY_DIR}/release/${variant_name}_${FN_VERSION_SUFFIX}.zip"
-        )
-    endif()
-    add_dependencies(ALL_MULTILANG "${variant_name}-All-Languages")
   endif()
+  set(ALL_VARIANT_HEXES "")
+  # Non-xflash, e.g. MK2.5
+  foreach(LANG IN LISTS SELECTED_LANGUAGES)
+    set(FW_LANG_FINAL ${variant_name}_en-${LANG})
+    set(LANG_HEX ${CMAKE_BINARY_DIR}/${variant_name}_${FN_VERSION_SUFFIX}_en-${LANG}.hex)
+    set(LANG_DEBUG_HEX ${CMAKE_BINARY_DIR}/${variant_name}_${FN_VERSION_DEBUG_SUFFIX}_en-${LANG}.hex)
+    set(LANG_BIN ${LANG_TMP_DIR}/${variant_name}_${LANG}.bin)
+
+    # Patched binary with pre-baked secondary language
+    add_custom_command(
+      OUTPUT ${FW_LANG_FINAL}.bin
+      COMMAND ${CMAKE_COMMAND} -E copy ${FW_LANG_PATCH}.bin ${FW_LANG_FINAL}.bin
+      COMMAND "${Python3_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/lang/lang-patchsec.py ${FW_LANG_BASE} ${LANG_BIN}
+              ${FW_LANG_FINAL}.bin
+      DEPENDS ${FW_LANG_BASE} ${FW_LANG_PATCH}.bin ${LANG_BIN}
+      COMMENT "Generating ${FW_LANG_FINAL}.bin"
+      )
+
+    # Final hex files
+    add_custom_command(
+      OUTPUT ${FW_LANG_FINAL}.hex
+      COMMAND ${CMAKE_OBJCOPY} -I binary -O ihex ${FW_LANG_FINAL}.bin ${FW_LANG_FINAL}.hex
+      COMMAND ${CMAKE_COMMAND} -E create_hardlink ${FW_LANG_FINAL}.hex ${LANG_HEX}
+      BYPRODUCTS ${LANG_HEX}
+      COMMAND ${CMAKE_COMMAND} -E create_hardlink ${FW_LANG_FINAL}.hex ${LANG_DEBUG_HEX}
+      BYPRODUCTS ${LANG_DEBUG_HEX}
+      DEPENDS ${FW_LANG_FINAL}.bin
+      COMMENT "Creating ${FW_LANG_FINAL}.hex"
+      )
+
+    add_custom_target(${FW_LANG_FINAL} DEPENDS ${FW_LANG_FINAL}.hex)
+    list(APPEND ALL_VARIANT_HEXES ${FW_LANG_FINAL})
+  endforeach()
+  add_custom_target("${variant_name}-All-Languages" DEPENDS ${ALL_VARIANT_HEXES})
+  if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    add_custom_command(TARGET "${variant_name}-All-Languages"
+      POST_BUILD
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory "release"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "release/${variant_name}_${FN_VERSION_SUFFIX}.zip" --format=zip ${variant_name}_${FN_VERSION_SUFFIX}_en*.hex
+      BYPRODUCTS "${CMAKE_BINARY_DIR}/release/${variant_name}_${FN_VERSION_SUFFIX}.zip"
+      )
+  endif()
+  add_dependencies(ALL_MULTILANG "${variant_name}-All-Languages")
+  
 endfunction()
 
 if(CMAKE_CROSSCOMPILING)

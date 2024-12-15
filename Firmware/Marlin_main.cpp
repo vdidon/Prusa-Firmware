@@ -8540,25 +8540,21 @@ void process_commands()
 	}
   }
   else if (code_seen('P')) {
-    pcode_in_progress = (uint16_t)code_value();
+    pcode_in_progress = code_value_short();
     char* msg;
     switch (pcode_in_progress) {
-      case 117:
+      case 117: //full screen message and wait
         msg = strchr_pointer+5;
-        //lcd_puts_P(msg);
         lcd_clear();
         for (int i = 0; msg[i]!='\x00'; ++i) {
           lcd_putc(msg[i]);
         }
         lcd_wait_for_click();
         break;
-      case 1000:
-        lcd_show_fullscreen_message_ok(_N("test"));
-        break;
-      case 300:
-        int beepS = code_seen('S') ? code_value() : 110;
-        int beepP = code_seen('P') ? code_value() : 1000;
-        bool beepC = !code_seen('C') || code_value();
+      case 300: //beep with criticality parameter
+        int beepS = code_seen('S') ? code_value() : 110; //beep speed
+        int beepP = code_seen('P') ? code_value() : 1000; //beep pitch
+        bool beepC = code_seen('C'); //beep criticality
         Sound_MakeCustom(beepP, beepS, beepC);
         break;
     }

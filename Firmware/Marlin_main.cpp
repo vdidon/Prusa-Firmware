@@ -8543,17 +8543,22 @@ void process_commands()
     pcode_in_progress = code_value_short();
     char* msg;
     switch (pcode_in_progress) {
-      case 117: //full screen message and wait
+      case 117: //full screen multi-line message and wait
         msg = strchr_pointer+5;
         lcd_clear();
         for (int i = 0; msg[i]!='\x00'; ++i) {
-          lcd_putc(msg[i]);
+          if (msg[i] == '\\' && msg[i+1] == 'n') {
+            lcd_putc('\n');
+            ++i;
+          } else {
+            lcd_putc(msg[i]);
+          }
         }
         lcd_wait_for_click();
         break;
       case 300: //beep with criticality parameter
-        int beepS = code_seen('S') ? code_value() : 110; //beep speed
-        int beepP = code_seen('P') ? code_value() : 1000; //beep pitch
+        uint16_t beepS = code_seen('S') ? code_value_short() : 110; //beep speed
+        uint16_t beepP = code_seen('P') ? code_value_short() : 1000; //beep pitch
         bool beepC = code_seen('C'); //beep criticality
         Sound_MakeCustom(beepP, beepS, beepC);
         break;

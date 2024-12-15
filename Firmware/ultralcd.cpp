@@ -4563,6 +4563,8 @@ static void lcd_gcode_menu()
        MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
        MENU_ITEM_GCODE_P(_N("Clean extrude"), PSTR("G1 E5"));
        MENU_ITEM_GCODE_P(_N("Change nozzle"), PSTR("G1 X125 Z190"));
+       MENU_ITEM_GCODE_P(_N("Bed front"), PSTR("G1 Y0"));
+       MENU_ITEM_GCODE_P(_N("Bed back"), PSTR("G1 Y200"));
     }
     MENU_END();
 }
@@ -5498,12 +5500,10 @@ static void lcd_main_menu()
                 }
 #endif //FILAMENT_SENSOR
             }
+            MENU_ITEM_SUBMENU_P(_N("Gcode"), lcd_gcode_menu);
             MENU_ITEM_SUBMENU_P(_T(MSG_SETTINGS), lcd_settings_menu);
             MENU_ITEM_SUBMENU_P(_T(MSG_CALIBRATION), lcd_calibration_menu);
         }
-    MENU_ITEM_SUBMENU_P(_T(MSG_SETTINGS), lcd_settings_menu);
-    MENU_ITEM_SUBMENU_P(_N("Gcode"), lcd_gcode_menu);
-    if(!printer_active()) MENU_ITEM_SUBMENU_P(_T(MSG_CALIBRATION), lcd_calibration_menu);
     }
 
         MENU_ITEM_SUBMENU_P(_T(MSG_STATISTICS), lcd_menu_statistics);
@@ -5525,6 +5525,7 @@ static void lcd_main_menu()
 
     MENU_END();
 }
+
 
 
 #ifdef DEBUG_STEPPER_TIMER_MISSED

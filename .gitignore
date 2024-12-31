@@ -33,3 +33,5 @@ __pycache__
 
 #IDE
 vscode-portable*
+
+.vscode/

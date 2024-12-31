@@ -7,6 +7,7 @@
 - Change support menu order.
 - Add babystep to the setup menu to adjust babystep settings when not printing.
 - Unlock build any single language on MK3/S
+- Support of [Marlin EEPROM Editor](https://plugins.octoprint.org/plugins/eeprom_marlin/)
 
 # Prusa Firmware MK3
 

@@ -1,6 +1,10 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+// Support of Marlin EEPROM Editor
+#define EEPROM_CHITCHAT
+//#define DISABLE_M503
+
 #include <stdint.h>
 #include "boards.h"
 

@@ -20,17 +20,20 @@ void rbuf_ini(uint8_t* ptr, uint8_t l)
 int rbuf_put(uint8_t* ptr, uint8_t b)
 {
 //#ifdef _NO_ASM
-	_lock();                         //lock
-	uint8_t buf_w = ptr[1];          //get write index
-	uint8_t buf_r = ptr[2];          //get read index
-	_unlock();                       //unlock
-	ptr[4 + buf_w] = b;              //store byte to buffer
-	buf_w++;                         //incerment write index
-	uint8_t buf_l = ptr[0];          //get length
-	if (buf_w >= buf_l) buf_w = 0;   //rotate write index
-	if (buf_w == buf_r) return -1;   //return -1 to signal buffer full
-	ptr[1] = buf_w;                  //store write index
-	return 0;                        //return 0 to signal success
+    _lock();                         //lock
+    uint8_t buf_w = ptr[1];          //get write index
+    uint8_t buf_r = ptr[2];          //get read index
+    uint8_t buf_l = ptr[0];          //get length
+    _unlock();                       //unlock
+
+    uint8_t next_w = buf_w + 1;      //calculate next write index
+    if (next_w >= buf_l) next_w = 0; //rotate write index
+    if (next_w == buf_r)             //buffer full?
+        return -1;                   //return -1 to signal buffer full
+
+    ptr[4 + buf_w] = b;              //store byte to buffer
+    ptr[1] = next_w;                 //store write index
+    return 0;                        //return 0 to signal success
 //#else //_NO_ASM
 // TODO - optimized assembler version
 //	asm("movw r26, r24");

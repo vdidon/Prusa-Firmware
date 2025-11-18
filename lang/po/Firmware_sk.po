@@ -2605,6 +2605,111 @@ msgstr "Nie je zavedený žiaden filament. Tlač zrušená."
 msgid "Z calibration recommended. Run it now?"
 msgstr "Odporúča sa kalibrácia Z. Spustiť ju teraz?"
 
+# EEPROM Backup/Restore translations
+#: ../../Firmware/ultralcd.cpp:7652
+msgid "EEPROM Tools"
+msgstr "Nástroje EEPROM"
+
+#: ../../Firmware/ultralcd.cpp:7689
+msgid "Backup to SD"
+msgstr "Zálohovať na SD"
+
+#: ../../Firmware/ultralcd.cpp:7690
+msgid "Restore from SD"
+msgstr "Obnoviť zo SD"
+
+#: ../../Firmware/ultralcd.cpp:7691
+msgid "Verify Backup"
+msgstr "Overiť zálohu"
+
+#: ../../Firmware/ultralcd.cpp:7699
+msgid "Backing up..."
+msgstr "Zálohovanie..."
+
+#: ../../Firmware/ultralcd.cpp:7700
+msgid "Please wait"
+msgstr "Čakajte prosím"
+
+#: ../../Firmware/ultralcd.cpp:7706
+msgid "Backup complete!"
+msgstr "Záloha hotová!"
+
+#: ../../Firmware/ultralcd.cpp:7707
+msgid "File: EEPROM.BAK"
+msgstr "Súbor: EEPROM.BAK"
+
+#: ../../Firmware/ultralcd.cpp:7710
+msgid "Backup failed!"
+msgstr "Záloha zlyhala!"
+
+#: ../../Firmware/ultralcd.cpp:7711
+msgid "Error code:"
+msgstr "Kód chyby:"
+
+#: ../../Firmware/ultralcd.cpp:7725
+msgid "Restore EEPROM?"
+msgstr "Obnoviť EEPROM?"
+
+#: ../../Firmware/ultralcd.cpp:7726
+msgid "All settings will"
+msgstr "Všetky nastavenia"
+
+#: ../../Firmware/ultralcd.cpp:7727
+msgid "be overwritten!"
+msgstr "budú prepísané!"
+
+#: ../../Firmware/ultralcd.cpp:7735
+msgid "Restore cancelled"
+msgstr "Zrušené"
+
+#: ../../Firmware/ultralcd.cpp:7743
+msgid "Restoring..."
+msgstr "Obnovujem..."
+
+#: ../../Firmware/ultralcd.cpp:7777
+msgid "Restore complete!"
+msgstr "Obnova hotová!"
+
+#: ../../Firmware/ultralcd.cpp:7778
+msgid "Restart printer"
+msgstr "Reštartovať tlač."
+
+#: ../../Firmware/ultralcd.cpp:7781
+msgid "Restore failed!"
+msgstr "Obnova zlyhala!"
+
+#: ../../Firmware/ultralcd.cpp:7795
+msgid "Verifying..."
+msgstr "Overujem..."
+
+#: ../../Firmware/ultralcd.cpp:7803
+msgid "Backup OK!"
+msgstr "Záloha OK!"
+
+#: ../../Firmware/ultralcd.cpp:7804
+msgid "FW:"
+msgstr "FW:"
+
+#: ../../Firmware/ultralcd.cpp:7809
+msgid "CRC:"
+msgstr "CRC:"
+
+#: ../../Firmware/ultralcd.cpp:7814
+msgid "Verify failed!"
+msgstr "Overenie zlyhalo!"
+
+#: ../../Firmware/ultralcd.cpp:7751
+msgid "FW Version"
+msgstr "Verzia FW"
+
+#: ../../Firmware/ultralcd.cpp:7752
+msgid "mismatch!"
+msgstr "nezhoduje sa!"
+
+#: ../../Firmware/ultralcd.cpp:7753
+msgid "Continue anyway?"
+msgstr "Pokračovať?"
+
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr "Vyberte starý filament a stlačte tlačidlo pre zavedenie nového."
 

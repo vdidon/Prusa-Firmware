@@ -2637,6 +2637,111 @@ msgstr "Il n'y a pas de filament chargé. Impression annulée."
 msgid "Z calibration recommended. Run it now?"
 msgstr "Calibrage Z recommandé. Exécuter maintenant?"
 
+# EEPROM Backup/Restore translations
+#: ../../Firmware/ultralcd.cpp:7652
+msgid "EEPROM Tools"
+msgstr "Outils EEPROM"
+
+#: ../../Firmware/ultralcd.cpp:7689
+msgid "Backup to SD"
+msgstr "Sauvegarde SD"
+
+#: ../../Firmware/ultralcd.cpp:7690
+msgid "Restore from SD"
+msgstr "Restauration SD"
+
+#: ../../Firmware/ultralcd.cpp:7691
+msgid "Verify Backup"
+msgstr "Vérifier sauveg."
+
+#: ../../Firmware/ultralcd.cpp:7699
+msgid "Backing up..."
+msgstr "Sauvegarde..."
+
+#: ../../Firmware/ultralcd.cpp:7700
+msgid "Please wait"
+msgstr "Patientez SVP"
+
+#: ../../Firmware/ultralcd.cpp:7706
+msgid "Backup complete!"
+msgstr "Sauveg. terminée!"
+
+#: ../../Firmware/ultralcd.cpp:7707
+msgid "File: EEPROM.BAK"
+msgstr "Fichier:EEPROM.BAK"
+
+#: ../../Firmware/ultralcd.cpp:7710
+msgid "Backup failed!"
+msgstr "Sauveg. échouée!"
+
+#: ../../Firmware/ultralcd.cpp:7711
+msgid "Error code:"
+msgstr "Code erreur:"
+
+#: ../../Firmware/ultralcd.cpp:7725
+msgid "Restore EEPROM?"
+msgstr "Restaurer EEPROM?"
+
+#: ../../Firmware/ultralcd.cpp:7726
+msgid "All settings will"
+msgstr "Tous les réglages"
+
+#: ../../Firmware/ultralcd.cpp:7727
+msgid "be overwritten!"
+msgstr "seront effacés!"
+
+#: ../../Firmware/ultralcd.cpp:7735
+msgid "Restore cancelled"
+msgstr "Annulé"
+
+#: ../../Firmware/ultralcd.cpp:7743
+msgid "Restoring..."
+msgstr "Restauration..."
+
+#: ../../Firmware/ultralcd.cpp:7777
+msgid "Restore complete!"
+msgstr "Restaur. terminée!"
+
+#: ../../Firmware/ultralcd.cpp:7778
+msgid "Restart printer"
+msgstr "Redémarrer"
+
+#: ../../Firmware/ultralcd.cpp:7781
+msgid "Restore failed!"
+msgstr "Restaur. échouée!"
+
+#: ../../Firmware/ultralcd.cpp:7795
+msgid "Verifying..."
+msgstr "Vérification..."
+
+#: ../../Firmware/ultralcd.cpp:7803
+msgid "Backup OK!"
+msgstr "Sauveg. OK!"
+
+#: ../../Firmware/ultralcd.cpp:7804
+msgid "FW:"
+msgstr "FW:"
+
+#: ../../Firmware/ultralcd.cpp:7809
+msgid "CRC:"
+msgstr "CRC:"
+
+#: ../../Firmware/ultralcd.cpp:7814
+msgid "Verify failed!"
+msgstr "Vérif. échouée!"
+
+#: ../../Firmware/ultralcd.cpp:7751
+msgid "FW Version"
+msgstr "Version FW"
+
+#: ../../Firmware/ultralcd.cpp:7752
+msgid "mismatch!"
+msgstr "différente!"
+
+#: ../../Firmware/ultralcd.cpp:7753
+msgid "Continue anyway?"
+msgstr "Continuer qd même?"
+
 #~ msgid "Remove old filament and press the knob to start loading new filament."
 #~ msgstr ""
 #~ "Retirez l'ancien fil. puis appuyez sur le bouton pour charger le nouveau."

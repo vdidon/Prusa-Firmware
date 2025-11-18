@@ -212,6 +212,7 @@ set(FW_SOURCES
     ConfigurationStore.cpp
     Dcodes.cpp
     eeprom.cpp
+    eeprom_backup.cpp
     fancheck.cpp
     Filament_sensor.cpp
     first_lay_cal.cpp

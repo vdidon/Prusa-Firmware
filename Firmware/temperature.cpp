@@ -1098,17 +1098,19 @@ int read_max6675()
 FORCE_INLINE static void applyBabysteps() {
   for(uint8_t axis=0;axis<3;axis++)
   {
-    int curTodo=babystepsTodo[axis]; //get rid of volatile for performance
+    int curTodo;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+      curTodo = babystepsTodo[axis]; // atomic read of 16-bit value
+    }
 
     if(curTodo>0)
-{
+    {
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         babystep(axis,/*fwd*/true);
         babystepsTodo[axis]--; //less to do next time
       }
     }
-    else
-    if(curTodo<0)
+    else if(curTodo<0)
     {
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         babystep(axis,/*fwd*/false);

@@ -86,6 +86,18 @@ public:
   //Reprint
   bool FileExists(const char* filename);
 
+  /// @brief Read raw bytes from open file (binary mode)
+  /// @param buf Buffer to read into
+  /// @param nbyte Number of bytes to read
+  /// @return Number of bytes read, or -1 on error
+  int16_t readFile(void* buf, uint16_t nbyte) { return file.read(buf, nbyte); }
+
+  /// @brief Write raw bytes to open file (binary mode)
+  /// @param buf Buffer to write from
+  /// @param nbyte Number of bytes to write
+  /// @return Number of bytes written, or -1 on error
+  int16_t writeFile(const void* buf, uint16_t nbyte) { return file.write(buf, nbyte); }
+
 public:
   bool saving;
   bool logging;

@@ -1,9 +1,7 @@
 get_filename_component(PROJECT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" DIRECTORY)
 get_filename_component(PROJECT_ROOT_DIR "${PROJECT_CMAKE_DIR}" DIRECTORY)
 
-if(NOT DEFINED Python3_EXECUTABLE)
-  set(Python3_EXECUTABLE "C:\\Users\\vdidon\\git\\Prusa-Firmware\\venv\\Scripts\\python.exe")
-endif()
+# Python3 sera détecté automatiquement par find_package
 
 find_package(Python3 COMPONENTS Interpreter)
 if(NOT Python3_FOUND)

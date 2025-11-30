@@ -129,7 +129,7 @@ EepromBackupResult backup_eeprom_to_sd() {
     }
 
     // Write header (32 bytes)
-    if (card.file.write(&header, sizeof(header)) != sizeof(header)) {
+    if (card.writeFile(&header, sizeof(header)) != sizeof(header)) {
         SERIAL_ERRORLNPGM("Failed to write header");
         card.closefile();
         return EEPROM_BACKUP_ERR_FILE_WRITE;
@@ -145,7 +145,7 @@ EepromBackupResult backup_eeprom_to_sd() {
         }
 
         // Write to SD card
-        if (card.file.write(buffer, 64) != 64) {
+        if (card.writeFile(buffer, 64) != 64) {
             SERIAL_ERRORLNPGM("Failed to write EEPROM data");
             card.closefile();
             return EEPROM_BACKUP_ERR_FILE_WRITE;
@@ -161,7 +161,7 @@ EepromBackupResult backup_eeprom_to_sd() {
     card.closefile();
 
     SERIAL_ECHOLNPGM("EEPROM backup complete!");
-    SERIAL_ECHO("File size: ");
+    SERIAL_ECHOPGM("File size: ");
     SERIAL_ECHO(EEPROM_BACKUP_FILE_SIZE);
     SERIAL_ECHOLNPGM(" bytes");
 
@@ -190,7 +190,7 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
 
     // Read header
     struct EepromBackupHeader header;
-    if (card.file.read(&header, sizeof(header)) != sizeof(header)) {
+    if (card.readFile(&header, sizeof(header)) != sizeof(header)) {
         SERIAL_ERRORLNPGM("Failed to read header");
         card.closefile();
         return EEPROM_BACKUP_ERR_FILE_READ;
@@ -199,10 +199,6 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
     // Verify magic bytes
     if (header.magic != EEPROM_BACKUP_MAGIC) {
         SERIAL_ERRORLNPGM("Invalid magic bytes");
-        SERIAL_ECHO("Expected: 0x");
-        SERIAL_PRINT(EEPROM_BACKUP_MAGIC, HEX);
-        SERIAL_ECHO(", Got: 0x");
-        SERIAL_PRINTLN(header.magic, HEX);
         card.closefile();
         return EEPROM_BACKUP_ERR_INVALID_MAGIC;
     }
@@ -210,10 +206,6 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
     // Check version
     if (header.version != EEPROM_BACKUP_VERSION) {
         SERIAL_ERRORLNPGM("Version mismatch");
-        SERIAL_ECHO("Expected: ");
-        SERIAL_ECHO((int)EEPROM_BACKUP_VERSION);
-        SERIAL_ECHO(", Got: ");
-        SERIAL_PRINTLN((int)header.version);
         card.closefile();
         return EEPROM_BACKUP_ERR_VERSION_MISMATCH;
     }
@@ -224,7 +216,7 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
     uint8_t buffer[64];
 
     for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
-        if (card.file.read(buffer, 64) != 64) {
+        if (card.readFile(buffer, 64) != 64) {
             SERIAL_ERRORLNPGM("Failed to read backup data");
             card.closefile();
             return EEPROM_BACKUP_ERR_FILE_READ;
@@ -242,19 +234,15 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
     // Verify CRC matches header
     if (crc != header.crc32) {
         SERIAL_ERRORLNPGM("CRC mismatch - backup corrupted!");
-        SERIAL_ECHO("Expected: 0x");
-        SERIAL_PRINT(header.crc32, HEX);
-        SERIAL_ECHO(", Got: 0x");
-        SERIAL_PRINTLN(crc, HEX);
         return EEPROM_BACKUP_ERR_CRC_MISMATCH;
     }
 
     SERIAL_ECHOLNPGM("Backup verification OK!");
-    SERIAL_ECHO("Firmware version: ");
+    SERIAL_ECHOPGM("Firmware version: ");
     for (uint8_t i = 0; i < 12 && header.fw_version[i] != 0; i++) {
         SERIAL_ECHO((char)header.fw_version[i]);
     }
-    SERIAL_ECHOLN();
+    SERIAL_ECHOLN("");
 
     // Copy header to output if requested
     if (out_header != nullptr) {
@@ -295,7 +283,7 @@ static EepromBackupResult create_temp_eeprom_backup() {
     }
 
     // Write header
-    if (card.file.write(&header, sizeof(header)) != sizeof(header)) {
+    if (card.writeFile(&header, sizeof(header)) != sizeof(header)) {
         SERIAL_ERRORLNPGM("Failed to write temp header");
         card.closefile();
         return EEPROM_BACKUP_ERR_FILE_WRITE;
@@ -310,7 +298,7 @@ static EepromBackupResult create_temp_eeprom_backup() {
         }
 
         // Write to SD card
-        if (card.file.write(buffer, 64) != 64) {
+        if (card.writeFile(buffer, 64) != 64) {
             SERIAL_ERRORLNPGM("Failed to write temp data");
             card.closefile();
             return EEPROM_BACKUP_ERR_FILE_WRITE;
@@ -339,15 +327,15 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
 
         if (memcmp(current_version, header.fw_version, 12) != 0) {
             SERIAL_ERRORLNPGM("Warning: Firmware version mismatch!");
-            SERIAL_ECHO("Current: ");
+            SERIAL_ECHOPGM("Current: ");
             for (uint8_t i = 0; i < 12 && current_version[i] != 0; i++) {
                 SERIAL_ECHO((char)current_version[i]);
             }
-            SERIAL_ECHO(", Backup: ");
+            SERIAL_ECHOPGM(", Backup: ");
             for (uint8_t i = 0; i < 12 && header.fw_version[i] != 0; i++) {
                 SERIAL_ECHO((char)header.fw_version[i]);
             }
-            SERIAL_ECHOLN();
+            SERIAL_ECHOLN("");
 
             // Return error if strict version validation requested
             return EEPROM_BACKUP_ERR_VERSION_MISMATCH;
@@ -371,7 +359,7 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
 
     // Skip header
     struct EepromBackupHeader dummy_header;
-    if (card.file.read(&dummy_header, sizeof(dummy_header)) != sizeof(dummy_header)) {
+    if (card.readFile(&dummy_header, sizeof(dummy_header)) != sizeof(dummy_header)) {
         SERIAL_ERRORLNPGM("Failed to read header");
         card.closefile();
         return EEPROM_BACKUP_ERR_FILE_READ;
@@ -381,7 +369,7 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
     uint8_t buffer[64];
     for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
         // Read 64 bytes from SD
-        if (card.file.read(buffer, 64) != 64) {
+        if (card.readFile(buffer, 64) != 64) {
             SERIAL_ERRORLNPGM("Failed to read backup data");
             card.closefile();
             return EEPROM_BACKUP_ERR_FILE_READ;

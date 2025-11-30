@@ -63,6 +63,8 @@ public:
   bool openFilteredGcode(SdBaseFile* dirFile, const char* path);
   int16_t readFilteredGcode();
   bool seekSetFilteredGcode(uint32_t pos);
+  // Expose protected read() from SdBaseFile for binary file operations
+  using SdBaseFile::read;
   int16_t write(const void* buf, uint16_t nbyte);
   void write(const char* str);
   void write_P(PGM_P str);

@@ -83,7 +83,7 @@ uint32_t calculate_eeprom_crc32() {
 
 void get_firmware_version_string(uint8_t *buffer) {
     // Extract version from FW_VERSION (defined in Configuration.h)
-    // Example: FW_VERSION "3.12.0" → buffer "3.12.0\0..."
+    // Example: FW_VERSION "3.12.0" -> buffer "3.12.0\0..."
     const char *version = FW_VERSION;
     uint8_t i = 0;
 
@@ -98,6 +98,78 @@ void get_firmware_version_string(uint8_t *buffer) {
         buffer[i] = 0;
         i++;
     }
+}
+
+//! @brief Write entire EEPROM contents to an open SD file
+//! @param show_progress If true, print progress every 512 bytes
+//! @return EEPROM_BACKUP_OK on success, EEPROM_BACKUP_ERR_FILE_WRITE on failure
+static EepromBackupResult write_eeprom_to_sd(bool show_progress) {
+    uint8_t buffer[64];
+    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
+        // Read 64 bytes from EEPROM
+        for (uint8_t i = 0; i < 64; i++) {
+            buffer[i] = eeprom_read_byte((uint8_t*)(addr + i));
+        }
+
+        // Write to SD card
+        if (card.writeFile(buffer, 64) != 64) {
+            return EEPROM_BACKUP_ERR_FILE_WRITE;
+        }
+
+        // Show progress every 512 bytes (~12%)
+        if (show_progress && (addr % 512) == 0) {
+            SERIAL_ECHO(addr);
+            SERIAL_ECHOLNPGM(" bytes written");
+        }
+    }
+    return EEPROM_BACKUP_OK;
+}
+
+//! @brief Read EEPROM data from open SD file and write to EEPROM
+//! @param show_progress If true, print progress every 512 bytes
+//! @return EEPROM_BACKUP_OK on success, error code on failure
+static EepromBackupResult read_sd_to_eeprom(bool show_progress) {
+    uint8_t buffer[64];
+    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
+        // Read 64 bytes from SD
+        if (card.readFile(buffer, 64) != 64) {
+            return EEPROM_BACKUP_ERR_FILE_READ;
+        }
+
+        // Write to EEPROM byte by byte
+        for (uint8_t i = 0; i < 64; i++) {
+            eeprom_write_byte((uint8_t*)(addr + i), buffer[i]);
+        }
+
+        // Show progress every 512 bytes
+        if (show_progress && (addr % 512) == 0) {
+            SERIAL_ECHO(addr);
+            SERIAL_ECHOLNPGM(" bytes restored");
+        }
+    }
+    return EEPROM_BACKUP_OK;
+}
+
+//! @brief Calculate CRC32 of EEPROM data from open SD file
+//! @param[out] out_crc Calculated CRC32 value
+//! @return EEPROM_BACKUP_OK on success, EEPROM_BACKUP_ERR_FILE_READ on failure
+static EepromBackupResult calculate_sd_data_crc32(uint32_t *out_crc) {
+    uint32_t crc = 0xFFFFFFFF;
+    uint8_t buffer[64];
+
+    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
+        if (card.readFile(buffer, 64) != 64) {
+            return EEPROM_BACKUP_ERR_FILE_READ;
+        }
+
+        // Update CRC
+        for (uint8_t i = 0; i < 64; i++) {
+            crc = crc32_update(crc, buffer[i]);
+        }
+    }
+
+    *out_crc = ~crc;
+    return EEPROM_BACKUP_OK;
 }
 
 EepromBackupResult backup_eeprom_to_sd() {
@@ -135,27 +207,13 @@ EepromBackupResult backup_eeprom_to_sd() {
         return EEPROM_BACKUP_ERR_FILE_WRITE;
     }
 
-    // Write EEPROM contents in 64-byte chunks
+    // Write EEPROM contents
     SERIAL_ECHOLNPGM("Writing EEPROM data...");
-    uint8_t buffer[64];
-    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
-        // Read 64 bytes from EEPROM
-        for (uint8_t i = 0; i < 64; i++) {
-            buffer[i] = eeprom_read_byte((uint8_t*)(addr + i));
-        }
-
-        // Write to SD card
-        if (card.writeFile(buffer, 64) != 64) {
-            SERIAL_ERRORLNPGM("Failed to write EEPROM data");
-            card.closefile();
-            return EEPROM_BACKUP_ERR_FILE_WRITE;
-        }
-
-        // Show progress every 512 bytes (~12%)
-        if ((addr % 512) == 0) {
-            SERIAL_ECHO(addr);
-            SERIAL_ECHOLNPGM(" bytes written");
-        }
+    EepromBackupResult result = write_eeprom_to_sd(true);
+    if (result != EEPROM_BACKUP_OK) {
+        SERIAL_ERRORLNPGM("Failed to write EEPROM data");
+        card.closefile();
+        return result;
     }
 
     card.closefile();
@@ -212,22 +270,13 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
 
     // Calculate CRC32 of backup data
     SERIAL_ECHOLNPGM("Verifying CRC32...");
-    uint32_t crc = 0xFFFFFFFF;
-    uint8_t buffer[64];
-
-    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
-        if (card.readFile(buffer, 64) != 64) {
-            SERIAL_ERRORLNPGM("Failed to read backup data");
-            card.closefile();
-            return EEPROM_BACKUP_ERR_FILE_READ;
-        }
-
-        // Update CRC
-        for (uint8_t i = 0; i < 64; i++) {
-            crc = crc32_update(crc, buffer[i]);
-        }
+    uint32_t crc;
+    EepromBackupResult result = calculate_sd_data_crc32(&crc);
+    if (result != EEPROM_BACKUP_OK) {
+        SERIAL_ERRORLNPGM("Failed to read backup data");
+        card.closefile();
+        return result;
     }
-    crc = ~crc;
 
     card.closefile();
 
@@ -289,20 +338,12 @@ static EepromBackupResult create_temp_eeprom_backup() {
         return EEPROM_BACKUP_ERR_FILE_WRITE;
     }
 
-    // Write EEPROM contents in 64-byte chunks
-    uint8_t buffer[64];
-    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
-        // Read 64 bytes from EEPROM
-        for (uint8_t i = 0; i < 64; i++) {
-            buffer[i] = eeprom_read_byte((uint8_t*)(addr + i));
-        }
-
-        // Write to SD card
-        if (card.writeFile(buffer, 64) != 64) {
-            SERIAL_ERRORLNPGM("Failed to write temp data");
-            card.closefile();
-            return EEPROM_BACKUP_ERR_FILE_WRITE;
-        }
+    // Write EEPROM contents (no progress for temp backup)
+    EepromBackupResult result = write_eeprom_to_sd(false);
+    if (result != EEPROM_BACKUP_OK) {
+        SERIAL_ERRORLNPGM("Failed to write temp data");
+        card.closefile();
+        return result;
     }
 
     card.closefile();
@@ -366,25 +407,11 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
     }
 
     // Write EEPROM data from backup
-    uint8_t buffer[64];
-    for (uint16_t addr = 0; addr < EEPROM_SIZE; addr += 64) {
-        // Read 64 bytes from SD
-        if (card.readFile(buffer, 64) != 64) {
-            SERIAL_ERRORLNPGM("Failed to read backup data");
-            card.closefile();
-            return EEPROM_BACKUP_ERR_FILE_READ;
-        }
-
-        // Write to EEPROM byte by byte
-        for (uint8_t i = 0; i < 64; i++) {
-            eeprom_write_byte((uint8_t*)(addr + i), buffer[i]);
-        }
-
-        // Show progress every 512 bytes
-        if ((addr % 512) == 0) {
-            SERIAL_ECHO(addr);
-            SERIAL_ECHOLNPGM(" bytes restored");
-        }
+    result = read_sd_to_eeprom(true);
+    if (result != EEPROM_BACKUP_OK) {
+        SERIAL_ERRORLNPGM("Failed to restore EEPROM data");
+        card.closefile();
+        return result;
     }
 
     card.closefile();

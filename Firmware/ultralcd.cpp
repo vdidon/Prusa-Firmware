@@ -7718,16 +7718,12 @@ static void lcd_eeprom_backup_do()
 static void lcd_eeprom_restore_do()
 {
     // Step 1: Display warning and wait for first confirmation
-    lcd_clear();
-    lcd_puts_at_P(0, 0, PSTR("Restore EEPROM?"));
-    lcd_puts_at_P(0, 2, PSTR("All settings will"));
-    lcd_puts_at_P(0, 3, PSTR("be overwritten!"));
+    // Use lcd_show_fullscreen_message_yes_no_and_wait_P to handle display properly
+    // Line 3 is reserved for Yes/No buttons
+    uint8_t choice = lcd_show_fullscreen_message_yes_no_and_wait_P(
+        PSTR("Restore EEPROM?\nAll settings will\nbe overwritten!"), false, 1);
 
-    // Wait for user Yes/No choice (default: No)
-    uint8_t choice = lcd_show_yes_no_and_wait(false, 1); // 1 = default No
-
-    if (choice != 0) { // 0 = Yes, 1 = No
-        // User selected "No" - abort restore
+    if (choice != LCD_LEFT_BUTTON_CHOICE) {
         lcd_clear();
         lcd_puts_at_P(0, 1, PSTR("Restore cancelled"));
         _delay(2000);
@@ -7740,20 +7736,14 @@ static void lcd_eeprom_restore_do()
     lcd_puts_at_P(0, 1, PSTR("Restoring..."));
     lcd_puts_at_P(0, 2, PSTR("Please wait"));
 
-    EepromBackupResult result = restore_eeprom_from_sd(true); // Enable version check
+    EepromBackupResult result = restore_eeprom_from_sd(true);
 
     // Step 3: Handle version mismatch with second confirmation
     if (result == EEPROM_BACKUP_ERR_VERSION_MISMATCH) {
-        lcd_clear();
-        lcd_puts_at_P(0, 0, PSTR("FW Version"));
-        lcd_puts_at_P(0, 1, PSTR("mismatch!"));
-        lcd_puts_at_P(0, 3, PSTR("Continue anyway?"));
+        choice = lcd_show_fullscreen_message_yes_no_and_wait_P(
+            PSTR("FW version\nmismatch!\n\nContinue anyway?"), false, 1);
 
-        // Second confirmation for dangerous operation (default: No)
-        uint8_t choice2 = lcd_show_yes_no_and_wait(false, 1);
-
-        if (choice2 != 0) {
-            // User cancelled at version warning
+        if (choice != LCD_LEFT_BUTTON_CHOICE) {
             lcd_clear();
             lcd_puts_at_P(0, 1, PSTR("Restore cancelled"));
             _delay(2000);
@@ -7768,21 +7758,22 @@ static void lcd_eeprom_restore_do()
         result = restore_eeprom_from_sd(false);
     }
 
-    // Step 4: Display final result
+    // Step 4: Display final result and handle restart
     lcd_clear();
     if (result == EEPROM_BACKUP_OK) {
-        lcd_puts_at_P(0, 1, PSTR("Restore complete!"));
-        lcd_puts_at_P(0, 2, PSTR("Restart printer"));
-        _delay(4000);
+        lcd_puts_at_P(0, 0, PSTR("Restore complete!"));
+        lcd_puts_at_P(0, 2, PSTR("Restarting..."));
+        _delay(2000);
+        // Soft reset to reload EEPROM values into RAM
+        softReset();
     } else {
         lcd_puts_at_P(0, 1, PSTR("Restore failed!"));
         lcd_puts_at_P(0, 2, PSTR("Error code:"));
         lcd_set_cursor(13, 2);
         lcd_print((int)result);
         _delay(3000);
+        menu_back();
     }
-
-    menu_back();
 }
 
 //! @brief Verify EEPROM backup integrity

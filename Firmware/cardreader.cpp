@@ -511,6 +511,30 @@ void CardReader::openFileWrite(const char* name)
     }
 }
 
+bool CardReader::openFileReadBinary(const char* name)
+{
+    if (!mounted) return false;
+    if (file.isOpen()) file.close();
+
+    const char *fname = name;
+    if (!diveSubfolder(fname))
+        return false;
+
+    return file.open(curDir, fname, O_READ);
+}
+
+bool CardReader::openFileWriteBinary(const char* name)
+{
+    if (!mounted) return false;
+    if (file.isOpen()) file.close();
+
+    const char *fname = name;
+    if (!diveSubfolder(fname))
+        return false;
+
+    return file.open(curDir, fname, O_CREAT | O_WRITE | O_TRUNC);
+}
+
 void CardReader::removeFile(const char* name)
 {
     if(!mounted) return;

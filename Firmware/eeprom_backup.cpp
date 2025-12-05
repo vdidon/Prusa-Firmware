@@ -6,6 +6,8 @@
 #include "cardreader.h"
 #include "Configuration.h"
 #include "Marlin.h"
+#include "eeprom.h"
+#include "power_panic.h"
 #include <avr/eeprom.h>
 #include <string.h>
 
@@ -141,8 +143,7 @@ EepromBackupResult backup_eeprom_to_sd() {
     header.crc32 = crc;
     memset(header.reserved, 0, sizeof(header.reserved));
 
-    card.openFileWrite(EEPROM_BACKUP_FILENAME);
-    if (!card.isFileOpen()) return EEPROM_BACKUP_ERR_FILE_OPEN;
+    if (!card.openFileWriteBinary(EEPROM_BACKUP_FILENAME)) return EEPROM_BACKUP_ERR_FILE_OPEN;
 
     if (card.writeFile(&header, sizeof(header)) != sizeof(header)) {
         card.closefile();
@@ -158,8 +159,7 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
     if (!card.mounted) return EEPROM_BACKUP_ERR_NO_SD;
     if (!card.FileExists(EEPROM_BACKUP_FILENAME)) return EEPROM_BACKUP_ERR_FILE_OPEN;
 
-    card.openFileReadFilteredGcode(EEPROM_BACKUP_FILENAME);
-    if (!card.isFileOpen()) return EEPROM_BACKUP_ERR_FILE_OPEN;
+    if (!card.openFileReadBinary(EEPROM_BACKUP_FILENAME)) return EEPROM_BACKUP_ERR_FILE_OPEN;
 
     struct EepromBackupHeader header;
     if (card.readFile(&header, sizeof(header)) != sizeof(header)) {
@@ -202,8 +202,7 @@ static EepromBackupResult create_temp_eeprom_backup() {
     header.crc32 = calculate_eeprom_crc32();
     memset(header.reserved, 0, sizeof(header.reserved));
 
-    card.openFileWrite(EEPROM_BACKUP_TEMP_FILENAME);
-    if (!card.isFileOpen()) return EEPROM_BACKUP_ERR_FILE_OPEN;
+    if (!card.openFileWriteBinary(EEPROM_BACKUP_TEMP_FILENAME)) return EEPROM_BACKUP_ERR_FILE_OPEN;
 
     if (card.writeFile(&header, sizeof(header)) != sizeof(header)) {
         card.closefile();
@@ -231,8 +230,7 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
     result = create_temp_eeprom_backup();
     if (result != EEPROM_BACKUP_OK) return result;
 
-    card.openFileReadFilteredGcode(EEPROM_BACKUP_FILENAME);
-    if (!card.isFileOpen()) return EEPROM_BACKUP_ERR_FILE_OPEN;
+    if (!card.openFileReadBinary(EEPROM_BACKUP_FILENAME)) return EEPROM_BACKUP_ERR_FILE_OPEN;
 
     // Skip header
     struct EepromBackupHeader dummy;
@@ -243,5 +241,12 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
 
     result = read_sd_to_eeprom();
     card.closefile();
+
+    if (result == EEPROM_BACKUP_OK) {
+        // Clear Power Panic recovery flags to prevent false recovery attempts after reboot
+        eeprom_write_byte((uint8_t*)EEPROM_UVLO, PowerPanic::NO_PENDING_RECOVERY);
+        eeprom_write_byte((uint8_t*)EEPROM_UVLO_Z_LIFTED, 0);
+    }
+
     return result;
 }

@@ -353,7 +353,11 @@ endif()
 add_custom_target(ALL_FIRMWARE)
 add_custom_target(ALL_ENGLISH)
 add_custom_target(ALL_MULTILANG)
-add_dependencies(ALL_FIRMWARE ALL_ENGLISH ALL_MULTILANG)
+# Single-language builds: firmware with one secondary language baked-in (no XFLASH needed)
+# These work on MK3/MK3S without requiring external flash, similar to MK2.5 builds
+# Example targets: MK3S_en-fr, MK3S_en-de, etc.
+add_custom_target(ALL_SINGLE_LANG)
+add_dependencies(ALL_FIRMWARE ALL_ENGLISH ALL_MULTILANG ALL_SINGLE_LANG)
 set_target_properties(ALL_MULTILANG PROPERTIES EXCLUDE_FROM_ALL FALSE)
 
 function(add_base_binary variant_name)
@@ -553,8 +557,11 @@ function(fw_add_variant variant_name)
     add_custom_target(${FW_LANG_FINAL} DEPENDS ${FW_LANG_FINAL}.hex)
     add_dependencies(ALL_MULTILANG ${FW_LANG_FINAL})
   endif()
+  # Single-language builds: firmware with one secondary language baked into the binary
+  # For MK3/MK3S: these provide an alternative to XFLASH-based MULTILANG builds
+  # For MK2.5: these are the only way to get translated firmware (no XFLASH available)
+  # Targets: ${variant_name}_en-${LANG} (e.g., MK3S_en-fr, MK3S_en-de, MK25S-RAMBo13a_en-cs)
   set(ALL_VARIANT_HEXES "")
-  # Non-xflash, e.g. MK2.5
   foreach(LANG IN LISTS SELECTED_LANGUAGES)
     set(FW_LANG_FINAL ${variant_name}_en-${LANG})
     set(LANG_HEX ${CMAKE_BINARY_DIR}/${variant_name}_${FN_VERSION_SUFFIX}_en-${LANG}.hex)
@@ -586,18 +593,30 @@ function(fw_add_variant variant_name)
     add_custom_target(${FW_LANG_FINAL} DEPENDS ${FW_LANG_FINAL}.hex)
     list(APPEND ALL_VARIANT_HEXES ${FW_LANG_FINAL})
   endforeach()
-  add_custom_target("${variant_name}-All-Languages" DEPENDS ${ALL_VARIANT_HEXES})
+
+  # Create per-variant aggregate target for all single-language builds
+  add_custom_target("${variant_name}-All-SingleLang" DEPENDS ${ALL_VARIANT_HEXES})
+
+  # For MK3 variants: add to ALL_SINGLE_LANG (alternative to XFLASH multilang)
+  # For MK2.5 variants: add to ALL_MULTILANG (this is the standard way to get translations)
+  if(${HAS_XFLASH} GREATER_EQUAL 0)
+    # MK3/MK3S: single-lang builds are an alternative option (no XFLASH needed)
+    add_dependencies(ALL_SINGLE_LANG "${variant_name}-All-SingleLang")
+  else()
+    # MK2.5: single-lang builds are the main multilang option
+    add_dependencies(ALL_MULTILANG "${variant_name}-All-SingleLang")
+  endif()
+
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-    add_custom_command(TARGET "${variant_name}-All-Languages"
+    add_custom_command(TARGET "${variant_name}-All-SingleLang"
       POST_BUILD
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       COMMAND ${CMAKE_COMMAND} -E make_directory "release"
-      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "release/${variant_name}_${FN_VERSION_SUFFIX}.zip" --format=zip ${variant_name}_${FN_VERSION_SUFFIX}_en*.hex
-      BYPRODUCTS "${CMAKE_BINARY_DIR}/release/${variant_name}_${FN_VERSION_SUFFIX}.zip"
+      COMMAND ${CMAKE_COMMAND} -E tar "cfv" "release/${variant_name}_${FN_VERSION_SUFFIX}_SingleLang.zip" --format=zip ${variant_name}_${FN_VERSION_SUFFIX}_en*.hex
+      BYPRODUCTS "${CMAKE_BINARY_DIR}/release/${variant_name}_${FN_VERSION_SUFFIX}_SingleLang.zip"
       )
   endif()
-  add_dependencies(ALL_MULTILANG "${variant_name}-All-Languages")
-  
+
 endfunction()
 
 if(CMAKE_CROSSCOMPILING)

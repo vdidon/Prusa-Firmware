@@ -4649,7 +4649,7 @@ static void lcd_settings_menu()
 #endif //SDCARD_SORT_ALPHA
 
 	// EEPROM backup/restore tools
-	MENU_ITEM_SUBMENU_P(_i("EEPROM Tools"), lcd_eeprom_backup_menu);
+	MENU_ITEM_SUBMENU_P(PSTR("EEPROM Tools"), lcd_eeprom_backup_menu);
 
 	SETTINGS_SOUND;
 
@@ -7683,9 +7683,9 @@ static void lcd_eeprom_backup_menu()
 {
     MENU_BEGIN();
     MENU_ITEM_BACK_P(_T(MSG_SETTINGS));
-    MENU_ITEM_FUNCTION_P(_i("Backup to SD"), lcd_eeprom_backup_do);
-    MENU_ITEM_FUNCTION_P(_i("Restore from SD"), lcd_eeprom_restore_do);
-    MENU_ITEM_FUNCTION_P(_i("Verify Backup"), lcd_eeprom_verify_do);
+    MENU_ITEM_FUNCTION_P(PSTR("Backup to SD"), lcd_eeprom_backup_do);
+    MENU_ITEM_FUNCTION_P(PSTR("Restore from SD"), lcd_eeprom_restore_do);
+    MENU_ITEM_FUNCTION_P(PSTR("Verify Backup"), lcd_eeprom_verify_do);
     MENU_END();
 }
 
@@ -7693,19 +7693,19 @@ static void lcd_eeprom_backup_menu()
 static void lcd_eeprom_backup_do()
 {
     lcd_clear();
-    lcd_puts_at_P(0, 1, _i("Backing up..."));
-    lcd_puts_at_P(0, 2, _i("Please wait"));
+    lcd_puts_at_P(0, 1, PSTR("Backing up..."));
+    lcd_puts_at_P(0, 2, PSTR("Please wait"));
 
     EepromBackupResult result = backup_eeprom_to_sd();
 
     lcd_clear();
     if (result == EEPROM_BACKUP_OK) {
-        lcd_puts_at_P(0, 1, _i("Backup complete!"));
-        lcd_puts_at_P(0, 2, _i("File: EEPROM.BAK"));
+        lcd_puts_at_P(0, 1, PSTR("Backup complete!"));
+        lcd_puts_at_P(0, 2, PSTR("File: EEPROM.BAK"));
         _delay(2000);
     } else {
-        lcd_puts_at_P(0, 1, _i("Backup failed!"));
-        lcd_puts_at_P(0, 2, _i("Error code:"));
+        lcd_puts_at_P(0, 1, PSTR("Backup failed!"));
+        lcd_puts_at_P(0, 2, PSTR("Error code:"));
         lcd_set_cursor(13, 2);
         lcd_print((int)result);
         _delay(3000);
@@ -7719,9 +7719,9 @@ static void lcd_eeprom_restore_do()
 {
     // Step 1: Display warning and wait for first confirmation
     lcd_clear();
-    lcd_puts_at_P(0, 0, _i("Restore EEPROM?"));
-    lcd_puts_at_P(0, 2, _i("All settings will"));
-    lcd_puts_at_P(0, 3, _i("be overwritten!"));
+    lcd_puts_at_P(0, 0, PSTR("Restore EEPROM?"));
+    lcd_puts_at_P(0, 2, PSTR("All settings will"));
+    lcd_puts_at_P(0, 3, PSTR("be overwritten!"));
 
     // Wait for user Yes/No choice (default: No)
     uint8_t choice = lcd_show_yes_no_and_wait(false, 1); // 1 = default No
@@ -7729,7 +7729,7 @@ static void lcd_eeprom_restore_do()
     if (choice != 0) { // 0 = Yes, 1 = No
         // User selected "No" - abort restore
         lcd_clear();
-        lcd_puts_at_P(0, 1, _i("Restore cancelled"));
+        lcd_puts_at_P(0, 1, PSTR("Restore cancelled"));
         _delay(2000);
         menu_back();
         return;
@@ -7737,17 +7737,17 @@ static void lcd_eeprom_restore_do()
 
     // Step 2: Attempt restore with version validation enabled
     lcd_clear();
-    lcd_puts_at_P(0, 1, _i("Restoring..."));
-    lcd_puts_at_P(0, 2, _i("Please wait"));
+    lcd_puts_at_P(0, 1, PSTR("Restoring..."));
+    lcd_puts_at_P(0, 2, PSTR("Please wait"));
 
     EepromBackupResult result = restore_eeprom_from_sd(true); // Enable version check
 
     // Step 3: Handle version mismatch with second confirmation
     if (result == EEPROM_BACKUP_ERR_VERSION_MISMATCH) {
         lcd_clear();
-        lcd_puts_at_P(0, 0, _i("FW Version"));
-        lcd_puts_at_P(0, 1, _i("mismatch!"));
-        lcd_puts_at_P(0, 3, _i("Continue anyway?"));
+        lcd_puts_at_P(0, 0, PSTR("FW Version"));
+        lcd_puts_at_P(0, 1, PSTR("mismatch!"));
+        lcd_puts_at_P(0, 3, PSTR("Continue anyway?"));
 
         // Second confirmation for dangerous operation (default: No)
         uint8_t choice2 = lcd_show_yes_no_and_wait(false, 1);
@@ -7755,7 +7755,7 @@ static void lcd_eeprom_restore_do()
         if (choice2 != 0) {
             // User cancelled at version warning
             lcd_clear();
-            lcd_puts_at_P(0, 1, _i("Restore cancelled"));
+            lcd_puts_at_P(0, 1, PSTR("Restore cancelled"));
             _delay(2000);
             menu_back();
             return;
@@ -7763,20 +7763,20 @@ static void lcd_eeprom_restore_do()
 
         // User confirmed - retry without version validation
         lcd_clear();
-        lcd_puts_at_P(0, 1, _i("Restoring..."));
-        lcd_puts_at_P(0, 2, _i("Please wait"));
+        lcd_puts_at_P(0, 1, PSTR("Restoring..."));
+        lcd_puts_at_P(0, 2, PSTR("Please wait"));
         result = restore_eeprom_from_sd(false);
     }
 
     // Step 4: Display final result
     lcd_clear();
     if (result == EEPROM_BACKUP_OK) {
-        lcd_puts_at_P(0, 1, _i("Restore complete!"));
-        lcd_puts_at_P(0, 2, _i("Restart printer"));
+        lcd_puts_at_P(0, 1, PSTR("Restore complete!"));
+        lcd_puts_at_P(0, 2, PSTR("Restart printer"));
         _delay(4000);
     } else {
-        lcd_puts_at_P(0, 1, _i("Restore failed!"));
-        lcd_puts_at_P(0, 2, _i("Error code:"));
+        lcd_puts_at_P(0, 1, PSTR("Restore failed!"));
+        lcd_puts_at_P(0, 2, PSTR("Error code:"));
         lcd_set_cursor(13, 2);
         lcd_print((int)result);
         _delay(3000);
@@ -7789,27 +7789,27 @@ static void lcd_eeprom_restore_do()
 static void lcd_eeprom_verify_do()
 {
     lcd_clear();
-    lcd_puts_at_P(0, 1, _i("Verifying..."));
-    lcd_puts_at_P(0, 2, _i("Please wait"));
+    lcd_puts_at_P(0, 1, PSTR("Verifying..."));
+    lcd_puts_at_P(0, 2, PSTR("Please wait"));
 
     struct EepromBackupHeader header;
     EepromBackupResult result = verify_eeprom_backup(&header);
 
     lcd_clear();
     if (result == EEPROM_BACKUP_OK) {
-        lcd_puts_at_P(0, 0, _i("Backup OK!"));
-        lcd_puts_at_P(0, 1, _i("FW:"));
+        lcd_puts_at_P(0, 0, PSTR("Backup OK!"));
+        lcd_puts_at_P(0, 1, PSTR("FW:"));
         lcd_set_cursor(4, 1);
         for (uint8_t i = 0; i < 12 && header.fw_version[i] != 0; i++) {
             lcd_print((char)header.fw_version[i]);
         }
-        lcd_puts_at_P(0, 2, _i("CRC:"));
+        lcd_puts_at_P(0, 2, PSTR("CRC:"));
         lcd_set_cursor(5, 2);
         lcd_print(header.crc32, HEX);
         _delay(4000);
     } else {
-        lcd_puts_at_P(0, 1, _i("Verify failed!"));
-        lcd_puts_at_P(0, 2, _i("Error code:"));
+        lcd_puts_at_P(0, 1, PSTR("Verify failed!"));
+        lcd_puts_at_P(0, 2, PSTR("Error code:"));
         lcd_set_cursor(13, 2);
         lcd_print((int)result);
         _delay(3000);

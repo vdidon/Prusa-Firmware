@@ -303,7 +303,7 @@ void __attribute__((noinline)) PID_autotune(float temp, int extruder, int ncycle
 #ifdef WATCHDOG
     wdt_reset();
 #endif //WATCHDOG
-    if(temp_meas_ready == true) { // temp sample ready
+    if (temp_meas_ready) { // temp sample ready
       updateTemperatures();
 
       input = (extruder<0)?current_temperature_bed:current_temperature[extruder];
@@ -318,7 +318,7 @@ void __attribute__((noinline)) PID_autotune(float temp, int extruder, int ncycle
       }
       #endif
 
-      if(heating == true && input > temp) {
+      if (heating && input > temp) {
         if(_millis() - t2 > 5000) {
           heating=false;
           if (extruder<0) {
@@ -331,7 +331,7 @@ void __attribute__((noinline)) PID_autotune(float temp, int extruder, int ncycle
           max=temp;
         }
       }
-      if(heating == false && input < temp) {
+      if (!heating && input < temp) {
         if(_millis() - t1 > 5000) {
           heating=true;
           t2=_millis();
@@ -592,7 +592,7 @@ static float analog2temp(int raw, uint8_t e) {
     }
   #endif
 
-  if(heater_ttbl_map[e] != NULL)
+  if (heater_ttbl_map[e])
   {
     float celsius = 0;
     uint8_t i;
@@ -824,6 +824,17 @@ void soft_pwm_init()
 }
 
 #if (defined (TEMP_RUNAWAY_BED_HYSTERESIS) && TEMP_RUNAWAY_BED_TIMEOUT > 0) || (defined (TEMP_RUNAWAY_EXTRUDER_HYSTERESIS) && TEMP_RUNAWAY_EXTRUDER_TIMEOUT > 0)
+
+// Helper: check if current temperature has reached target (within lower hysteresis bound)
+static inline bool temp_is_target_reached(float current, float target, float hysteresis) {
+    return current > (target - hysteresis);
+}
+
+// Helper: check if current temperature is within target range (± hysteresis)
+static inline bool temp_is_within_range(float current, float target, float hysteresis) {
+    return current > (target - hysteresis) && current < (target + hysteresis);
+}
+
 static void temp_runaway_check(uint8_t _heater_id, float _target_temperature, float _current_temperature, float _output, bool _isbed)
 {
 	float __delta;
@@ -901,7 +912,7 @@ static void temp_runaway_check(uint8_t _heater_id, float _target_temperature, fl
 			}
 		}
 
-		if ((_current_temperature > (_target_temperature - __hysteresis))  && temp_runaway_status[_heater_id] == TempRunaway_PREHEAT)
+		if (temp_is_target_reached(_current_temperature, _target_temperature, __hysteresis) && temp_runaway_status[_heater_id] == TempRunaway_PREHEAT)
 		{
 			temp_runaway_status[_heater_id] = TempRunaway_ACTIVE;
 			temp_runaway_check_active = false;
@@ -917,7 +928,7 @@ static void temp_runaway_check(uint8_t _heater_id, float _target_temperature, fl
 		if (temp_runaway_check_active)
 		{
 			//	we are in range
-			if ((_current_temperature > (_target_temperature - __hysteresis)) && (_current_temperature < (_target_temperature + __hysteresis)))
+			if (temp_is_within_range(_current_temperature, _target_temperature, __hysteresis))
 			{
 				temp_runaway_check_active = false;
 				temp_runaway_error_counter[_heater_id] = 0;
@@ -938,7 +949,7 @@ static void temp_runaway_check(uint8_t _heater_id, float _target_temperature, fl
 
 static void temp_runaway_stop(bool isPreheat, bool isBed)
 {
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         if (isPreheat) {
             lcd_setalertstatuspgm(isBed? PSTR("BED PREHEAT ERROR") : PSTR("PREHEAT ERROR"), LCD_STATUS_CRITICAL);
             SERIAL_ERROR_START;
@@ -987,7 +998,7 @@ static void temp_error_messagepgm(const char* PROGMEM type, uint8_t e = EXTRUDER
 
 
 static void max_temp_error(uint8_t e) {
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(PSTR("MAXTEMP"), e);
         prusa_statistics(93);
     }
@@ -998,7 +1009,7 @@ static void max_temp_error(uint8_t e) {
 
 static void min_temp_error(uint8_t e) {
     static const char err[] PROGMEM = "MINTEMP";
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(err, e);
         prusa_statistics(92);
     }
@@ -1006,7 +1017,7 @@ static void min_temp_error(uint8_t e) {
 }
 
 static void bed_max_temp_error(void) {
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(PSTR("MAXTEMP BED"));
     }
     ThermalStop();
@@ -1014,7 +1025,7 @@ static void bed_max_temp_error(void) {
 
 static void bed_min_temp_error(void) {
     static const char err[] PROGMEM = "MINTEMP BED";
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(err);
 	}
     ThermalStop();
@@ -1023,14 +1034,14 @@ static void bed_min_temp_error(void) {
 
 #ifdef AMBIENT_THERMISTOR
 static void ambient_max_temp_error(void) {
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(PSTR("MAXTEMP AMB"));
     }
     ThermalStop();
 }
 
 static void ambient_min_temp_error(void) {
-    if(IsStopped() == false) {
+    if (!IsStopped()) {
         temp_error_messagepgm(PSTR("MINTEMP AMB"));
     }
     ThermalStop();
@@ -1519,7 +1530,7 @@ void handle_temp_error()
 #ifdef THERMAL_MODEL
     case TempErrorType::model:
         if(temp_error_state.assert) {
-            if(IsStopped() == false) {
+            if (!IsStopped()) {
                 SERIAL_ECHOLNPGM("TM: error triggered!");
             }
             ThermalStop(true);

@@ -48,13 +48,13 @@ void SdFatUtil::set_stack_guard()
 {
 	uint32_t *stack_guard;
 
-	stack_guard = (uint32_t*)(&__bss_end + STACK_GUARD_MARGIN);
+	stack_guard = reinterpret_cast<uint32_t*>(&__bss_end + STACK_GUARD_MARGIN);
     *stack_guard = STACK_GUARD_TEST_VALUE;
 }
 
 bool SdFatUtil::test_stack_integrity()
 {
-	uint32_t* stack_guard = (uint32_t*)(&__bss_end + STACK_GUARD_MARGIN);
+	uint32_t* stack_guard = reinterpret_cast<uint32_t*>(&__bss_end + STACK_GUARD_MARGIN);
 	return (*stack_guard == STACK_GUARD_TEST_VALUE);
 }
 

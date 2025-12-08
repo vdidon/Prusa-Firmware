@@ -950,13 +950,13 @@ BedSkewOffsetDetectionResultType xyzcal_scan_and_process(){
 	int16_t y = _Y;
 	const int16_t z = _Z;
 
-	uint8_t *matrix32 = (uint8_t *)block_buffer;
-	uint16_t *pattern08 = (uint16_t *)(matrix32 + 32 * 32);
-	uint16_t *pattern10 = (uint16_t *)(pattern08 + 12);
+	uint8_t *matrix32 = reinterpret_cast<uint8_t*>(block_buffer);
+	uint16_t *pattern08 = reinterpret_cast<uint16_t*>(matrix32 + 32 * 32);
+	uint16_t *pattern10 = pattern08 + 12;
 
 	for (uint8_t i = 0; i < 12; i++){
-		pattern08[i] = pgm_read_word((uint16_t*)(xyzcal_point_pattern_08 + i));
-		pattern10[i] = pgm_read_word((uint16_t*)(xyzcal_point_pattern_10 + i));
+		pattern08[i] = pgm_read_word(reinterpret_cast<const uint16_t*>(xyzcal_point_pattern_08 + i));
+		pattern10[i] = pgm_read_word(reinterpret_cast<const uint16_t*>(xyzcal_point_pattern_10 + i));
 	}
 
 	xyzcal_scan_pixels_32x32_Zhop(x, y, z, 2400, 200, matrix32);

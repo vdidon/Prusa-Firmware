@@ -188,11 +188,11 @@ uint16_t PrusaErrorCode(uint8_t i) {
 }
 
 const char *PrusaErrorTitle(uint8_t i) {
-    return (const char *)pgm_read_ptr(errorTitles + i);
+    return reinterpret_cast<const char*>(pgm_read_ptr(errorTitles + i));
 }
 
 const char *PrusaErrorDesc(uint8_t i) {
-    return (const char *)pgm_read_ptr(errorDescs + i);
+    return reinterpret_cast<const char*>(pgm_read_ptr(errorDescs + i));
 }
 
 uint8_t PrusaErrorButtons(uint8_t i) {
@@ -201,7 +201,7 @@ uint8_t PrusaErrorButtons(uint8_t i) {
 
 const char *PrusaErrorButtonTitle(uint8_t bi) {
     // -1 represents the hidden NoOperation button which is not drawn in any way
-    return (const char *)pgm_read_ptr(btnOperation + bi - 1);
+    return reinterpret_cast<const char*>(pgm_read_ptr(btnOperation + bi - 1));
 }
 
 const char *PrusaErrorButtonMore() {

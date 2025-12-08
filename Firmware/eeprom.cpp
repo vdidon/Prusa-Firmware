@@ -314,7 +314,7 @@ bool __attribute__((noinline)) eeprom_is_sheet_initialized(uint8_t sheet_num) {
 
 
 bool __attribute__((noinline)) eeprom_is_initialized_block(const void *__p, size_t __n) {
-    const uint8_t *p = (const uint8_t*)__p;
+    const uint8_t *p = reinterpret_cast<const uint8_t*>(__p);
     while (__n--) {
         if (eeprom_read_byte(p++) != EEPROM_EMPTY_VALUE)
             return true;
@@ -323,8 +323,8 @@ bool __attribute__((noinline)) eeprom_is_initialized_block(const void *__p, size
 }
 
 void eeprom_update_block_P(const void *__src, void *__dst, size_t __n) {
-    const uint8_t *src = (const uint8_t*)__src;
-    uint8_t *dst = (uint8_t*)__dst;
+    const uint8_t *src = reinterpret_cast<const uint8_t*>(__src);
+    uint8_t *dst = reinterpret_cast<uint8_t*>(__dst);
     while (__n--) {
         eeprom_update_byte_notify(dst++, pgm_read_byte(src++));
     }

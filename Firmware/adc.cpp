@@ -35,7 +35,7 @@ static void adc_reset()
     adc_channel = 0;
     adc_channel_idx = first_channel_idx;
     adc_setmux(adc_channel_idx);
-    memset((void*)adc_values, 0, sizeof(adc_values));
+    memset(const_cast<uint16_t*>(adc_values), 0, sizeof(adc_values));
 }
 
 static void adc_setmux(uint8_t ch)

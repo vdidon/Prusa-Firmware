@@ -1361,7 +1361,7 @@ void setup()
 #ifdef DEBUG_SD_SPEED_TEST
 	if (card.mounted)
 	{
-		uint8_t* buff = (uint8_t*)block_buffer;
+		uint8_t* buff = reinterpret_cast<uint8_t*>(block_buffer);
 		uint32_t block = 0;
 		uint32_t sumr = 0;
 		uint32_t sumw = 0;

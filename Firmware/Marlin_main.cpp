@@ -1748,7 +1748,7 @@ void loop()
       {
         // Saving a G-code file onto an SD-card is in progress.
         // Saving starts with M28, saving until M29 is seen.
-        if(strstr_P(CMDBUFFER_CURRENT_STRING, PSTR("M29")) == NULL) {
+        if (!strstr_P(CMDBUFFER_CURRENT_STRING, PSTR("M29"))) {
           card.write_command(CMDBUFFER_CURRENT_STRING);
           if(card.logging)
             process_commands();
@@ -2277,13 +2277,13 @@ void change_power_mode_live(uint8_t mode)
 
 void force_high_power_mode(bool start_high_power_section) {
 #ifdef PSU_Delta
-	if (start_high_power_section == true) enable_force_z();
+	if (start_high_power_section) enable_force_z();
 #endif //PSU_Delta
 	uint8_t silent;
 	silent = eeprom_read_byte((uint8_t*)EEPROM_SILENT);
 	if (silent == 1 || tmc2130_mode == TMC2130_MODE_SILENT) {
 		//we are in silent mode, set to normal mode to enable crash detection
-    change_power_mode_live((start_high_power_section == true) ? TMC2130_MODE_NORMAL : TMC2130_MODE_SILENT);
+    change_power_mode_live(start_high_power_section ? TMC2130_MODE_NORMAL : TMC2130_MODE_SILENT);
 	}
 }
 #endif //TMC2130
@@ -2605,7 +2605,7 @@ static void gcode_G80()
 
 #ifndef PINDA_THERMISTOR
     static bool run = false; // thermistor-less PINDA temperature compensation is running
-    if (run == false && eeprom_read_byte((uint8_t *)EEPROM_TEMP_CAL_ACTIVE) && calibration_status_pinda() == true && target_temperature_bed >= 50)
+    if (!run && eeprom_read_byte((uint8_t *)EEPROM_TEMP_CAL_ACTIVE) && calibration_status_pinda() && target_temperature_bed >= 50)
     {
         temp_compensation_start();
         run = true;
@@ -2817,7 +2817,7 @@ static void gcode_G80()
     clean_up_after_endstop_move(l_feedmultiply);
 
 #ifndef PINDA_THERMISTOR
-    if(eeprom_read_byte((uint8_t *)EEPROM_TEMP_CAL_ACTIVE) && calibration_status_pinda() == true) temp_compensation_apply(); //apply PINDA temperature compensation
+    if (eeprom_read_byte((uint8_t *)EEPROM_TEMP_CAL_ACTIVE) && calibration_status_pinda()) temp_compensation_apply(); //apply PINDA temperature compensation
 #endif
     babystep_apply(); // Apply Z height correction aka baby stepping before mesh bed leveing gets activated.
 
@@ -4220,7 +4220,7 @@ void process_commands()
 #else
       gcode_G28(home_x, home_x_value, home_y, home_y_value, home_z, home_z_value, without_mbl);
 #endif //TMC2130
-      if ((home_x || home_y || without_mbl || home_z) == false) {
+      if (!(home_x || home_y || without_mbl || home_z)) {
           gcode_G80();
       }
       break;
@@ -4330,11 +4330,11 @@ void process_commands()
             gcode_G28(false, false, true);
 
         }
-        if ((current_temperature_pinda > 35) && (farm_mode == false)) {
+        if ((current_temperature_pinda > 35) && !farm_mode) {
             //waiting for PIDNA probe to cool down in case that we are not in farm mode
             current_position[Z_AXIS] = 100;
             plan_buffer_line_curposXYZE(3000 / 60);
-            if (lcd_wait_for_pinda(35) == false) { //waiting for PINDA probe to cool, if this takes more then time expected, temp. cal. fails
+            if (!lcd_wait_for_pinda(35)) { //waiting for PINDA probe to cool, if this takes more then time expected, temp. cal. fails
                 lcd_temp_cal_show_result(false);
                 break;
             }
@@ -4383,7 +4383,7 @@ void process_commands()
         st_synchronize();
 
         bool find_z_result = find_bed_induction_sensor_point_z(-1.f);
-        if (find_z_result == false) {
+        if (!find_z_result) {
             lcd_temp_cal_show_result(find_z_result);
             homing_flag = false;
             break;
@@ -4428,7 +4428,7 @@ void process_commands()
             plan_buffer_line_curposXYZE(3000 / 60);
             st_synchronize();
             find_z_result = find_bed_induction_sensor_point_z(-1.f);
-            if (find_z_result == false) {
+            if (!find_z_result) {
                 lcd_temp_cal_show_result(find_z_result);
                 break;
             }
@@ -8866,7 +8866,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   if(max_inactive_time && previous_millis_cmd.expired(max_inactive_time))
     kill(PSTR("Inactivity Shutdown"));
   if(stepper_inactive_time && previous_millis_cmd.expired(stepper_inactive_time)) {
-    if(blocks_queued() == false && ignore_stepper_queue == false) {
+    if (!blocks_queued() && !ignore_stepper_queue) {
       disable_x();
       disable_y();
       disable_z();
@@ -8962,7 +8962,7 @@ void kill(const char *full_screen_message) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNRPGM(PSTR("Printer halted. kill() called!"));
 
-    if (full_screen_message != NULL) {
+    if (full_screen_message) {
         SERIAL_ERRORLNRPGM(full_screen_message);
     } else {
         full_screen_message = PSTR("KILLED.");
@@ -9038,7 +9038,7 @@ void ConditionalStop()
 // is kept in busy state and *must* be recovered from the LCD.
 void ThermalStop(bool allow_recovery)
 {
-    if(Stopped == false) {
+    if (!Stopped) {
         Stopped = true;
 
         // Either pause or stop the print
@@ -9249,7 +9249,7 @@ static void wait_for_heater(long codenum, uint8_t extruder) {
 	while ((!cancel_heatup) && ((residencyStart == -1) ||
 		(residencyStart >= 0 && (((unsigned int)(_millis() - residencyStart)) < (TEMP_RESIDENCY_TIME * 1000UL))))) {
 #else
-	while (target_direction ? (isHeatingHotend(tmp_extruder)) : (isCoolingHotend(tmp_extruder) && (CooldownNoWait == false))) {
+	while (target_direction ? (isHeatingHotend(tmp_extruder)) : (isCoolingHotend(tmp_extruder) && !CooldownNoWait)) {
 #endif //TEMP_RESIDENCY_TIME
         if (lcd_commands_type == LcdCommands::LongPause) {
             // Print was suddenly paused, break out of the loop
@@ -9319,6 +9319,58 @@ void d_setup()
 	digitalWrite(D_REQUIRE, HIGH);
 }
 
+// Helper: read 13 digits from micrometer via GPIO clock/data protocol
+static void micrometer_read_digits(int digit[13])
+{
+	memset(digit, 0, 13 * sizeof(int));
+	digitalWrite(D_REQUIRE, LOW);
+	for (int i = 0; i < 13; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			while (digitalRead(D_DATACLOCK) == LOW) {}
+			while (digitalRead(D_DATACLOCK) == HIGH) {}
+			bitWrite(digit[i], j, digitalRead(D_DATA));
+		}
+	}
+	digitalWrite(D_REQUIRE, HIGH);
+}
+
+// Helper: convert micrometer digit array to float value
+static float micrometer_digits_to_value(const int digit[13])
+{
+	// Merge digits 5-10 into a number string
+	char mergeOutput[7];
+	for (int r = 0; r < 6; r++)
+	{
+		mergeOutput[r] = '0' + digit[r + 5];
+	}
+	mergeOutput[6] = '\0';
+
+	float output = atof(mergeOutput);
+
+	// Handle sign (digit[4] == 8 means negative)
+	if (digit[4] == 8)
+	{
+		output *= -1;
+	}
+
+	// Handle decimal point position (digit[11] = number of decimal places)
+	for (int i = digit[11]; i > 0; i--)
+	{
+		output *= 0.1f;
+	}
+
+	return output;
+}
+
+// Combined helper: read micrometer and return float value
+static float micrometer_read_value()
+{
+	int digit[13];
+	micrometer_read_digits(digit);
+	return micrometer_digits_to_value(digit);
+}
 
 float d_ReadData()
 {
@@ -9361,13 +9413,7 @@ float d_ReadData()
 }
 
 void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_points_num, float shift_x, float shift_y) {
-	int t1 = 0;
-	int t_delay = 0;
-	int digit[13];
 	int m;
-	char str[3];
-	//String mergeOutput;
-	char mergeOutput[15];
 	float output;
 
 	int mesh_point = 0; //index number of calibration point
@@ -9471,58 +9517,7 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 		//delay(3000);
 		//t1 = millis();
 
-		//while (digitalRead(D_DATACLOCK) == LOW) {}
-		//while (digitalRead(D_DATACLOCK) == HIGH) {}
-		memset(digit, 0, sizeof(digit));
-		//cli();
-		digitalWrite(D_REQUIRE, LOW);
-
-		for (int i = 0; i<13; i++)
-		{
-			//t1 = millis();
-			for (int j = 0; j < 4; j++)
-			{
-				while (digitalRead(D_DATACLOCK) == LOW) {}
-				while (digitalRead(D_DATACLOCK) == HIGH) {}
-				//printf_P(PSTR("Done %d\n"), j);
-				bitWrite(digit[i], j, digitalRead(D_DATA));
-			}
-			//t_delay = (millis() - t1);
-			//SERIAL_PROTOCOLPGM(" ");
-			//SERIAL_PROTOCOL_F(t_delay, 5);
-			//SERIAL_PROTOCOLPGM(" ");
-
-		}
-		//sei();
-		digitalWrite(D_REQUIRE, HIGH);
-		mergeOutput[0] = '\0';
-		output = 0;
-		for (int r = 5; r <= 10; r++) //Merge digits
-		{
-			sprintf(str, "%d", digit[r]);
-			strcat(mergeOutput, str);
-		}
-
-		output = atof(mergeOutput);
-
-		if (digit[4] == 8) //Handle sign
-		{
-			output *= -1;
-		}
-
-		for (int i = digit[11]; i > 0; i--) //Handle floating point
-		{
-			output *= 0.1;
-		}
-
-
-		//output = d_ReadData();
-
-		//row[ix] = current_position[Z_AXIS];
-
-
-
-		//row[ix] = d_ReadData();
+		output = micrometer_read_value();
 
 		row[ix] = output;
 
@@ -9552,13 +9547,7 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 }
 
 void bed_analysis(float x_dimension, float y_dimension, int x_points_num, int y_points_num, float shift_x, float shift_y) {
-	int t1 = 0;
-	int t_delay = 0;
-	int digit[13];
 	int m;
-	char str[3];
-	//String mergeOutput;
-	char mergeOutput[15];
 	float output;
 
 	int mesh_point = 0; //index number of calibration point
@@ -9650,52 +9639,7 @@ void bed_analysis(float x_dimension, float y_dimension, int x_points_num, int y_
 		//_delay(3000);
 		//t1 = _millis();
 
-		//while (digitalRead(D_DATACLOCK) == LOW) {}
-		//while (digitalRead(D_DATACLOCK) == HIGH) {}
-		memset(digit, 0, sizeof(digit));
-		//cli();
-		digitalWrite(D_REQUIRE, LOW);
-
-		for (int i = 0; i<13; i++)
-		{
-			//t1 = _millis();
-			for (int j = 0; j < 4; j++)
-			{
-				while (digitalRead(D_DATACLOCK) == LOW) {}
-				while (digitalRead(D_DATACLOCK) == HIGH) {}
-				bitWrite(digit[i], j, digitalRead(D_DATA));
-			}
-			//t_delay = (_millis() - t1);
-			//SERIAL_PROTOCOLPGM(" ");
-			//SERIAL_PROTOCOL_F(t_delay, 5);
-			//SERIAL_PROTOCOLPGM(" ");
-		}
-		//sei();
-		digitalWrite(D_REQUIRE, HIGH);
-		mergeOutput[0] = '\0';
-		output = 0;
-		for (int r = 5; r <= 10; r++) //Merge digits
-		{
-			sprintf(str, "%d", digit[r]);
-			strcat(mergeOutput, str);
-		}
-
-		output = atof(mergeOutput);
-
-		if (digit[4] == 8) //Handle sign
-		{
-			output *= -1;
-		}
-
-		for (int i = digit[11]; i > 0; i--) //Handle floating point
-		{
-			output *= 0.1;
-		}
-
-
-		//output = d_ReadData();
-
-		//row[ix] = current_position[Z_AXIS];
+		output = micrometer_read_value();
 
 		memset(data_wldsd, 0, sizeof(data_wldsd));
 

@@ -130,7 +130,7 @@ static uint8_t ReportErrorHookMonitor(uint8_t ei) {
 
     // Check if knob was rotated
     if (lcd_encoder) {
-        if (two_choices == false) { // third_choice is not nullptr, safe to dereference
+        if (!two_choices) { // third_choice is not nullptr, safe to dereference
             if (lcd_encoder < 0 && current_selection != LCD_LEFT_BUTTON_CHOICE) {
                 // Rotating knob counter clockwise
                 current_selection--;
@@ -168,7 +168,7 @@ static uint8_t ReportErrorHookMonitor(uint8_t ei) {
         //! @endcode
         //
         lcd_putc_at(0, 3, current_selection == LCD_LEFT_BUTTON_CHOICE ? '>': ' ');
-        if (two_choices == false)
+        if (!two_choices)
         {
             lcd_putc_at(9, 3, current_selection == LCD_MIDDLE_BUTTON_CHOICE ? '>': ' ');
             lcd_putc_at(18, 3, current_selection == LCD_RIGHT_BUTTON_CHOICE ? '>': ' ');

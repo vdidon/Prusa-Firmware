@@ -1117,7 +1117,7 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
   if (!isDir() || (0X1F & curPosition_)) return -1;
 
   //If we have a longFilename buffer, mark it as invalid. If we find a long filename it will be filled automaticly.
-  if (longFilename != NULL)
+  if (longFilename)
   {
   	longFilename[0] = '\0';
   }
@@ -1131,7 +1131,7 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
     if (dir->name[0] == DIR_NAME_DELETED || dir->name[0] == '.') continue;
     //Fill the long filename if we have a long filename entry,
 	// long filename entries are stored before the actual filename.
-	if (DIR_IS_LONG_NAME(dir) && longFilename != NULL)
+	if (DIR_IS_LONG_NAME(dir) && longFilename)
     {
     	vfat_t *VFAT = (vfat_t*)dir;
 		//Sanity check the VFAT entry. The first cluster is always set to zero. And th esequence number should be higher then 0

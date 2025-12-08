@@ -427,7 +427,7 @@ void get_command()
 				  return;
 			  }
 
-			  if((strchr_pointer = strchr(cmd_start, '*')) != NULL)
+			  if ((strchr_pointer = strchr(cmd_start, '*')))
 			  {
 				  byte checksum = 0;
 				  char *p = cmd_head;
@@ -460,7 +460,7 @@ void get_command()
             while (*cmd_start == ' ') ++cmd_start;
 
             // if we didn't receive 'N' but still see '*'
-            if (strchr(cmd_start, '*') != NULL)
+            if (strchr(cmd_start, '*'))
             {
                 SERIAL_ERROR_START;
                 SERIAL_ERRORRPGM(_n("No Line Number with checksum, Last Line: "));////MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM
@@ -486,7 +486,7 @@ void get_command()
             SetPrinterState(PrinterState::IsHostPrinting); //set printer state busy printing to hide LCD menu while USB printing
             eeprom_update_byte_notify((uint8_t*)EEPROM_UVLO, PowerPanic::NO_PENDING_RECOVERY);
         }
-        if (allow_when_stopped == false && Stopped == true) {
+        if (!allow_when_stopped && Stopped) {
             // Stopped can be set either during error states (thermal error: cannot continue), or
             // when a printer-initiated action is processed. In such case the printer will send to
             // the host an action, but cannot know if the action has been processed while new

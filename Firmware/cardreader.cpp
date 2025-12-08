@@ -180,7 +180,7 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
 							crmodTime = p.creationTime;
 						}
 						//writeDate = p.lastAccessDate;
-						if (match != NULL) {
+						if (match) {
 							if (strcasecmp(match, filename) == 0) return;
 						}
 						else if (cnt == nrFiles) return;
@@ -817,7 +817,7 @@ void CardReader::presort() {
 	// Throw away old sort index
 	flush_presort();
 
-	if (IS_SD_INSERTED == false) return; //sorting is not used in farm mode
+	if (!IS_SD_INSERTED) return; //sorting is not used in farm mode
 	uint8_t sdSort = eeprom_read_byte((uint8_t*)EEPROM_SD_SORT);
 
 	KEEPALIVE_STATE(IN_HANDLER);

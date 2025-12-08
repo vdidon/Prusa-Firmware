@@ -615,7 +615,7 @@ void planner_reset_position()
         current_position[Z_AXIS] -= mbl.get_z(current_position[X_AXIS], current_position[Y_AXIS]);
 #else
         // Undo the bed level correction so that the current Z position is the same as linearly interpolated from the source G-code line.
-        if (current_block == NULL || (current_block->steps_x == 0 && current_block->steps_y == 0))
+        if (!current_block || (current_block->steps_x == 0 && current_block->steps_y == 0))
             current_position[Z_AXIS] -= mbl.get_z(current_position[X_AXIS], current_position[Y_AXIS]);
         else {
             float t = float(step_events_completed) / float(current_block->step_event_count);

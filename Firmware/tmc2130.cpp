@@ -387,7 +387,7 @@ uint8_t tmc2130_sample_diag()
 
 void tmc2130_st_isr()
 {
-	if (tmc2130_mode == TMC2130_MODE_SILENT || tmc2130_sg_stop_on_crash == false || tmc2130_sg_homing_axes_mask != 0)
+	if (tmc2130_mode == TMC2130_MODE_SILENT || !tmc2130_sg_stop_on_crash || tmc2130_sg_homing_axes_mask != 0)
 		return;
 	uint8_t mask = tmc2130_sample_diag();
 	if (tmc2130_sg_stop_on_crash && mask) {

@@ -316,7 +316,7 @@ FORCE_INLINE void stepper_next_block()
   // Anything in the buffer?
   //WRITE_NC(LOGIC_ANALYZER_CH2, true);
   current_block = plan_get_current_block();
-  if (current_block != NULL) {
+  if (current_block) {
 #ifdef BACKLASH_X
 	if (current_block->steps[X_AXIS].wide)
 	{ //X-axis movement
@@ -806,10 +806,10 @@ FORCE_INLINE void isr() {
 
 	//if (UVLO) uvlo();
   // If there is no current block, attempt to pop one from the buffer
-  if (current_block == NULL)
+  if (!current_block)
     stepper_next_block();
 
-  if (current_block != NULL)
+  if (current_block)
   {
     stepper_check_endstops();
     if (current_block->flag & BLOCK_FLAG_DDA_LOWRES)

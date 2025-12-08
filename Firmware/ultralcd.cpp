@@ -1750,7 +1750,7 @@ void lcd_set_fan_check() {
 	fans_check_enabled = !fans_check_enabled;
 	eeprom_update_byte_notify((unsigned char *)EEPROM_FAN_CHECK_ENABLED, fans_check_enabled);
 #ifdef FANCHECK
-	if (fans_check_enabled == false) fan_check_error = EFCE_OK; //reset error if fanCheck is disabled during error. Allows resuming print.
+	if (!fans_check_enabled) fan_check_error = EFCE_OK; //reset error if fanCheck is disabled during error. Allows resuming print.
 #endif //FANCHECK
 }
 
@@ -2877,7 +2877,7 @@ bool lcd_calibrate_z_end_stop_manual(bool only_z)
             ? _T(MSG_MOVE_CARRIAGE_TO_THE_TOP_Z)
             : _T(MSG_MOVE_CARRIAGE_TO_THE_TOP);
         const char   *msg_next            = lcd_display_message_fullscreen_P(msg);
-        const bool    multi_screen        = msg_next != NULL;
+        const bool    multi_screen        = msg_next;
         unsigned long previous_millis_msg = _millis();
         // Until the user finishes the z up movement.
         lcd_encoder = 0;
@@ -2903,7 +2903,7 @@ bool lcd_calibrate_z_end_stop_manual(bool only_z)
                 break;
             }
             if (multi_screen && _millis() - previous_millis_msg > 5000) {
-                if (msg_next == NULL)
+                if (!msg_next)
                     msg_next = msg;
                 msg_next = lcd_display_message_fullscreen_P(msg_next);
                 previous_millis_msg = _millis();
@@ -3027,12 +3027,12 @@ void lcd_show_fullscreen_message_and_wait_P(const char *msg)
 {
     LcdUpdateDisabler lcdUpdateDisabler;
     const char *msg_next = lcd_display_message_fullscreen_P(msg);
-    bool multi_screen = msg_next != NULL;
+    bool multi_screen = msg_next;
 	lcd_consume_click();
 	KEEPALIVE_STATE(PAUSED_FOR_USER);
 	// Until confirmed by a button click.
 	for (;;) {
-		if (msg_next == NULL) {
+		if (!msg_next) {
 			// Display the confirm char.
 			lcd_putc_at(19, 3, LCD_STR_CONFIRM[0]);
 		}
@@ -3040,7 +3040,7 @@ void lcd_show_fullscreen_message_and_wait_P(const char *msg)
         for (uint8_t i = 0; i < 100; ++ i) {
             delay_keep_alive(50);
             if (lcd_clicked()) {
-				if (msg_next == NULL) {
+				if (!msg_next) {
 					KEEPALIVE_STATE(IN_HANDLER);
 					return;
 				}
@@ -3050,7 +3050,7 @@ void lcd_show_fullscreen_message_and_wait_P(const char *msg)
             }
         }
         if (multi_screen) {
-            if (msg_next == NULL)
+            if (!msg_next)
                 msg_next = msg;
             msg_next = lcd_display_message_fullscreen_P(msg_next);
         }
@@ -3135,7 +3135,7 @@ uint8_t lcd_show_multiscreen_message_with_choices_and_wait_P(
     uint8_t second_col
 ) {
     const char *msg_next = msg ? lcd_display_message_fullscreen_P(msg) : NULL;
-    bool multi_screen = msg_next != NULL;
+    bool multi_screen = msg_next;
 
     // Initial status/prompt on single-screen messages
     uint8_t current_selection = default_selection;
@@ -3154,7 +3154,7 @@ uint8_t lcd_show_multiscreen_message_with_choices_and_wait_P(
                 goto exit;
             }
             if (lcd_encoder) {
-                if (msg_next == NULL) {
+                if (!msg_next) {
                     if (third_choice) { // third_choice is not nullptr, safe to dereference
                         if (lcd_encoder < 0 && current_selection != LCD_LEFT_BUTTON_CHOICE) {
                             // Rotating knob counter clockwise
@@ -3180,19 +3180,19 @@ uint8_t lcd_show_multiscreen_message_with_choices_and_wait_P(
                 }
             }
             if (lcd_clicked()) {
-                if (msg_next == NULL) {
+                if (!msg_next) {
                     goto exit;
                 } else
                     break;
             }
         }
         if (multi_screen) {
-            if (msg_next == NULL) {
+            if (!msg_next) {
                 msg_next = msg;
             }
             msg_next = lcd_display_message_fullscreen_P(msg_next);
         }
-        if (msg_next == NULL) {
+        if (!msg_next) {
             lcd_show_choices_prompt_P(current_selection, first_choice, second_choice, second_col, third_choice);
         }
     }
@@ -3238,7 +3238,7 @@ void lcd_show_fullscreen_message_ok(const char *msg) {
     KEEPALIVE_STATE(PAUSED_FOR_USER);
     // Until confirmed by a button click.
     for (;;) {
-        if (msg_next == NULL) {
+        if (!msg_next) {
             lcd_set_cursor(8,4);
             lcd_puts_P(_N("\xFFOK\xFF"));
         }
@@ -3246,7 +3246,7 @@ void lcd_show_fullscreen_message_ok(const char *msg) {
         for (uint8_t i = 0; i < 200; ++i) {
             delay_keep_alive(50);
             if (lcd_clicked()) {
-                if (msg_next == NULL) {
+                if (!msg_next) {
                     KEEPALIVE_STATE(IN_HANDLER);
                     // lcd_set_custom_characters();
                     lcd_update_enable(true);
@@ -3257,7 +3257,7 @@ void lcd_show_fullscreen_message_ok(const char *msg) {
                 }
             }
         }
-        if(msg_next != NULL)
+        if (msg_next)
         {
             msg_next = lcd_display_message_fullscreen_P(msg_next);
         }
@@ -5402,7 +5402,7 @@ static void lcd_main_menu()
                 #endif //REPLACE_SETREADY
             }
         }
-        if (mesh_bed_leveling_flag == false && homing_flag == false && !printingIsPaused() && !processing_tcode) {
+        if (!mesh_bed_leveling_flag && !homing_flag && !printingIsPaused() && !processing_tcode) {
             if (usb_timer.running()) {
                 MENU_ITEM_FUNCTION_P(_T(MSG_PAUSE_PRINT), lcd_pause_usb_print);
             } else if (IS_SD_PRINTING) {
@@ -5974,7 +5974,7 @@ void lcd_sdcard_menu()
 	{
 		case _uninitialized: //Initialize menu data
 		{
-			if (card.presort_flag == true) //used to force resorting if sorting type is changed.
+			if (card.presort_flag) //used to force resorting if sorting type is changed.
 			{
 				card.presort_flag = false;
 				lcd_update_enabled = false;
@@ -6056,7 +6056,7 @@ void lcd_sdcard_menu()
             // LCD_CLICKED is used so that the click event is later consumed by the _standard state.
 			const bool rewindFlag = LCD_CLICKED || lcd_draw_update; //flag that says whether the menu should return to _standard state.
 
-			if (_md->scrollPointer == NULL)
+			if (!_md->scrollPointer)
 			{
 				//load filename to memory.
 #ifdef SDCARD_SORT_ALPHA
@@ -7283,7 +7283,7 @@ static void menu_action_sdfile(const char* filename)
 
     for (uint_least8_t i = 0; i < 3; i++)
     {
-        if (extension_ptr == NULL || extension_ptr[i] == '\0') {
+        if (!extension_ptr || extension_ptr[i] == '\0') {
             eeprom_update_byte_notify((uint8_t*)EEPROM_FILENAME_EXTENSION + i, '\0');
         } else {
             eeprom_update_byte_notify((uint8_t*)EEPROM_FILENAME_EXTENSION + i, extension_ptr[i]);
@@ -7582,7 +7582,7 @@ void menu_lcd_lcdupdate_func(void)
 		// Exiting a menu. Let's call the menu function the last time with menu_leaving flag set to true
 		// to give it a chance to save its state.
 		// This is useful for example, when the babystep value has to be written into EEPROM.
-			if (menu_menu != NULL)
+			if (menu_menu)
 			{
 				menu_leaving = 1;
 				(*menu_menu)();

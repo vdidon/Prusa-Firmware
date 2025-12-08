@@ -1013,7 +1013,7 @@ bool find_bed_induction_sensor_point_z(float minimum_z, uint8_t n_iter, int
 		//printf_P(PSTR("Z[%d] = %d, dz=%d\n"), i, (int)(current_position[Z_AXIS] * 1000), (int)(dz * 1000));
 		//printf_P(PSTR("Z- measurement deviation from avg value %f um\n"), dz);
 		if (dz > 0.05) { //deviation > 50um
-			if (high_deviation_occured == false) { //first occurence may be caused in some cases by mechanic resonance probably especially if printer is placed on unstable surface
+			if (!high_deviation_occured) { //first occurence may be caused in some cases by mechanic resonance probably especially if printer is placed on unstable surface
 				//printf_P(PSTR("high dev. first occurence\n"));
 				delay_keep_alive(500); //damping
 				//start measurement from the begining, but this time with higher movements in Z axis which should help to reduce mechanical resonance
@@ -1136,7 +1136,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 			MYSERIAL.println(z_error);
 			current_position[Y_AXIS] = direction ? y1 : y0;
 			initial_z_position = current_position[Z_AXIS];
-			for (i = 0; i < (nsteps_y - 1); (direction == false) ? (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)), ++i) {
+			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)), ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
 				current_position[Z_AXIS] -= find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
@@ -1148,13 +1148,13 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 						find_bed_induction_sensor_point_z_step = z_error / 2;
 						current_position[Z_AXIS] += z_error;
 						enable_z_endstop(false);
-						(direction == false) ? go_xyz(x0, y0, current_position[Z_AXIS], feedrate) : go_xyz(x0, y1, current_position[Z_AXIS], feedrate);
+						!direction ? go_xyz(x0, y0, current_position[Z_AXIS], feedrate) : go_xyz(x0, y1, current_position[Z_AXIS], feedrate);
 						enable_z_endstop(true);
 					}
 					goto endloop;
 				}
 			}
-			for (i = 0; i < (nsteps_y - 1); (direction == false) ? (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)), ++i) {
+			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)), ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
 				current_position[Z_AXIS] -= find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
@@ -1167,7 +1167,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 						current_position[Z_AXIS] += z_error;
 						enable_z_endstop(false);
 						direction = !direction;
-						(direction == false) ? go_xyz(x0, y0, current_position[Z_AXIS], feedrate) : go_xyz(x0, y1, current_position[Z_AXIS], feedrate);
+						!direction ? go_xyz(x0, y0, current_position[Z_AXIS], feedrate) : go_xyz(x0, y1, current_position[Z_AXIS], feedrate);
 						enable_z_endstop(true);
 					}
 					goto endloop;

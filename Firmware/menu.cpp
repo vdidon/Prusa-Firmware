@@ -170,8 +170,8 @@ static void menu_draw_toggle_puts_P(const char* str, const char* toggle, const u
     //a = selection mark. If it's set(1), then '>' will be used as the first character on the line. Else leave blank
     //b = toggle string is from progmem
     uint8_t is_progmem = settings & 0x02;
-    const char eol = (toggle == NULL) ? LCD_STR_ARROW_RIGHT[0] : ' ';
-    if (toggle == NULL) toggle = _T(MSG_NA);
+    const char eol = !toggle ? LCD_STR_ARROW_RIGHT[0] : ' ';
+    if (!toggle) toggle = _T(MSG_NA);
     uint8_t len = 4 + (is_progmem ? strlen_P(toggle) : strlen(toggle));
 	lcd_putc_at(0, menu_row, (settings & 0x01) ? '>' : ' ');
     lcd_print_pad_P(str, LCD_WIDTH - len);
@@ -378,7 +378,7 @@ void menu_item_toggle_P(const char* str, const char* toggle, menu_func_t func, c
 		if (lcd_draw_update) menu_draw_toggle_puts_P(str, toggle, settings | (menu_selection_mark()=='>'));
 		if (menu_clicked && (lcd_encoder == menu_item))
 		{
-			if (toggle == NULL) // print N/A warning message
+			if (!toggle) // print N/A warning message
 			{
 				menu_submenu(func);
 			}

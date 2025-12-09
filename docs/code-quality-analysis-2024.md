@@ -193,9 +193,9 @@ static float micrometer_digits_to_float(const int digit[13]) {
 2. [x] Simplifier comparaisons booléennes
 3. [x] Extraire helpers conditions température
 4. [x] Factoriser code micrométrage
-5. [ ] Remplacer C-style casts par static_cast
-6. [ ] Résoudre FIXMEs dans planner.cpp
-7. [ ] Nettoyer code mort commenté
+5. [x] Remplacer C-style casts par static_cast (Option A : casts critiques non-EEPROM)
+6. [x] Résoudre FIXMEs dans planner.cpp
+7. [~] Nettoyer code mort commenté - **Non nécessaire** : code dans git si besoin, impact nul
 
 ---
 
@@ -247,3 +247,45 @@ static float micrometer_read_value()
 - Réduction nette : ~80 lignes de code
 - Flash : 236000 bytes (légère augmentation +10 bytes due aux fonctions helper)
 - Maintenabilité : Améliorée significativement
+
+---
+
+## Changements Additionnels (Session 3)
+
+### Problème #5 : C-style casts (Option A)
+
+**Fichiers modifiés** : `eeprom.cpp`, `Marlin_main.cpp`, `xyzcal.cpp`, `SdFatUtil.cpp`, `adc.cpp`, `mmu2_error_converter.cpp`
+
+**15 casts convertis** (non-EEPROM uniquement) :
+- `reinterpret_cast<>` pour conversions de pointeurs (void* → uint8_t*, block_buffer, PROGMEM)
+- `const_cast<>` pour suppression de volatile (`adc_values`)
+
+**Impact** : Zéro runtime (résolu à la compilation)
+
+### Problème #6 : FIXMEs dans planner.cpp
+
+**Fichier** : `planner.cpp`
+
+**4 FIXMEs résolus** :
+
+| Ligne | Description | Résolution |
+|-------|-------------|------------|
+| 209 | Overflow uint32 pour nominal_rate_sqr | Documenté : nominal_rate < 65535, pas d'overflow |
+| 328 | Routine appelée 15x | Converti en Note (suggestion d'optimisation future) |
+| 910 | Pourquoi moves_queued > 1 ? | Répondu : bloc à block_buffer_tail exécuté par ISR |
+| 1064 | Même question junction velocity | Même réponse : protection bloc en cours |
+
+**Impact** : Zéro (commentaires uniquement)
+
+### Optimisation performance planner (REPORTÉE)
+
+**Fichier** : `planner.cpp` ligne 328
+
+**Objectif** : Remplacer `ceil()` par une version inline pour éviter l'appel à la libm.
+
+**Analyse** :
+- `ceil()` est utilisé à ~10 endroits dans le codebase
+- La libm est déjà linkée pour ces autres usages
+- Remplacer seulement 2 appels ajoute +54 bytes au lieu d'en économiser
+
+**Décision** : Reportée. Pour être efficace, il faudrait remplacer TOUS les `ceil()` du projet (~10 fichiers), ce qui permettrait au linker d'éliminer la fonction `ceil()` de la libm.

@@ -1116,11 +1116,13 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 			#endif // SUPPORT_VERBOSITY
 		}
 		nsteps_y = int(ceil((y1 - y0) / FIND_BED_INDUCTION_SENSOR_POINT_XY_STEP));
+		const float delta_y = (y1 - y0) / float(nsteps_y - 1);
 
 		enable_endstops(false);
 		bool  dir_positive = true;
 		float z_error = 2 * FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP;
 		float find_bed_induction_sensor_point_z_step = FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP;
+		float delta_z = find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
 		float initial_z_position = current_position[Z_AXIS];
 
 		//        go_xyz(current_position[X_AXIS], current_position[Y_AXIS], MESH_HOME_Z_SEARCH, homing_feedrate[Z_AXIS]/60);
@@ -1136,9 +1138,9 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 			MYSERIAL.println(z_error);
 			current_position[Y_AXIS] = direction ? y1 : y0;
 			initial_z_position = current_position[Z_AXIS];
-			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)), ++i) {
+			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] += delta_y) : (current_position[Y_AXIS] -= delta_y), ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
-				current_position[Z_AXIS] -= find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
+				current_position[Z_AXIS] -= delta_z;
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
 				dir_positive = !dir_positive;
 				if (endstop_z_hit_on_purpose()) {
@@ -1146,6 +1148,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 					z_error = initial_z_position - current_position[Z_AXIS] + find_bed_induction_sensor_point_z_step;
 					if (z_error > FIND_BED_INDUCTION_SENSOR_POINT_MAX_Z_ERROR) {
 						find_bed_induction_sensor_point_z_step = z_error / 2;
+						delta_z = find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
 						current_position[Z_AXIS] += z_error;
 						enable_z_endstop(false);
 						!direction ? go_xyz(x0, y0, current_position[Z_AXIS], feedrate) : go_xyz(x0, y1, current_position[Z_AXIS], feedrate);
@@ -1154,9 +1157,9 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 					goto endloop;
 				}
 			}
-			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1)) : (current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1)), ++i) {
+			for (i = 0; i < (nsteps_y - 1); !direction ? (current_position[Y_AXIS] -= delta_y) : (current_position[Y_AXIS] += delta_y), ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
-				current_position[Z_AXIS] -= find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
+				current_position[Z_AXIS] -= delta_z;
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
 				dir_positive = !dir_positive;
 				if (endstop_z_hit_on_purpose()) {
@@ -1164,6 +1167,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 					z_error = initial_z_position - current_position[Z_AXIS];
 					if (z_error > FIND_BED_INDUCTION_SENSOR_POINT_MAX_Z_ERROR) {
 						find_bed_induction_sensor_point_z_step = z_error / 2;
+						delta_z = find_bed_induction_sensor_point_z_step / float(nsteps_y - 1);
 						current_position[Z_AXIS] += z_error;
 						enable_z_endstop(false);
 						direction = !direction;
@@ -1364,6 +1368,8 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int verbosit
 			#endif // SUPPORT_VERBOSITY
 		}
 		nsteps_y = int(ceil((y1 - y0) / FIND_BED_INDUCTION_SENSOR_POINT_XY_STEP));
+		const float delta_y = (y1 - y0) / float(nsteps_y - 1);
+		const float delta_z = FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP / float(nsteps_y);
 
 		enable_endstops(false);
 		bool  dir_positive = true;
@@ -1376,17 +1382,17 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int verbosit
 		while (current_position[Z_AXIS] > -10.f) {
 			// Do nsteps_y zig-zag movements.
 			current_position[Y_AXIS] = y0;
-			for (i = 0; i < nsteps_y; current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1), ++i) {
+			for (i = 0; i < nsteps_y; current_position[Y_AXIS] += delta_y, ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
-				current_position[Z_AXIS] -= FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP / float(nsteps_y);
+				current_position[Z_AXIS] -= delta_z;
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
 				dir_positive = !dir_positive;
 				if (endstop_z_hit_on_purpose())
 					goto endloop;
 			}
-			for (i = 0; i < nsteps_y; current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1), ++i) {
+			for (i = 0; i < nsteps_y; current_position[Y_AXIS] -= delta_y, ++i) {
 				// Run with a slightly decreasing Z axis, zig-zag movement. Stop at the Z end-stop.
-				current_position[Z_AXIS] -= FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP / float(nsteps_y);
+				current_position[Z_AXIS] -= delta_z;
 				go_xyz(dir_positive ? x1 : x0, current_position[Y_AXIS], current_position[Z_AXIS], feedrate);
 				dir_positive = !dir_positive;
 				if (endstop_z_hit_on_purpose())
@@ -1415,7 +1421,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int verbosit
 			go_xy(x0, current_position[Y_AXIS], feedrate);
 			enable_z_endstop(true);
 			found = false;
-			for (i = 0, dir_positive = true; i < nsteps_y; current_position[Y_AXIS] += (y1 - y0) / float(nsteps_y - 1), ++i, dir_positive = !dir_positive) {
+			for (i = 0, dir_positive = true; i < nsteps_y; current_position[Y_AXIS] += delta_y, ++i, dir_positive = !dir_positive) {
 				go_xy(dir_positive ? x1 : x0, current_position[Y_AXIS], feedrate);
 				if (endstop_z_hit_on_purpose()) {
 					found = true;
@@ -1435,7 +1441,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int verbosit
 			go_xy(x0, current_position[Y_AXIS], feedrate);
 			enable_z_endstop(true);
 			found = false;
-			for (i = 0, dir_positive = true; i < nsteps_y; current_position[Y_AXIS] -= (y1 - y0) / float(nsteps_y - 1), ++i, dir_positive = !dir_positive) {
+			for (i = 0, dir_positive = true; i < nsteps_y; current_position[Y_AXIS] -= delta_y, ++i, dir_positive = !dir_positive) {
 				go_xy(dir_positive ? x1 : x0, current_position[Y_AXIS], feedrate);
 				if (endstop_z_hit_on_purpose()) {
 					found = true;

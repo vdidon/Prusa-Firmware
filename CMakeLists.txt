@@ -245,6 +245,7 @@ set(FW_SOURCES
     pat9125.cpp
     planner.cpp
     power_panic.cpp
+    preheat_data.cpp
     printer_state.cpp
     Prusa_farm.cpp
     rbuf.c

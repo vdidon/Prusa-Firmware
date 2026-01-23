@@ -102,6 +102,9 @@ extern uint8_t menu_item_text_P(const char* str);
 #define MENU_ITEM_SUBMENU_P(str, submenu) do { menu_item_submenu_P(str, submenu); } while (0)
 extern void menu_item_submenu_P(const char* str, menu_func_t submenu);
 
+#define MENU_ITEM_SUBMENU(str, submenu) do { menu_item_submenu(str, submenu); } while (0)
+extern void menu_item_submenu(const char* str, menu_func_t submenu);
+
 #define MENU_ITEM_SUBMENU_E(sheet, submenu) do { menu_item_submenu_E(sheet, submenu); } while (0)
 extern void menu_item_submenu_E(const Sheet &sheet, menu_func_t submenu);
 

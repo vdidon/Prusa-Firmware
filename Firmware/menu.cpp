@@ -163,6 +163,13 @@ static void menu_draw_item_puts_P(char type_char, const char* str)
     lcd_putc(type_char);
 }
 
+static void menu_draw_item_puts(char type_char, const char* str)
+{
+    lcd_putc_at(0, menu_row, menu_selection_mark());
+    lcd_print_pad(str, LCD_WIDTH - 2);
+    lcd_putc(type_char);
+}
+
 static void menu_draw_toggle_puts_P(const char* str, const char* toggle, const uint8_t settings)
 {
     //settings:
@@ -267,6 +274,21 @@ void menu_item_submenu_P(const char* str, menu_func_t submenu)
 	if (menu_item == menu_line)
 	{
 		if (lcd_draw_update) menu_draw_item_puts_P(LCD_STR_ARROW_RIGHT[0], str);
+		if (menu_clicked && (lcd_encoder == menu_item))
+		{
+			menu_submenu(submenu);
+			menu_item_ret();
+			return;
+		}
+	}
+	menu_item++;
+}
+
+void menu_item_submenu(const char* str, menu_func_t submenu)
+{
+	if (menu_item == menu_line)
+	{
+		if (lcd_draw_update) menu_draw_item_puts(LCD_STR_ARROW_RIGHT[0], str);
 		if (menu_clicked && (lcd_encoder == menu_item))
 		{
 			menu_submenu(submenu);

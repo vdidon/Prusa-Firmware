@@ -196,10 +196,10 @@ public:
     static uint8_t EncodeResponseRead(const RequestMsg &msg, bool accepted, uint16_t value2, uint8_t *txbuff);
 
     /// @returns the most recently lexed request message
-    inline const RequestMsg GetRequestMsg() const { return requestMsg; }
+    inline const RequestMsg& GetRequestMsg() const { return requestMsg; }
 
     /// @returns the most recently lexed response message
-    inline const ResponseMsg GetResponseMsg() const { return responseMsg; }
+    inline const ResponseMsg& GetResponseMsg() const { return responseMsg; }
 
     /// resets the internal request decoding state (typically after an error)
     void ResetRequestDecoder() {

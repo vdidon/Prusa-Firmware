@@ -9,10 +9,15 @@
 #include "spi.h"
 #include "Timer.h"
 
-#define TMC2130_GCONF_NORMAL 0x00000000 // spreadCycle
-#define TMC2130_GCONF_SGSENS 0x00000180 // spreadCycle with stallguard (stall activates DIAG0 and DIAG1 [open collector])
-#define TMC2130_GCONF_DYNAMIC_SGSENS 0x00000184 // stealthChop/spreadCycle (dynamic) with stallguard (stall activates DIAG0 and DIAG1 [open collector])
-#define TMC2130_GCONF_SILENT 0x00000004 // stealthChop
+// GCONF bit map (TMC2130 datasheet §5.1):
+//   bit 2 = en_pwm_mode (0=spreadCycle, 1=stealthChop)
+//   bit 7 = diag0_stall (route stallguard to DIAG0)
+//   bit 8 = diag1_stall (route stallguard to DIAG1)
+// DIAG pins are open-collector (push-pull bits 12/13 left at 0).
+#define TMC2130_GCONF_NORMAL 0x00000000          // bit none           : spreadCycle, no stallguard
+#define TMC2130_GCONF_SGSENS 0x00000180          // bits 7|8           : spreadCycle + stallguard on DIAG0/DIAG1 (open collector)
+#define TMC2130_GCONF_DYNAMIC_SGSENS 0x00000184  // bits 2|7|8         : stealthChop + stallguard on DIAG0/DIAG1
+#define TMC2130_GCONF_SILENT 0x00000004          // bit 2              : stealthChop only, no stallguard
 
 #ifdef TMC2130_DEDGE_STEPPING
 static constexpr uint8_t default_dedge_bit = 1;
@@ -501,6 +506,8 @@ void tmc2130_check_overtemp()
 			{ // BIT 26 - over temp prewarning ~120C (+-20C)
 				SERIAL_ERRORRPGM(MSG_TMC_OVERTEMP);
 				SERIAL_ECHOLN(i);
+				// Disable all four drivers: CHOPCONF.toff (bits 0-3) = 0 stops the
+				// chopper (bit 16 = chm is irrelevant when toff=0, kept for reference).
 				for (uint_least8_t j = 0; j < 4; j++)
 					tmc2130_wr(j, TMC2130_REG_CHOPCONF, 0x00010000);
 				kill(MSG_TMC_OVERTEMP);

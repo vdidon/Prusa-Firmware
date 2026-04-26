@@ -37,3 +37,7 @@ vscode-portable*
 .vscode/
 
 .claude/
+
+# RuVector intelligence data
+.ruvector/
+.codegraph

@@ -539,7 +539,7 @@ void debug_printer_states()
     printf_P(PSTR("DBG:fsensor.getAutoLoadEnabled() = %d\n"), (int)fsensor.getAutoLoadEnabled());
     printf_P(PSTR("DBG:custom_message_type = %d\n"), (int)custom_message_type);
     printf_P(PSTR("DBG:uvlo_auto_recovery_ready = %d\n"), (int)uvlo_auto_recovery_ready);
-    SERIAL_ECHOLN("");
+    SERIAL_ECHOLNPGM("");
 }
 #endif //End DEBUG_PRINTER_STATES
 
@@ -7144,7 +7144,7 @@ void process_commands()
 		{
 			SERIAL_PROTOCOLPGM("Invalid sheet ID. Allowed: 0..");
 			SERIAL_PROTOCOL(max_sheets-1);
-			SERIAL_PROTOCOLLN("");
+			SERIAL_PROTOCOLLNPGM("");
 			break; // invalid sheet ID
 		}
 	} else {

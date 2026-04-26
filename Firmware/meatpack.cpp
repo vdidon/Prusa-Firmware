@@ -319,7 +319,7 @@ void FORCE_INLINE mp_handle_cmd(const MeatPack_Command c) {
     } break;
     default: {
 #ifdef MP_DEBUG
-        SERIAL_ECHOLN("[MPDBG] UNK CMD REC");
+        SERIAL_ECHOLNPGM("[MPDBG] UNK CMD REC");
 #endif
     }
     case MPCommand_QueryConfig:

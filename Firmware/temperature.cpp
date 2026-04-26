@@ -1709,17 +1709,17 @@ static void pid_heater(uint8_t e, const float current, const int target)
 
 #ifdef PID_DEBUG
     SERIAL_ECHO_START;
-    SERIAL_ECHO(" PID_DEBUG ");
+    SERIAL_ECHOPGM(" PID_DEBUG ");
     SERIAL_ECHO(e);
-    SERIAL_ECHO(": Input ");
+    SERIAL_ECHOPGM(": Input ");
     SERIAL_ECHO(pid_input);
-    SERIAL_ECHO(" Output ");
+    SERIAL_ECHOPGM(" Output ");
     SERIAL_ECHO(pid_output);
-    SERIAL_ECHO(" pTerm ");
+    SERIAL_ECHOPGM(" pTerm ");
     SERIAL_ECHO(pTerm[e]);
-    SERIAL_ECHO(" iTerm ");
+    SERIAL_ECHOPGM(" iTerm ");
     SERIAL_ECHO(iTerm[e]);
-    SERIAL_ECHO(" dTerm ");
+    SERIAL_ECHOPGM(" dTerm ");
     SERIAL_ECHOLN(-dTerm[e]);
 #endif //PID_DEBUG
 

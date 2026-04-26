@@ -739,7 +739,7 @@ msgstr "Felhasznalt filam."
 #. MSG_FILE_INCOMPLETE c=20 r=3
 #: ../../Firmware/messages.cpp:375 ../../Firmware/ultralcd.cpp:7119
 msgid "File incomplete."
-msgstr "A fajl vege hianyzik. Folytatod igy is?"
+msgstr "A fajl vege hianyzik."
 
 #. MSG_FINISHING_MOVEMENTS c=20
 #: ../../Firmware/messages.cpp:45

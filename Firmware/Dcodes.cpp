@@ -315,7 +315,7 @@ void dcode_4()
 			else
 			{
 				int val = (digitalRead(pin) != LOW)?1:0;
-				printf("PIN%d=%d", pin, val);
+				printf_P(PSTR("PIN%d=%d"), pin, val);
 			}
 		}
 	}
@@ -878,13 +878,13 @@ void dcode_9125()
 	if ((strchr_pointer[1+4] == '?') || (strchr_pointer[1+4] == 0))
 	{
 //		printf("res_x=%d res_y=%d x=%d y=%d b=%d s=%d\n", pat9125_xres, pat9125_yres, pat9125_x, pat9125_y, pat9125_b, pat9125_s);
-		printf("x=%d y=%d b=%d s=%d\n", pat9125_x, pat9125_y, pat9125_b, pat9125_s);
+		printf_P(PSTR("x=%d y=%d b=%d s=%d\n"), pat9125_x, pat9125_y, pat9125_b, pat9125_s);
 		return;
 	}
 	if (strchr_pointer[1+4] == '!')
 	{
 		pat9125_update();
-		printf("x=%d y=%d b=%d s=%d\n", pat9125_x, pat9125_y, pat9125_b, pat9125_s);
+		printf_P(PSTR("x=%d y=%d b=%d s=%d\n"), pat9125_x, pat9125_y, pat9125_b, pat9125_s);
 		return;
 	}
 /*

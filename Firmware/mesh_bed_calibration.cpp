@@ -1181,12 +1181,12 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 		}
 		#ifdef SUPPORT_VERBOSITY
 		if (verbosity_level >= 20) {
-			SERIAL_ECHO("First hit");
-			SERIAL_ECHO("- X: ");
+			SERIAL_ECHOPGM("First hit");
+			SERIAL_ECHOPGM("- X: ");
 			MYSERIAL.print(current_position[X_AXIS]);
-			SERIAL_ECHO("; Y: ");
+			SERIAL_ECHOPGM("; Y: ");
 			MYSERIAL.print(current_position[Y_AXIS]);
-			SERIAL_ECHO("; Z: ");
+			SERIAL_ECHOPGM("; Z: ");
 			MYSERIAL.println(current_position[Z_AXIS]);
 		}
 		#endif //SUPPORT_VERBOSITY

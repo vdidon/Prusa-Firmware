@@ -197,7 +197,7 @@ void checkHitEndstops()
             SERIAL_ECHO(float(endstops_trigsteps[axis]) / cs.axis_steps_per_mm[axis]);
         }
     }
-   SERIAL_ECHOLN("");
+   SERIAL_ECHOLNPGM("");
 #endif //VERBOSE_CHECK_HIT_ENDSTOPS
    endstop_hit = 0;
 #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)

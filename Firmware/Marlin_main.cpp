@@ -3710,7 +3710,7 @@ extern uint8_t st_backlash_y;
 //!@n M221 - Set extrude factor override percentage
 //!@n M226 - Wait for Pin state
 //!@n M240 - Trigger camera
-//!@n M250 - Set LCD contrast C<contrast value> (value 0..63)
+//!@n M256 - Set LCD brightness
 //!@n M300 - Play tone
 //!@n M301 - Set hotend PID
 //!@n M302 - Allow cold extrude, or set minimum extrude temperature
@@ -5241,16 +5241,41 @@ void process_commands()
     }
 
     /*!
-    ### M78 - Show statistical information about the print jobs <a href="https://reprap.org/wiki/G-code#M78:_Show_statistical_information_about_the_print_jobs">M78: Show statistical information about the print jobs</a>
+    ### M78 - Get/set statistics <a href="https://reprap.org/wiki/G-code#M78:_Show_statistical_information_about_the_print_jobs">M78: Show statistical information about the print jobs</a>
+
+    #### Usage
+
+        M78 [ S | T ]
+
+    #### Parameters
+    - `S` - Set used filament length in cm
+    - `T` - Set total print time in minutes
     */
     case 78:
     {
-        // @todo useful for maintenance notifications
-        SERIAL_ECHOPGM("STATS ");
-        SERIAL_ECHO(eeprom_read_dword((uint32_t *)EEPROM_TOTALTIME));
-        SERIAL_ECHOPGM(" min ");
-        SERIAL_ECHO(eeprom_read_dword((uint32_t *)EEPROM_FILAMENTUSED));
-        SERIAL_ECHOLNPGM(" cm.");
+        const char *_m_fil;
+        const char *_m_time;
+        uint32_t _cm = 0;
+        uint32_t _min = 0;
+
+        if (printJobOngoing()) {
+          _m_fil = _O(MSG_FILAMENT_USED);
+          _m_time = _O(MSG_PRINT_TIME);
+          _cm = (uint32_t)total_filament_used / 1000;
+          _min = print_job_timer.duration() / 60;
+        } else {
+          if (code_seen('S')) {
+          eeprom_update_dword_notify((uint32_t *)EEPROM_FILAMENTUSED, code_value());
+          }
+          if (code_seen('T')) {
+          eeprom_update_dword_notify((uint32_t *)EEPROM_TOTALTIME, code_value());
+          }
+          _m_fil = _O(MSG_TOTAL_FILAMENT);
+          _m_time = _O(MSG_TOTAL_PRINT_TIME);
+          _cm = eeprom_read_dword((uint32_t *)EEPROM_FILAMENTUSED);
+          _min = eeprom_read_dword((uint32_t *)EEPROM_TOTALTIME);
+        }
+        printf_P(_N("%S:%lu cm\n%S:%lu min\n"),_m_fil,_cm,_m_time,_min);
         break;
     }
 
@@ -6490,11 +6515,11 @@ void process_commands()
 
     #### Parameters
     - `S` - frequency in Hz. Not all firmware versions support this parameter
-    - `P` - duration in milliseconds
+    - `P` - duration in milliseconds max 3500ms
     */
     case 300: // M300
     {
-      uint16_t beepP = code_seen('P') ? code_value() : 1000;
+      uint16_t beepP = code_seen('P') ? min(code_value(), 3500) : 1000;
       uint16_t beepS;
       if (!code_seen('S'))
           beepS = 0;
@@ -6615,6 +6640,42 @@ void process_commands()
      }
     break;
     #ifdef PREVENT_DANGEROUS_EXTRUDE
+
+    /*!
+    ### M256 - Set LCD brightness <a href="https://reprap.org/wiki/G-code#M256:_Set_LCD_brightness">M256: Set LCD brightness</a>
+    Set and/or get the LCD brightness. The value is constrained based on the LCD, but typically a value of 0 is the dimmest and 255 is the brightest.
+    #### Usage
+
+        M256 [ B | D | S | T ]
+
+    #### Parameters
+    - `B` - Normal Brightness value (0 - 255), default 130
+    - `D` - Dimmed Brightness value (0 - 255), default 50
+    - `S` - Brightness mode, default Auto
+      - `0` - Dim
+      - `1` - Bright
+      - `2` - Auto
+    - `T` - Brightness timeout  (15 - 900), default 15 seconds
+    */
+    #ifdef LCD_BL_PIN
+     case 256:
+    {
+      if (backlightSupport) {
+        if (code_seen('B') ) backlightLevel_HIGH = code_value_uint8();
+        if (code_seen('D')) backlightLevel_LOW = code_value_uint8();
+        if (code_seen('S')) {
+          uint8_t mode = code_value_uint8();
+          if (mode <= BACKLIGHT_MODE_AUTO) {
+            backlightMode = static_cast<Backlight_Mode>(mode);
+         }
+        }
+        if (code_seen('T')) backlightTimer_period = constrain(code_value_short(), LCD_BACKLIGHT_TIMEOUT, LCD_BACKLIGHT_TIMEOUT*60);
+        printf_P(PSTR("M256 B%d D%d S%d T%u\n"), backlightLevel_HIGH, backlightLevel_LOW, backlightMode, backlightTimer_period);
+        backlight_save();
+      }
+    }
+    break;
+    #endif //LCD_BL_PIN
 
     /*!
     ### M302 - Allow cold extrude, or set minimum extrude temperature <a href="https://reprap.org/wiki/G-code#M302:_Allow_cold_extrudes">M302: Allow cold extrudes</a>
@@ -9177,7 +9238,7 @@ void setPwmFrequency(uint8_t pin, int val)
 #endif //FAST_PWM_FAN
 
 void save_statistics() {
-    uint32_t _previous_filament = eeprom_init_default_dword((uint32_t *)EEPROM_FILAMENTUSED, 0); //_previous_filament unit: meter
+    uint32_t _previous_filament = eeprom_init_default_dword((uint32_t *)EEPROM_FILAMENTUSED, 0); //_previous_filament unit: centimeter
     uint32_t _previous_time = eeprom_init_default_dword((uint32_t *)EEPROM_TOTALTIME, 0);        //_previous_time unit: min
 
     uint32_t time_minutes = print_job_timer.duration() / 60;

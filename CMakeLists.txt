@@ -338,8 +338,11 @@ if(CMAKE_CROSSCOMPILING)
   add_link_options(-ffunction-sections -fdata-sections -Wl,--gc-sections)
 
   # LTO (with custom options)
-  add_compile_options(-flto -fno-fat-lto-objects)
-  add_link_options(-flto)
+  # -flto-partition=none: single LTO partition for maximum inlining opportunities
+  # -fipa-icf: Identical Code Folding for functions + variables
+  # -fmerge-all-constants: aggressive constant pool deduplication
+  add_compile_options(-flto -fno-fat-lto-objects -flto-partition=none -fipa-icf -fmerge-all-constants)
+  add_link_options(-flto -flto-partition=none -fipa-icf -fmerge-all-constants)
 
   # Create this target before we apply the GC options
   add_library(avr_core STATIC ${AVR_SOURCES})

@@ -338,7 +338,7 @@ void lcdui_print_planner_diag(void)
 {
 	lcd_set_cursor(LCD_WIDTH - 8-2, 1);
 	lcd_print(LCD_STR_FEEDRATE[0]);
-	lcd_print(itostr3(feedmultiply));
+	lcd_printf_P(PSTR("%3d"), feedmultiply);
 	lcd_puts_P(PSTR("%  Q"));
 	{
 		uint8_t queue = planner_queue_min();

@@ -741,7 +741,7 @@ msgstr "Fil. utilizzato"
 #. MSG_FILE_INCOMPLETE c=20 r=3
 #: ../../Firmware/messages.cpp:375 ../../Firmware/ultralcd.cpp:7119
 msgid "File incomplete."
-msgstr "File incompleto. Continuare comunque?"
+msgstr "File incompleto."
 
 #. MSG_FINISHING_MOVEMENTS c=20
 #: ../../Firmware/messages.cpp:45

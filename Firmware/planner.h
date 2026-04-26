@@ -26,7 +26,7 @@
 
 #include "Marlin.h"
 
-enum BlockFlag {
+enum BlockFlag : uint8_t {
     // Planner flag to recalculate trapezoids on entry junction.
     // This flag has an optimization purpose only.
     BLOCK_FLAG_RECALCULATE = 1,

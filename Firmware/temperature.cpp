@@ -1383,7 +1383,7 @@ struct alert_automaton_mintemp {
 	inline constexpr alert_automaton_mintemp(const char *m2)
 		: m2(m2) {}
 private:
-	enum { ALERT_AUTOMATON_SPEED_DIV = 5 };
+	enum : uint8_t { ALERT_AUTOMATON_SPEED_DIV = 5 };
 	enum class States : uint8_t { Init = 0, TempAboveMintemp, ShowPleaseRestart, ShowMintemp };
 	States state = States::Init;
 	uint8_t repeat = ALERT_AUTOMATON_SPEED_DIV;

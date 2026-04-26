@@ -5,7 +5,7 @@
 #include "config.h"
 
 #if (defined(FANCHECK) && defined(TACH_0) && (TACH_0 > -1))
-enum {
+enum : uint8_t {
 	EFCE_OK = 0,   //!< normal operation, both fans are ok
 	EFCE_FIXED,    //!< previous fan error was fixed
 	EFCE_REPORTED  //!< fan error detected and reported to LCD and serial

@@ -45,7 +45,7 @@
 // 0xFF *IS* used in "packed" g-code (used to denote that the next 2 characters are
 // full-width), however 2 in a row will never occur, as the next 2 bytes will always
 // some non-0xFF character.
-enum MeatPack_Command {
+enum MeatPack_Command : uint8_t {
     MPCommand_None            = 0U,
     // MPCommand_TogglePacking   = 253U, -- Unused, byte 253 can be re-used later.
     MPCommand_EnablePacking   = 251U,

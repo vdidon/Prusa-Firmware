@@ -101,10 +101,12 @@ static void lcd_language_menu();
 static void lcd_main_menu();
 static void lcd_tune_menu();
 static void lcd_settings_menu();
+#ifdef EEPROM_BACKUP_ENABLE
 static void lcd_eeprom_backup_menu();
 static void lcd_eeprom_backup_do();
 static void lcd_eeprom_restore_do();
 static void lcd_eeprom_verify_do();
+#endif
 static void lcd_control_temperature_menu();
 #ifdef TMC2130
 static void lcd_settings_linearity_correction_menu_save();
@@ -4643,8 +4645,10 @@ static void lcd_settings_menu()
     }
 #endif //SDCARD_SORT_ALPHA
 
+#ifdef EEPROM_BACKUP_ENABLE
 	// EEPROM backup/restore tools
 	MENU_ITEM_SUBMENU_P(PSTR("EEPROM Tools"), lcd_eeprom_backup_menu);
+#endif
 
 	SETTINGS_SOUND;
 
@@ -7675,6 +7679,7 @@ void lcd_pinda_temp_compensation_toggle()
 }
 #endif //PINDA_TEMP_COMP
 
+#ifdef EEPROM_BACKUP_ENABLE
 //! @brief EEPROM Backup Menu
 //! Displays submenu with backup, restore, and verify options
 static void lcd_eeprom_backup_menu()
@@ -7806,6 +7811,7 @@ static void lcd_eeprom_verify_do()
 
     menu_back();
 }
+#endif // EEPROM_BACKUP_ENABLE
 
 void lcd_heat_bed_on_load_toggle()
 {

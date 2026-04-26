@@ -1,13 +1,98 @@
-# Add same improvements from 3.14.1 stock
-- Add `Pxxx` G-code to send custom orders.
-- New preheat menu with additional materials, cooldown at the top, and an option to cool down either the bed or the hotend.
-- New nozzle sizes.
-- Add 7 and 10 samples per point for bed leveling.
-- A G-code menu to send preconfigured G-code.
-- Change support menu order.
-- Add babystep to the setup menu to adjust babystep settings when not printing.
-- Unlock build any single language on MK3/S
-- Support of [Marlin EEPROM Editor](https://plugins.octoprint.org/plugins/eeprom_marlin/)
+# Differences from the official Prusa firmware
+
+This repository is a fork of the stock Prusa MK3 firmware (branch `MK3` of
+`prusa3d/Prusa-Firmware`). The sections below list what changes compared to the 3.14.1 stock
+release.
+
+## Printing & materials
+
+- **Nozzle-aware preheat temperatures**. The firmware reads the nozzle diameter stored in
+  EEPROM and picks the hotend temperature based on three thermal buckets:
+  `≤ 0.5 mm`, `0.6 – 0.7 mm`, `≥ 0.8 mm`. The tables are generated from PrusaSlicer profiles
+  via `utils/generate_preheat_data.py` and shipped in `PROGMEM`.
+- **15 materials in the Preheat menu**: PLA, PETG, ASA, PC, PVB, PA, ABS, HIPS, PP, FLEX,
+  VEGETAL, PLAPERL, PLABOIS, CLEAN1 (260 °C, resin cleanup), CLEAN2 (90 °C, solvent purge).
+  The menu always keeps `Cooldown` at the top.
+- **Selective cooldown**. The `Cooldown` button is now a submenu with three entries:
+  `ALL` (nozzle + bed + fans), `BUSE` (nozzle only), `BED` (bed only).
+- **Mesh Bed Leveling with 7 and 10 probes**. The `Z probe nr` toggle in
+  `Calibration → Mesh Bed Leveling Settings` cycles through `1 → 3 → 5 → 7 → 10`, letting
+  users trade speed for accuracy.
+
+## EEPROM maintenance
+
+- **EEPROM Backup / Restore on the SD card**, under `Settings → EEPROM Tools`:
+    - `Backup to SD` writes `EEPROM.BAK` (header with magic, firmware version, CRC32, plus the
+      4 KB EEPROM payload).
+    - `Restore from SD` requires a double confirmation and warns if the firmware version
+      differs; a soft reset is issued at the end so values are reloaded.
+    - `Verify Backup` checks integrity (CRC32 + version) without touching the EEPROM.
+
+  The feature is enabled by default (`EEPROM_BACKUP_ENABLE` in `Configuration.h`) and is
+  disabled on the E3D-REVO variants where flash is too tight (`EEPROM_BACKUP_DISABLED`).
+- **[Marlin EEPROM Editor](https://plugins.octoprint.org/plugins/eeprom_marlin/) compatibility**
+  for fine-grained inspection / editing through OctoPrint.
+
+## G-code & messaging extensions
+
+- **G-code menu in the main menu** (`Main → Gcode`) with six preconfigured macros, available
+  when no print is running:
+
+    | Entry             | G-code         |
+    |-------------------|----------------|
+    | Fast home         | `G28 W`        |
+    | Change filament   | `G1 X125 Z150` |
+    | Clean extrude     | `G1 E5`        |
+    | Change nozzle     | `G1 X125 Z190` |
+    | Bed front         | `G1 Y0`        |
+    | Bed back          | `G1 Y200`      |
+
+- **Custom P-codes** (in addition to standard G-codes and M-codes):
+    - `P117 <message>` — show a full-screen, multi-line message (using `\n`) and wait for a
+      user click. Useful for interactive pauses inside an SD G-code.
+    - `P300 [S<freq>] [P<duration_ms>] [C]` — parametrized beep, with the `C` flag marking the
+      beep as critical.
+
+## Build & packaging
+
+- **Single-language builds for MK3/MK3S** (no X-Flash required). New CMake targets bake a
+  secondary language alongside English directly into the firmware: `MK3S_en-fr`, `MK3S_en-de`,
+  etc. The resulting binary is significantly smaller than the multi-language X-Flash build and
+  no longer depends on the external flash for translations. The classic `MK3S_ENGLISH` and
+  `MK3S_MULTILANG` targets remain available.
+- **Reordered Support menu**. Hardware information (XYZ details, Extruder info, sensors,
+  temperatures, voltages) is moved above the diagnostic tools (Dump memory, Dump serial,
+  Debug).
+
+## Transparent optimizations
+
+No behavior change, but measurable savings on flash, RAM, and CPU.
+
+- **Flash**:
+    - Aggressive LTO flags (`-flto-partition=none`, `-fipa-icf`, `-fmerge-all-constants`) —
+      around 500 bytes saved per variant.
+    - Debug logs stripped from the multi-language build — about 1.2 KB freed, which brings
+      multi-language MK3S back under the flash budget.
+- **CPU**:
+    - Temperature compensation interpolation: `pow()` replaced by Horner's method
+      (~4.7× faster on AVR).
+    - Calibration loops: float divisions hoisted out of the loop.
+    - `checkautostart`: `strlen()` result cached to avoid O(n²) scans.
+    - MMU2: protocol messages returned by `const &` instead of being copied.
+- **RAM**:
+    - Always-emitted string literals routed through `PROGMEM`, freeing SRAM.
+
+## Stability fixes
+
+Bugs fixed in this fork but not (yet) in upstream:
+
+- **Atomic read of `babystepsTodo`** inside `applyBabysteps` (ISR context). Eliminates
+  potential torn reads on the 16-bit volatile counter during babystepping.
+- **Buffer overflow protection** in `CardReader::chdir` (`strncpy` instead of `strcpy` on
+  directory names).
+- **EEPROM restore bugs**: dedicated binary file open to avoid spurious serial logs, correct
+  rendering of Yes/No prompts, soft reset after restore.
+- **`PLANNER_DIAGNOSTICS`**: replacement for `itostr3()` (removed upstream).
 
 # Prusa Firmware MK3
 

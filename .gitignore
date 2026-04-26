@@ -41,3 +41,6 @@ vscode-portable*
 # RuVector intelligence data
 .ruvector/
 .codegraph
+.clang-tidy-build/
+
+.cppcheck-build/

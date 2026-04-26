@@ -585,7 +585,6 @@ void crashdet_stop_and_save_print()
 void crashdet_restore_print_and_continue()
 {
   restore_print_from_ram_and_continue(default_retraction); //XYZ = orig, E +1mm unretract
-//babystep_apply();
 }
 
 void crashdet_fmt_error(char* buf, uint8_t mask)
@@ -9442,20 +9441,10 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 	custom_message_state = (x_points_num * y_points_num) + 10;
 	lcd_update(1);
 
-	//mbl.reset();
 	babystep_undo();
 
 	card.openFile(filename_wldsd, false);
 
-	/*destination[Z_AXIS] = mesh_home_z_search;
-	//plan_buffer_line_curposXYZE(Z_LIFT_FEEDRATE);
-
-	plan_buffer_line_destinationXYZE(Z_LIFT_FEEDRATE);
-	for(int8_t i=0; i < NUM_AXIS; i++) {
-		current_position[i] = destination[i];
-	}
-	st_synchronize();
-	*/
 		destination[Z_AXIS] = measure_z_height;
 		plan_buffer_line_destinationXYZE(Z_LIFT_FEEDRATE);
 		for(int8_t i=0; i < NUM_AXIS; i++) {
@@ -9481,18 +9470,6 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 		iy = mesh_point / x_points_num;
 		if (iy & 1) ix = (x_points_num - 1) - ix; // Zig zag
 		float z0 = 0.f;
-		/*destination[Z_AXIS] = mesh_home_z_search;
-		//plan_buffer_line_curposXYZE(Z_LIFT_FEEDRATE);
-
-		plan_buffer_line_destinationXYZE(Z_LIFT_FEEDRATE);
-		for(int8_t i=0; i < NUM_AXIS; i++) {
-			current_position[i] = destination[i];
-		}
-		st_synchronize();*/
-
-
-		//current_position[X_AXIS] = 13.f + ix * (x_dimension / (x_points_num - 1)) - bed_zero_ref_x + shift_x;
-		//current_position[Y_AXIS] = 6.4f + iy * (y_dimension / (y_points_num - 1)) - bed_zero_ref_y + shift_y;
 
 		destination[X_AXIS] = ix * (x_dimension / (x_points_num - 1)) + shift_x;
 		destination[Y_AXIS] = iy * (y_dimension / (y_points_num - 1)) + shift_y;
@@ -9501,21 +9478,8 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 		set_current_to_destination();
 		st_synchronize();
 
-	//	printf_P(PSTR("X = %f; Y= %f \n"), current_position[X_AXIS], current_position[Y_AXIS]);
-
 		delay_keep_alive(1000);
 #ifdef MICROMETER_LOGGING
-
-		//memset(numb_wldsd, 0, sizeof(numb_wldsd));
-		//dtostrf(d_ReadData(), 8, 5, numb_wldsd);
-		//strcat(data_wldsd, numb_wldsd);
-
-
-
-		//MYSERIAL.println(data_wldsd);
-		//delay(1000);
-		//delay(3000);
-		//t1 = millis();
 
 		output = micrometer_read_value();
 

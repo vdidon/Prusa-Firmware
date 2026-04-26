@@ -677,4 +677,7 @@
 //Remove the "AutoLoad filament" LCD menu entry if autoload is enabled.
 //#define REMOVE_AUTOLOAD_FILAMENT_MENU_ENTRY
 
+// Disable EEPROM backup/restore feature: tight flash budget on this variant
+#define EEPROM_BACKUP_DISABLED
+
 #endif //__CONFIGURATION_PRUSA_H

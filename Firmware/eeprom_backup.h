@@ -6,6 +6,10 @@
 #ifndef EEPROM_BACKUP_H
 #define EEPROM_BACKUP_H
 
+#include "Configuration.h"
+
+#ifdef EEPROM_BACKUP_ENABLE
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -75,5 +79,7 @@ uint32_t calculate_eeprom_crc32();
 //! @details Extracts version from FW_VERSION define
 //! @param buffer Output buffer (must be at least 12 bytes)
 void get_firmware_version_string(uint8_t *buffer);
+
+#endif // EEPROM_BACKUP_ENABLE
 
 #endif // EEPROM_BACKUP_H

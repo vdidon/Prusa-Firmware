@@ -2,9 +2,12 @@
 //! @date 2025-01-17
 //! @brief EEPROM backup/restore implementation
 
+#include "Configuration.h"
+
+#ifdef EEPROM_BACKUP_ENABLE
+
 #include "eeprom_backup.h"
 #include "cardreader.h"
-#include "Configuration.h"
 #include "Marlin.h"
 #include "eeprom.h"
 #include "power_panic.h"
@@ -250,3 +253,5 @@ EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
 
     return result;
 }
+
+#endif // EEPROM_BACKUP_ENABLE

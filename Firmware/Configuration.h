@@ -64,6 +64,12 @@ extern const char _sPrinterMmuName[] PROGMEM;
 
 #include "Configuration_var.h"
 
+// EEPROM backup/restore feature (SD card backup/restore + LCD menu).
+// Default-enabled. Variants with tight flash can opt out via EEPROM_BACKUP_DISABLED.
+#ifndef EEPROM_BACKUP_DISABLED
+#define EEPROM_BACKUP_ENABLE
+#endif
+
 #define FW_PRUSA3D_MAGIC "PRUSA3DFW"
 #define FW_PRUSA3D_MAGIC_LEN 10
 

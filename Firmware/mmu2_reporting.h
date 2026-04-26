@@ -95,7 +95,7 @@ void IncrementMMUFails();
 bool cutter_enabled();
 
 // Beware: enum values intentionally chosen to match the 8bit FW to save code size
-enum SoundType {
+enum SoundType : uint8_t {
     Prompt = 2,
     Confirm = 3
 };

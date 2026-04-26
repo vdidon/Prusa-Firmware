@@ -34,7 +34,7 @@ extern uint8_t menu_depth;
 
 //! definition of reasons blocking the main menu
 //! Use them as bit mask, so that the code may set various errors at the same time
-enum ESeriousErrors {
+enum ESeriousErrors : uint8_t {
 	MENU_BLOCK_NONE                   = 0,
 	MENU_BLOCK_THERMAL_ERROR          = 0x01,
 #ifdef THERMAL_MODEL

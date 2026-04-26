@@ -4,7 +4,7 @@
 
 #include <inttypes.h>
 
-enum Backlight_Mode
+enum Backlight_Mode : uint8_t
 {
 	BACKLIGHT_MODE_DIM     = 0,
 	BACKLIGHT_MODE_BRIGHT  = 1,

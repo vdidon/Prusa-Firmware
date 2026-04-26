@@ -33,7 +33,7 @@ extern const float bed_skew_angle_mild;
 extern const float bed_skew_angle_extreme;
 
 // Is the world2machine correction activated?
-enum World2MachineCorrectionMode
+enum World2MachineCorrectionMode : uint8_t
 {
 	WORLD2MACHINE_CORRECTION_NONE  = 0,
 	WORLD2MACHINE_CORRECTION_SHIFT = 1,

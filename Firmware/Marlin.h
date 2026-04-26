@@ -177,7 +177,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_e0() /* nothing */
 #endif
 
-enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
+enum AxisEnum : uint8_t {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
 #define X_AXIS_MASK  1
 #define Y_AXIS_MASK  2
 #define Z_AXIS_MASK  4

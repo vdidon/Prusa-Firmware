@@ -62,7 +62,7 @@
 
 // State variables
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-enum MeatPack_ConfigStateFlags {
+enum MeatPack_ConfigStateFlags : uint8_t {
     MPConfig_None = 0,
     MPConfig_Active = (1 << 0),
     MPConfig_NoSpaces = (1 << 1)

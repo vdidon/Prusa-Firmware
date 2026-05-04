@@ -40,7 +40,9 @@ extern char __bss_end;
  */
 int SdFatUtil::FreeRam() {
   char top;
-  return __brkval ? &top - __brkval : &top - &__bss_end;
+  return __brkval
+         ? (int)((uintptr_t)&top - (uintptr_t)__brkval)
+         : (int)((uintptr_t)&top - (uintptr_t)&__bss_end);
 }
 #endif  // __arm
 

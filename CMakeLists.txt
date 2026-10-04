@@ -555,6 +555,9 @@ function(fw_add_variant variant_name)
 
     add_custom_command(
       OUTPUT ${FW_LANG_FINAL}.hex
+      # The versioned names below are hardlinks to this file: rewriting it in place would also
+      # change the hex of every older build that still carries its own version in the name
+      COMMAND ${CMAKE_COMMAND} -E rm -f ${FW_LANG_FINAL}.hex
       COMMAND ${CMAKE_COMMAND} -E cat ${FW_LANG_PATCH}.hex ${LANG_CATHEX} > ${FW_LANG_FINAL}.hex
       COMMAND ${CMAKE_COMMAND} -E create_hardlink ${FW_LANG_FINAL}.hex ${LANG_HEX}
       BYPRODUCTS ${LANG_HEX}

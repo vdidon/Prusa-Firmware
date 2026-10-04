@@ -30,6 +30,18 @@ bool cmdqueue_serial_disabled = false;
 
 int serial_count = 0;  //index of character read from serial line
 bool comment_mode = false;
+// Serial line state reset together with comment_mode at each end of line
+static bool serial_overflow = false;   // characters beyond MAX_CMD_SIZE were dropped
+static bool serial_star_seen = false;  // the checksum marker has been stored
+static uint8_t serial_comment_xor = 0; // XOR of the comment characters before the checksum
+
+static void serial_line_reset()
+{
+    comment_mode = false;
+    serial_overflow = false;
+    serial_star_seen = false;
+    serial_comment_xor = 0;
+}
 char *strchr_pointer; // just a pointer to find chars in the command string like X, Y, Z, E, etc
 
 ShortTimer serialTimeoutTimer;
@@ -393,12 +405,10 @@ void get_command()
         // Serial characters with a highest bit set to 1 are generated when the USB cable is unplugged, leading
         // to a hang-up of the print process from an SD card.
         continue;
-    if(serial_char == '\n' ||
-       serial_char == '\r' ||
-       serial_count >= (MAX_CMD_SIZE - 1) )
+    if(serial_char == '\n' || serial_char == '\r')
     {
       if(!serial_count) { //if empty line
-        comment_mode = false; //for new command
+        serial_line_reset(); //for new command
         return;
       }
       cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0; // terminate string
@@ -408,7 +418,21 @@ void get_command()
       // The characters before ';' form the command, the comment itself was not stored.
       // Gating on comment_mode here dropped the whole line (no "ok" -> host stalled) and left
       // comment_mode set, so the next line was swallowed as an empty one.
-      comment_mode = false; //for new command
+      const bool overflow = serial_overflow;
+      const uint8_t comment_xor = serial_comment_xor;
+      serial_line_reset(); //for new command
+      if (overflow) {
+          // Never execute a cut line: its end used to be parsed as a new command, and a cut
+          // number (Z15 -> Z1) is worse than a missing command.
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLNRPGM(PSTR("Line too long, skipped"));
+          if (*cmd_head == 'N')
+              FlushSerialRequestResend();
+          else
+              SERIAL_PROTOCOLLNRPGM(MSG_OK);
+          serial_count = 0;
+          return;
+      }
       {
 		  long gcode_N = -1; // seen line number
 
@@ -433,7 +457,7 @@ void get_command()
 
 			  if ((strchr_pointer = strchr(cmd_start, '*')))
 			  {
-				  byte checksum = 0;
+				  byte checksum = comment_xor;
 				  char *p = cmd_head;
 				  while (p != strchr_pointer)
 					  checksum = checksum^(*p++);
@@ -548,7 +572,21 @@ void get_command()
     else {
       // Not an "end of line" symbol. Store the new character into a buffer.
       if(serial_char == ';') comment_mode = true;
-      if(!comment_mode) cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
+      if (comment_mode) {
+          // Checksum after a comment ("N5 G1 X5 ;c*47"): the host computed it over the comment
+          // too. Resume storing at '*' and fold the skipped characters into the check.
+          if (serial_char == '*' && !serial_star_seen && cmdbuffer[bufindw+CMDHDRSIZE] == 'N')
+              comment_mode = false;
+          else if (!serial_star_seen)
+              serial_comment_xor ^= serial_char;
+      }
+      if (!comment_mode) {
+          if (serial_char == '*') serial_star_seen = true;
+          if (serial_count < (MAX_CMD_SIZE - 1))
+              cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
+          else
+              serial_overflow = true;
+      }
     }
     #ifdef ENABLE_MEATPACK
      }
@@ -556,7 +594,7 @@ void get_command()
   } // end of serial line processing loop
 
     if (serial_count > 0 && serialTimeoutTimer.expired(farm_mode ? 800 : 2000)) {
-        comment_mode = false;
+        serial_line_reset();
         serial_count = 0;
         SERIAL_ECHOLNPGM("RX timeout");
         return;
@@ -584,7 +622,7 @@ void get_command()
   } sd_count;
   sd_count.value = 0;
   // The SD reader only filters whole comment lines: trailing comments are stripped here, and
-  // characters beyond MAX_CMD_SIZE are dropped instead of being parsed as a new command.
+  // a line longer than MAX_CMD_SIZE is skipped instead of being parsed as two commands.
   // Lines are always read to their end, so these flags never outlive the current line.
   bool sd_comment = false;
   bool sd_overflow = false;
@@ -609,6 +647,16 @@ void get_command()
         // to the following non-empty line.
         return; // prevent cycling indefinitely - let manage_heaters do their job
       }
+      if (sd_overflow) {
+          // Never execute a cut line: a cut number (Z15 -> Z1) is worse than a missing command.
+          // Like for an empty line, its bytes are counted with the next command.
+          cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0;
+          SERIAL_ECHO_START;
+          SERIAL_ECHORPGM(PSTR("Line too long, skipped: "));
+          SERIAL_ECHOLN(cmdbuffer+bufindw+CMDHDRSIZE);
+          serial_count = 0;
+          return;
+      }
       // The new command buffer could be updated non-atomically, because it is not yet considered
       // to be inside the active queue.
       sd_count.value = card.get_sdpos() - sdpos_atomic;
@@ -616,11 +664,6 @@ void get_command()
       cmdbuffer[bufindw+1] = sd_count.lohi.lo;
       cmdbuffer[bufindw+2] = sd_count.lohi.hi;
       cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0; //terminate string
-      if (sd_overflow) {
-          SERIAL_ECHO_START;
-          SERIAL_ECHORPGM(PSTR("Line too long, truncated: "));
-          SERIAL_ECHOLN(cmdbuffer+bufindw+CMDHDRSIZE);
-      }
       // Calculate the length before disabling the interrupts.
       uint8_t len = strlen(cmdbuffer+bufindw+CMDHDRSIZE) + (1 + CMDHDRSIZE);
 

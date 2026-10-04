@@ -206,8 +206,7 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
   // estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration)
   // (target_rate*target_rate-initial_rate*initial_rate)/(2.0*acceleration));
   uint32_t initial_rate_sqr  = initial_rate*initial_rate;
-  // Note: nominal_rate is capped by MAXIMUM_FEEDRATE, so nominal_rate < 65535 (sqrt(UINT32_MAX)).
-  // Typical values are 1000-40000 steps/s, so nominal_rate_sqr fits comfortably in uint32_t.
+  // nominal_rate is capped at MAX_STEP_FREQUENCY in plan_buffer_line(), so its square fits an uint32_t
   uint32_t nominal_rate_sqr  = block->nominal_rate*block->nominal_rate;
   uint32_t final_rate_sqr    = final_rate*final_rate;
   uint32_t acceleration_x2   = acceleration << 1;
@@ -881,8 +880,8 @@ Having the real displacement of the head, we can calculate the total movement le
 
   // slow down when de buffer starts to empty, rather than wait at the corner for a buffer refill
 #ifdef SLOWDOWN
-  // Check moves_queued > 1 (not >=1) because the block at block_buffer_tail is currently
-  // being executed by the stepper ISR and must not be modified.
+  //FIXME Vojtech: Why moves_queued > 1? Why not >=1?
+  // Can we somehow differentiate the filling of the buffer at the start of a g-code from a buffer draining situation?
   if (moves_queued > 1 && moves_queued < (BLOCK_BUFFER_SIZE >> 1)) {
       // segment time in micro seconds
       unsigned long segment_time = lround(1000000.0/inverse_second);
@@ -916,6 +915,14 @@ Having the real displacement of the head, we can calculate the total movement le
     }
     block->nominal_speed *= speed_factor;
     block->nominal_rate *= speed_factor;
+  }
+
+  // The stepper never runs faster (calc_timer() clamps the rate), and nominal_rate^2 must fit an
+  // uint32_t in calculate_trapezoid_for_block(): E at 560 steps/mm x 120 mm/s = 67200 steps/s
+  // overflowed it. Not reached with the stock settings.
+  if (block->nominal_rate > MAX_STEP_FREQUENCY) {
+    block->nominal_speed *= (float)MAX_STEP_FREQUENCY / block->nominal_rate;
+    block->nominal_rate = MAX_STEP_FREQUENCY;
   }
 
 #ifdef LIN_ADVANCE
@@ -1035,8 +1042,9 @@ Having the real displacement of the head, we can calculate the total movement le
   // Initial limit on the segment entry velocity.
   float vmax_junction;
 
-  // Check moves_queued > 1 because we must not modify junction parameters of the block
-  // at block_buffer_tail, which is currently being executed by the stepper ISR.
+  //FIXME Vojtech: Why only if at least two lines are planned in the queue?
+  // Is it because we don't want to tinker with the first buffer line, which
+  // is likely to be executed by the stepper interrupt routine soon?
   if (moves_queued > 1 && previous_nominal_speed > 0.0001f) {
       // Estimate a maximum velocity allowed at a joint of two successive segments.
       // If this maximum velocity allowed is lower than the minimum of the entry / exit safe velocities,

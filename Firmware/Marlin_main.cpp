@@ -8599,29 +8599,49 @@ void process_commands()
         printf_P(MSG_UNKNOWN_CODE, 'D', cmdbuffer + bufindr + CMDHDRSIZE);
 	}
   }
-  else if (code_seen('P')) {
+  else if (*CMDBUFFER_CURRENT_STRING == 'P') // P codes (fork)
+  {
+    strchr_pointer = CMDBUFFER_CURRENT_STRING;
     pcode_in_progress = code_value_short();
-    char* msg;
+    // Parameters are looked up after the code: code_seen() searches from the start of the line
+    // and would find the 'P' of the command itself (P300 P1000 -> duration 300).
+    char *params = CMDBUFFER_CURRENT_STRING + 1;
+    while (*params >= '0' && *params <= '9') ++params;
     switch (pcode_in_progress) {
-      case 117: //full screen multi-line message and wait
-        msg = strchr_pointer+5;
+      case 117: //full screen multi-line message ("\n" = new line, 4 x 20 characters) and wait for a click
+      {
+        const char *msg = params;
+        if (*msg == ' ') ++msg;
+        LcdUpdateDisabler lcdUpdateDisabler;
         lcd_clear();
-        for (int i = 0; msg[i]!='\x00'; ++i) {
-          if (msg[i] == '\\' && msg[i+1] == 'n') {
-            lcd_putc('\n');
-            ++i;
-          } else {
-            lcd_putc(msg[i]);
+        uint8_t row = 0, col = 0;
+        for (; *msg && row < LCD_HEIGHT; ++msg) {
+          if (msg[0] == '\\' && msg[1] == 'n') {
+            ++msg;
+            col = 0;
+            if (++row < LCD_HEIGHT) lcd_set_cursor(0, row);
+          } else if (col < LCD_WIDTH) { // longer lines would continue on another row
+            lcd_putc(*msg);
+            ++col;
           }
         }
         lcd_wait_for_click();
-        break;
-      case 300: //beep with criticality parameter
-        uint16_t beepS = code_seen('S') ? code_value_short() : 110; //beep speed
-        uint16_t beepP = code_seen('P') ? code_value_short() : 1000; //beep pitch
-        bool beepC = code_seen('C'); //beep criticality
+      }
+      break;
+      case 300: //beep: S frequency [Hz] (110), P duration [ms] (1000, max 3500), C critical (sounds even when muted)
+      {
+        uint16_t beepS = code_seen('S') ? code_value_short() : 110;
+        uint16_t beepP = 1000;
+        if ((strchr_pointer = strchr(params, 'P'))) {
+            beepP = code_value_short();
+            if (beepP > 3500) beepP = 3500;
+        }
+        bool beepC = code_seen('C');
         Sound_MakeCustom(beepP, beepS, beepC);
-        break;
+      }
+      break;
+      default:
+        printf_P(MSG_UNKNOWN_CODE, 'P', CMDBUFFER_CURRENT_STRING);
     }
     pcode_in_progress = 0;
   }

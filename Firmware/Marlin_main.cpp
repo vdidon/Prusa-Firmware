@@ -7150,8 +7150,9 @@ void process_commands()
         SERIAL_ECHOLN(pause_position[Z_AXIS]);
 */
         // Nothing to pause outside of a print: a host pause racing the end of an SD print used to
-        // retract, park and leave a "Print saved" state until M603
-        if (!printingIsPaused() && printJobOngoing()) {
+        // retract, park and leave a "Print saved" state until M603. M25 is the SD pause: the USB
+        // timer, also started by manual moves from the host, must not make it pause.
+        if (!printingIsPaused() && (mcode_in_progress == 25 ? IS_SD_PRINTING : printJobOngoing())) {
             st_synchronize();
             ClearToSend(); //send OK even before the command finishes executing because we want to make sure it is not skipped because of cmdqueue_pop_front();
             cmdqueue_pop_front(); //trick because we want skip this command (M601) after restore

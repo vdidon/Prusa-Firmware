@@ -338,11 +338,14 @@ if(CMAKE_CROSSCOMPILING)
   add_link_options(-ffunction-sections -fdata-sections -Wl,--gc-sections)
 
   # LTO (with custom options)
-  # -flto-partition=none: single LTO partition for maximum inlining opportunities
-  # -fipa-icf: Identical Code Folding for functions + variables
-  # -fmerge-all-constants: aggressive constant pool deduplication
-  add_compile_options(-flto -fno-fat-lto-objects -flto-partition=none -fipa-icf -fmerge-all-constants)
-  add_link_options(-flto -flto-partition=none -fipa-icf -fmerge-all-constants)
+  # -flto-partition=none: single LTO partition for maximum inlining opportunities (link time only)
+  # -fmerge-all-constants: aggressive constant pool deduplication (-264 B on MK3S). Not standard
+  #   conforming: distinct const objects with the same content may share one address, so never
+  #   test the identity of a constant by its address (first_lay_cal.cpp compares with MSG_M702,
+  #   which only matches the same text and is therefore safe).
+  # (-fipa-icf is already enabled by -Os)
+  add_compile_options(-flto -fno-fat-lto-objects -flto-partition=none -fmerge-all-constants)
+  add_link_options(-flto -flto-partition=none -fmerge-all-constants)
 
   # Linker relaxation: call/jmp -> rcall/rjmp when the target is within +-4KB and removal of
   # unneeded gs() trampolines (also required by GCC for correct stubs on >128KB devices)

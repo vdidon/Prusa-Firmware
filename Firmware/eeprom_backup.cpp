@@ -195,18 +195,29 @@ static EepromBackupResult restore_from_file(const char *name, bool validate_vers
         }
     }
 
+    bool created = false;
     if (snapshot && !card.fileExistsBinary(EEPROM_BACKUP_TEMP_FILENAME)) {
         result = write_backup_file(EEPROM_BACKUP_TEMP_FILENAME);
         if (result != EEPROM_BACKUP_OK) return result;
+        created = true;
     }
 
-    if (!card.openFileReadBinary(name)) return EEPROM_BACKUP_ERR_FILE_OPEN;
-    if (card.readFile(&header, sizeof(header)) != sizeof(header)) {
-        result = EEPROM_BACKUP_ERR_FILE_READ;
+    bool written = false;
+    if (!card.openFileReadBinary(name)) {
+        result = EEPROM_BACKUP_ERR_FILE_OPEN;
     } else {
-        result = read_sd_to_eeprom(header.crc32);
+        if (card.readFile(&header, sizeof(header)) != sizeof(header)) {
+            result = EEPROM_BACKUP_ERR_FILE_READ;
+        } else {
+            written = true;
+            result = read_sd_to_eeprom(header.crc32);
+        }
+        card.closefile();
     }
-    card.closefile();
+    if (created && !written) {
+        // EEPROM untouched: a kept snapshot would be mistaken for an interrupted restore later
+        card.removeFileBinary(EEPROM_BACKUP_TEMP_FILENAME);
+    }
 
     if (result == EEPROM_BACKUP_OK) {
         // Clear Power Panic recovery flags to prevent false recovery attempts after reboot

@@ -41,6 +41,7 @@ public:
   bool closeFileBinary();
   bool fileExistsBinary(const char* name);
   bool moveFileBinary(const char* from, const char* to);
+  bool removeFileBinary(const char* name);
   void openLogFile(const char* name);
   void removeFile(const char* name);
   void closefile(bool store_location=false);

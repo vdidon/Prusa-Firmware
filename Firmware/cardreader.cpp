@@ -542,6 +542,13 @@ bool CardReader::fileExistsBinary(const char* name)
     return true;
 }
 
+bool CardReader::removeFileBinary(const char* name)
+{
+    if (!mounted) return false;
+    if (file.isOpen()) file.close();
+    return SdBaseFile::remove(&root, name);
+}
+
 // Copy then delete instead of SdBaseFile::rename(): rename() costs ~1.2 KB of flash, this reuses
 // the read/write/remove code already linked.
 bool CardReader::moveFileBinary(const char* from, const char* to)

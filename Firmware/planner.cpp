@@ -590,8 +590,6 @@ static inline void planner_update_queue_min_counter()
 }
 #endif /* PLANNER_DIAGNOSTICS */
 
-extern volatile uint32_t step_events_completed; // The number of step events executed in the current block
-
 void planner_reset_position()
 {
     // First update the planner's current position in the physical motor steps.
@@ -609,33 +607,9 @@ void planner_reset_position()
     // Apply the mesh bed leveling correction to the Z axis.
 #ifdef MESH_BED_LEVELING
     if (mbl.active) {
-#if 1
         // Undo the bed level correction so the current Z position is reversible wrt. the machine coordinates.
         // This does not necessary mean that the Z position will be the same as linearly interpolated from the source G-code line.
         current_position[Z_AXIS] -= mbl.get_z(current_position[X_AXIS], current_position[Y_AXIS]);
-#else
-        // Undo the bed level correction so that the current Z position is the same as linearly interpolated from the source G-code line.
-        if (!current_block || (current_block->steps_x == 0 && current_block->steps_y == 0))
-            current_position[Z_AXIS] -= mbl.get_z(current_position[X_AXIS], current_position[Y_AXIS]);
-        else {
-            float t = float(step_events_completed) / float(current_block->step_event_count);
-            float vec[3] = {
-              current_block->steps_x / cs.axis_steps_per_mm[X_AXIS],
-              current_block->steps_y / cs.axis_steps_per_mm[Y_AXIS],
-              current_block->steps_z / cs.axis_steps_per_mm[Z_AXIS]
-            };
-            float pos1[3], pos2[3];
-            for (int8_t i = 0; i < 3; ++ i) {
-              if (current_block->direction_bits & (1<<i))
-                vec[i] = - vec[i];
-              pos1[i] = current_position[i] - vec[i] * t;
-              pos2[i] = current_position[i] + vec[i] * (1.f - t);
-            }
-            pos1[Z_AXIS] -= mbl.get_z(pos1[X_AXIS], pos1[Y_AXIS]);
-            pos2[Z_AXIS] -= mbl.get_z(pos2[X_AXIS], pos2[Y_AXIS]);
-            current_position[Z_AXIS] = pos1[Z_AXIS] * t + pos2[Z_AXIS] * (1.f - t);
-        }
-#endif
     }
 #endif
 

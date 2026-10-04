@@ -44,3 +44,6 @@ vscode-portable*
 .clang-tidy-build/
 
 .cppcheck-build/
+
+# local working notes, test files and reports (not versioned)
+/_workspace/

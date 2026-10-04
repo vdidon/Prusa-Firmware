@@ -760,7 +760,7 @@ FORCE_INLINE void stepper_tick_highres()
 FORCE_INLINE uint16_t fastdiv(uint16_t q, uint8_t d)
 {
     if(d != 3) return q >> (d / 2);
-    else return ((uint32_t)0xAAAB * q) >> 17;
+    else return (uint16_t)(((uint32_t)0xAAAB * q) >> 16) >> 1; // avoid a 17-step 32-bit shift loop
 }
 
 FORCE_INLINE void advance_spread(uint16_t timer)
@@ -989,16 +989,19 @@ FORCE_INLINE void advance_isr() {
 }
 
 FORCE_INLINE void advance_isr_scheduler() {
+    // OCR1A is only written at the end of this function: read the 16-bit register once
+    const uint16_t ocr1a = OCR1A;
+
     // Integrate the final timer value, accounting for scheduling adjustments
     if(nextAdvanceISR && nextAdvanceISR != ADV_NEVER)
     {
-        if(nextAdvanceISR > OCR1A)
-            nextAdvanceISR -= OCR1A;
+        if(nextAdvanceISR > ocr1a)
+            nextAdvanceISR -= ocr1a;
         else
             nextAdvanceISR = 0;
     }
-    if(nextMainISR > OCR1A)
-        nextMainISR -= OCR1A;
+    if(nextMainISR > ocr1a)
+        nextMainISR -= ocr1a;
     else
         nextMainISR = 0;
 

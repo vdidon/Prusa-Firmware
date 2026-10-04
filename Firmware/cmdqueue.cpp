@@ -405,7 +405,11 @@ void get_command()
       char* cmd_head = cmdbuffer+bufindw+CMDHDRSIZE; // current command pointer
       char* cmd_start = cmd_head; // pointer past the line number (if any)
 
-      if(!comment_mode){
+      // The characters before ';' form the command, the comment itself was not stored.
+      // Gating on comment_mode here dropped the whole line (no "ok" -> host stalled) and left
+      // comment_mode set, so the next line was swallowed as an empty one.
+      comment_mode = false; //for new command
+      {
 		  long gcode_N = -1; // seen line number
 
 		  // Line numbers must be first in buffer
@@ -579,14 +583,18 @@ void get_command()
     uint16_t value;
   } sd_count;
   sd_count.value = 0;
+  // The SD reader only filters whole comment lines: trailing comments are stripped here, and
+  // characters beyond MAX_CMD_SIZE are dropped instead of being parsed as a new command.
+  // Lines are always read to their end, so these flags never outlive the current line.
+  bool sd_comment = false;
+  bool sd_overflow = false;
   // Reads whole lines from the SD card. Never leaves a half-filled line in the cmdbuffer.
   while( !card.eof() && !stop_buffering) {
     int16_t n=card.getFilteredGcodeChar();
     char serial_char = (char)n;
     if( serial_char == '\n'
      || serial_char == '\r'
-     || serial_char == '#'
-     || serial_count >= (MAX_CMD_SIZE - 1)
+     || (serial_char == '#' && !sd_comment)
      || n==-1
     ){
       if(serial_char=='#')
@@ -608,6 +616,11 @@ void get_command()
       cmdbuffer[bufindw+1] = sd_count.lohi.lo;
       cmdbuffer[bufindw+2] = sd_count.lohi.hi;
       cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0; //terminate string
+      if (sd_overflow) {
+          SERIAL_ECHO_START;
+          SERIAL_ECHORPGM(PSTR("Line too long, truncated: "));
+          SERIAL_ECHOLN(cmdbuffer+bufindw+CMDHDRSIZE);
+      }
       // Calculate the length before disabling the interrupts.
       uint8_t len = strlen(cmdbuffer+bufindw+CMDHDRSIZE) + (1 + CMDHDRSIZE);
 
@@ -633,7 +646,8 @@ void get_command()
           bufindw = 0;
       sei();
 
-      comment_mode = false; //for new command
+      sd_comment = false; //for new command
+      sd_overflow = false;
       serial_count = 0; //clear buffer
 
       if(card.eof()) break;
@@ -644,8 +658,13 @@ void get_command()
     }
     else
     {
-        // there are no comments coming from the filtered file
-        cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
+        if (serial_char == ';') sd_comment = true;
+        if (!sd_comment) {
+            if (serial_count < (MAX_CMD_SIZE - 1))
+                cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
+            else
+                sd_overflow = true;
+        }
     }
   }
   if(card.eof())

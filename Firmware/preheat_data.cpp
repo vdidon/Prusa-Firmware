@@ -32,7 +32,7 @@ const uint16_t preheat_bed_temps[(uint8_t)MaterialIndex::_count] PROGMEM = {
 
 #elif defined(PRINTER_VARIANT_MK25S) || defined(PRINTER_VARIANT_MK25)
 
-// MK2.5 variants use same temperatures for now
+// MK2.5 variants use same temperatures for now, except MK25_OVERRIDES
 // (structure ready for future divergence)
 const uint16_t preheat_hotend_temps[(uint8_t)MaterialIndex::_count][(uint8_t)NozzleCategory::_count] PROGMEM = {
     // {Default, 0.6mm, 0.8mm}
@@ -54,7 +54,7 @@ const uint16_t preheat_hotend_temps[(uint8_t)MaterialIndex::_count][(uint8_t)Noz
 };
 
 const uint16_t preheat_bed_temps[(uint8_t)MaterialIndex::_count] PROGMEM = {
-     60,  85, 105, 110,  75,  90, 100, 100, 100,  50,  60,  60,  60,   0,   0
+     60,  85, 105, 105,  75,  90, 100, 100, 100,  50,  60,  60,  60,   0,   0
 };
 
 #else

@@ -372,7 +372,9 @@ FORCE_INLINE void stepper_next_block()
     if (current_block->use_advance_lead) {
         target_adv_steps = current_block->max_adv_steps;
     }
-    e_steps = 0;
+    // Do not clear e_steps: steps still pending from the previous block (typically the end of
+    // a decompression, already subtracted from current_adv_steps) must still be issued, else the
+    // extruder ends up ahead of its position. LA_phase = -1 lets them tick freely.
     nextAdvanceISR = ADV_NEVER;
     LA_phase = -1;
 #endif
@@ -443,7 +445,8 @@ FORCE_INLINE void stepper_next_block()
 #ifdef LIN_ADVANCE
       // reset LA state when there's no block
       nextAdvanceISR = ADV_NEVER;
-      e_steps = 0;
+      // pending e_steps are flushed by the scheduler, without phase restriction
+      LA_phase = -1;
 
       // incrementally lose pressure to give a chance for
       // a new LA block to be scheduled and recover
@@ -979,8 +982,9 @@ FORCE_INLINE void advance_isr() {
     }
 
     if (current_adv_steps == target_adv_steps) {
-        // advance steps completed
+        // advance steps completed: no more eISR, so the remaining e_steps must not wait for one
         nextAdvanceISR = ADV_NEVER;
+        LA_phase = -1;
     }
     else {
         // schedule another tick
@@ -1325,6 +1329,7 @@ void quickStop()
 #ifdef LIN_ADVANCE
   nextAdvanceISR = ADV_NEVER;
   current_adv_steps = 0;
+  e_steps = 0;
 #endif
   st_reset_timer();
   ENABLE_STEPPER_DRIVER_INTERRUPT();

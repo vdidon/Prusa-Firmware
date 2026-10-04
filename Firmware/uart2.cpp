@@ -21,8 +21,14 @@ static int uart2_putchar(char c, _UNUSED FILE *stream)
 	return 0;
 }
 
+static volatile bool uart2_rx_overflow = false;
+
 static int uart2_getchar(_UNUSED FILE *stream)
 {
+	if (uart2_rx_overflow) { // reported here, outside of the RX ISR
+		uart2_rx_overflow = false;
+		puts_P(PSTR("USART2 rx Full!!!"));
+	}
 	if (rbuf_empty(uart2_ibuf)) return -1;
 	return rbuf_get(uart2_ibuf);
 }
@@ -43,8 +49,8 @@ void uart2_init(uint32_t baudRate)
 ISR(USART2_RX_vect)
 {
 	if (rbuf_put(uart2_ibuf, UDR2) < 0) // put received byte to buffer
-	{ //rx buffer full
-		puts_P(PSTR("USART2 rx Full!!!"));
+	{ //rx buffer full: don't print from the ISR (blocking serial TX with interrupts disabled)
+		uart2_rx_overflow = true;
 	}
 }
 

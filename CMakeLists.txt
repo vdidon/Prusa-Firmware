@@ -344,6 +344,11 @@ if(CMAKE_CROSSCOMPILING)
   add_compile_options(-flto -fno-fat-lto-objects -flto-partition=none -fipa-icf -fmerge-all-constants)
   add_link_options(-flto -flto-partition=none -fipa-icf -fmerge-all-constants)
 
+  # Linker relaxation: call/jmp -> rcall/rjmp when the target is within +-4KB and removal of
+  # unneeded gs() trampolines (also required by GCC for correct stubs on >128KB devices)
+  add_compile_options(-mrelax)
+  add_link_options(-mrelax)
+
   # Create this target before we apply the GC options
   add_library(avr_core STATIC ${AVR_SOURCES})
   set_reproducible_target(avr_core)

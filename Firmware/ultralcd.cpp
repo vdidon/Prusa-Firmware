@@ -256,6 +256,11 @@ static void menu_action_sddirectory(const char* filename);
 
 #if (SDCARDDETECT > 0)
 bool lcd_oldcardstatus;
+// The card detect line only has the internal pull-up and runs through the LCD cable: glitches
+// during fast moves released the card immediately and aborted the SD print. A new state is
+// only accepted once it has been seen continuously for this long.
+static constexpr uint16_t SD_DETECT_DEBOUNCE_MS = 250;
+static ShortTimer sd_detect_timer;
 #endif
 
 uint8_t selected_sheet = 0;
@@ -7529,7 +7534,11 @@ static inline bool other_menu_expired()
 void menu_lcd_lcdupdate_func(void)
 {
 #if (SDCARDDETECT > 0)
-	if ((IS_SD_INSERTED != lcd_oldcardstatus))
+	if (IS_SD_INSERTED == lcd_oldcardstatus)
+		sd_detect_timer.stop(); // back to the known state: it was a glitch
+	else if (!sd_detect_timer.running())
+		sd_detect_timer.start();
+	else if (sd_detect_timer.expired(SD_DETECT_DEBOUNCE_MS))
 	{
 		if(menu_menu == lcd_sdcard_menu) {
 			// If the user is either inside the submenus
@@ -7548,7 +7557,7 @@ void menu_lcd_lcdupdate_func(void)
 			menu_back();
 		}
 		lcd_draw_update = 2;
-		lcd_oldcardstatus = IS_SD_INSERTED;
+		lcd_oldcardstatus = !lcd_oldcardstatus; // debounced change, do not sample the pin again
 		lcd_refresh(); // to maybe revive the LCD if static electricity killed it.
 		backlight_wake();
 		if (lcd_oldcardstatus)

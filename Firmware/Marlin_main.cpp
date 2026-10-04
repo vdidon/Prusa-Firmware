@@ -7146,7 +7146,9 @@ void process_commands()
         SERIAL_ECHOPGM("Z:");
         SERIAL_ECHOLN(pause_position[Z_AXIS]);
 */
-        if (!printingIsPaused()) {
+        // Nothing to pause outside of a print: a host pause racing the end of an SD print used to
+        // retract, park and leave a "Print saved" state until M603
+        if (!printingIsPaused() && printJobOngoing()) {
             st_synchronize();
             ClearToSend(); //send OK even before the command finishes executing because we want to make sure it is not skipped because of cmdqueue_pop_front();
             cmdqueue_pop_front(); //trick because we want skip this command (M601) after restore

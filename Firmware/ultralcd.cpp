@@ -4562,17 +4562,28 @@ void lcd_hw_setup_menu(void)                      // can not be "static"
 
     MENU_END();
 }
+static void lcd_gcode_clean_extrude()
+{
+    // E may be in absolute mode with any position (e.g. +100 after a filament load from the menu):
+    // "G1 E5" alone would then retract ~95 mm instead of extruding 5 mm
+    enquecommand_P(PSTR("G92 E0"));
+    enquecommand_P(PSTR("G1 E5 F150"));
+}
+
 static void lcd_gcode_menu()
 {
     MENU_BEGIN();
     MENU_ITEM_BACK_P(_T(MSG_MAIN));
     if (!printJobOngoing()) {
        MENU_ITEM_GCODE_P(_N("Fast home"), PSTR("G28 W"));
-       MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150"));
-       MENU_ITEM_GCODE_P(_N("Clean extrude"), PSTR("G1 E5"));
-       MENU_ITEM_GCODE_P(_N("Change nozzle"), PSTR("G1 X125 Z190"));
-       MENU_ITEM_GCODE_P(_N("Bed front"), PSTR("G1 Y0"));
-       MENU_ITEM_GCODE_P(_N("Bed back"), PSTR("G1 Y200"));
+       // G0/G1 do not check the homing state: without it, these moves can hit the frame
+       if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS] && axis_known_position[Z_AXIS]) {
+           MENU_ITEM_GCODE_P(_N("Change filament"), PSTR("G1 X125 Z150 F6000"));
+           MENU_ITEM_GCODE_P(_N("Change nozzle"), PSTR("G1 X125 Z190 F6000"));
+           MENU_ITEM_GCODE_P(_N("Bed front"), PSTR("G1 Y0 F6000"));
+           MENU_ITEM_GCODE_P(_N("Bed back"), PSTR("G1 Y200 F6000"));
+       }
+       MENU_ITEM_FUNCTION_P(_N("Clean extrude"), lcd_gcode_clean_extrude);
     }
     MENU_END();
 }

@@ -89,7 +89,8 @@ void mesh_bed_leveling::upsample_3x3()
 
 void mesh_bed_leveling::print() {
     SERIAL_PROTOCOLLNPGM("Num X,Y: " STRINGIFY(MESH_NUM_X_POINTS) "," STRINGIFY(MESH_NUM_Y_POINTS));
-    SERIAL_PROTOCOLLNPGM("Z search height: " STRINGIFY(MESH_HOME_Z_SEARCH));
+    SERIAL_PROTOCOLPGM("Z search height: "); // STRINGIFY() printed the "f" suffix: "5.0f"
+    SERIAL_PROTOCOLLN(MESH_HOME_Z_SEARCH);
     SERIAL_PROTOCOLLNPGM("Measured points:");
     for (uint8_t y = MESH_NUM_Y_POINTS; y-- > 0;) {
         for (uint8_t x = 0; x < MESH_NUM_X_POINTS; x++) {

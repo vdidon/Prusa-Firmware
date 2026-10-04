@@ -1889,27 +1889,30 @@ static void clean_up_after_endstop_move(int original_feedmultiply) {
     *  K<factor>                  Set advance K factor
     */
 inline void gcode_M900() {
-    float newK = code_seen('K') ? code_value() : -2;
+    // M900 without K only reports the current value (it used to print "K out of allowed range!")
+    if (code_seen('K')) {
+        float newK = code_value();
 #ifdef LA_NOCOMPAT
-    if (newK >= 0 && newK < LA_K_MAX)
-        extruder_advance_K = newK;
-    else
-        SERIAL_ECHOLNPGM("K out of allowed range!");
-#else
-    if (newK == 0)
-    {
-        extruder_advance_K = 0;
-        la10c_reset();
-    }
-    else
-    {
-        newK = la10c_value(newK);
-        if (newK < 0)
-            SERIAL_ECHOLNPGM("K out of allowed range!");
-        else
+        if (newK >= 0 && newK < LA_K_MAX)
             extruder_advance_K = newK;
-    }
+        else
+            SERIAL_ECHOLNPGM("K out of allowed range!");
+#else
+        if (newK == 0)
+        {
+            extruder_advance_K = 0;
+            la10c_reset();
+        }
+        else
+        {
+            newK = la10c_value(newK);
+            if (newK < 0)
+                SERIAL_ECHOLNPGM("K out of allowed range!");
+            else
+                extruder_advance_K = newK;
+        }
 #endif
+    }
 
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM("Advance K=");

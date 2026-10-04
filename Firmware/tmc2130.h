@@ -27,7 +27,9 @@ extern const char eMotorCurrentScalingEnabled[];
 #define TMC2130_WAVE_FAC1000_STP   1
 
 #define TMC2130_MINIMUM_PULSE 0   // minimum pulse width in uS
-#define TMC2130_SET_DIR_DELAY 20  // minimum delay after setting direction in uS
+// TMC2130 datasheet V1.12 (sec. 16.1): DIR to STEP setup time tDSU = 20 ns min. Worst case with
+// input filtering and the internal clock is ~220 ns, so 1 us still leaves a ~4x margin.
+#define TMC2130_SET_DIR_DELAY 1   // minimum delay after setting direction in uS
 #define TMC2130_SET_PWR_DELAY 0   // minimum delay after changing pwr mode in uS
 
 #ifdef TMC2130_DEDGE_STEPPING

@@ -167,6 +167,15 @@ uint8_t lang_get_header(uint8_t lang, lang_table_header_t* header, uint32_t* off
 	return 0;
 }
 
+#ifdef XFLASH
+uint8_t lang_is_compatible(uint8_t lang)
+{
+	lang_table_header_t header;
+	if (!lang_get_header(lang, &header, 0)) return 0;
+	return header.signature == pgm_read_dword(((uint32_t*)(_PRI_LANG_SIGNATURE)));
+}
+#endif //XFLASH
+
 uint16_t lang_get_code(uint8_t lang)
 {
 	if (lang == LANG_ID_PRI) return LANG_CODE_EN; //primary lang = EN

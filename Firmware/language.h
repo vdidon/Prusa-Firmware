@@ -152,6 +152,11 @@ extern uint8_t lang_check(uint16_t addr);
 extern uint8_t lang_get_count(void);
 /** @brief reads lang table header and offset in xflash or progmem */
 extern uint8_t lang_get_header(uint8_t lang, lang_table_header_t* header, uint32_t* offset);
+#ifdef XFLASH
+/** @brief Check that a language table was built for this firmware (same signature)
+ * @return 1 if it can be copied and selected, 0 for a catalog left by another build */
+extern uint8_t lang_is_compatible(uint8_t lang);
+#endif //XFLASH
 /** @brief reads lang code from xflash or progmem */
 extern uint16_t lang_get_code(uint8_t lang);
 /** @return localized language name (text for menu item) */

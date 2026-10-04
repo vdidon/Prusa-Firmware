@@ -3561,6 +3561,13 @@ static void menu_setlang(uint8_t lang)
 {
 	if (!lang_select(lang))
 	{
+#ifdef XFLASH
+		// A catalog left in the XFLASH by another build (e.g. a single-language hex flashed over a
+		// MULTILANG one) would replace the built-in language, then fail the signature check at boot.
+		if (!lang_is_compatible(lang))
+			lcd_show_fullscreen_message_and_wait_P(PSTR("Language not\navailable in this\nfirmware build."));
+		else
+#endif //XFLASH
 		if (lcd_show_multiscreen_message_yes_no_and_wait_P(_T(MSG_COPY_SEL_LANG), false, LCD_LEFT_BUTTON_CHOICE) == LCD_LEFT_BUTTON_CHOICE)
 			lang_boot_update_start(lang);
 		lcd_update_enable(true);

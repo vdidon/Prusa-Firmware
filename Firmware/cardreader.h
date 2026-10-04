@@ -38,6 +38,9 @@ public:
   void openFileReadFilteredGcode(const char* name, bool replace_current = false);
   bool openFileReadBinary(const char* name);
   bool openFileWriteBinary(const char* name);
+  bool closeFileBinary();
+  bool fileExistsBinary(const char* name);
+  bool moveFileBinary(const char* from, const char* to);
   void openLogFile(const char* name);
   void removeFile(const char* name);
   void closefile(bool store_location=false);

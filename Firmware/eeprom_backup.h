@@ -22,18 +22,21 @@
 // EEPROM size on ATmega2560
 #define EEPROM_SIZE 4096
 
-// Backup file name on SD card
-#define EEPROM_BACKUP_FILENAME "EEPROM.BAK"
-#define EEPROM_BACKUP_TEMP_FILENAME "EEPROM.TMP"
+// Backup files, in the root directory of the SD card
+#define EEPROM_BACKUP_FILENAME "EEPROM.BAK"      // user backup
+#define EEPROM_BACKUP_NEW_FILENAME "EEPROM.NEW"  // backup being written, renamed to .BAK once verified
+#define EEPROM_BACKUP_TEMP_FILENAME "EEPROM.TMP" // EEPROM before a restore, exists while it runs
+#define EEPROM_BACKUP_UNDO_FILENAME "EEPROM.UND" // EEPROM before the last completed restore
 
-// Backup file header structure (32 bytes)
+// Backup file header structure (34 bytes)
 struct EepromBackupHeader {
     uint32_t magic;           // Magic bytes for validation (0xEE50524D)
     uint8_t version;          // Backup format version
     uint8_t fw_version[12];   // Firmware version string (e.g., "3.12.0")
     uint32_t timestamp;       // Backup timestamp (optional, can be 0)
     uint32_t crc32;           // CRC32 of EEPROM data (4096 bytes)
-    uint8_t reserved[9];      // Reserved for future use
+    uint16_t printer_type;    // PRINTER_TYPE of the source printer, 0 in older backups (not checked)
+    uint8_t reserved[7];      // Reserved for future use
 } __attribute__((packed));
 
 // Total backup file size: header + EEPROM data
@@ -50,6 +53,7 @@ enum EepromBackupResult : uint8_t {
     EEPROM_BACKUP_ERR_VERSION_MISMATCH,// Backup version incompatible
     EEPROM_BACKUP_ERR_CRC_MISMATCH,    // CRC validation failed
     EEPROM_BACKUP_ERR_ROLLBACK_FAILED, // Rollback after failed restore
+    EEPROM_BACKUP_ERR_PRINTER_MISMATCH,// Backup made on another printer type
 };
 
 //! @brief Backup EEPROM contents to SD card
@@ -58,11 +62,18 @@ enum EepromBackupResult : uint8_t {
 EepromBackupResult backup_eeprom_to_sd();
 
 //! @brief Restore EEPROM contents from SD card backup
-//! @details Reads /EEPROM.BAK from SD and writes to EEPROM with validation
-//! @note Creates automatic rollback backup before restore
+//! @details Reads /EEPROM.BAK from SD and writes to EEPROM with validation. The serial number and
+//! the firmware crash flag are never restored. A backup from another printer type is refused.
+//! @note Saves the current EEPROM first (EEPROM.TMP, then EEPROM.UND once completed)
 //! @param validate_version If true, reject backups from different firmware versions
 //! @return EepromBackupResult status code
 EepromBackupResult restore_eeprom_from_sd(bool validate_version = false);
+
+//! @brief Undo the last restore
+//! @details Writes back the EEPROM saved before the last restore (EEPROM.TMP if that restore was
+//! interrupted, EEPROM.UND otherwise)
+//! @return EepromBackupResult status code
+EepromBackupResult undo_eeprom_restore();
 
 //! @brief Verify integrity of EEPROM backup file on SD
 //! @details Checks magic bytes, version, and CRC32 without modifying EEPROM

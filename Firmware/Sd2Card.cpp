@@ -441,6 +441,9 @@ bool Sd2Card::readData(uint8_t *dst) {
 }
 
 #ifdef SD_CHECK_AND_RETRY
+#ifdef SOFTWARE_SPI
+#error "spiReadCrc() drives the hardware SPI registers: port it before using SOFTWARE_SPI with SD_CHECK_AND_RETRY"
+#endif
 /** CRC16-CCITT (poly 0x1021, init 0, as mandated by the SD spec) update for one byte.
  *  Table-less form: x = (crc >> 8) ^ d; x ^= x >> 4; crc = (crc << 8) ^ (x << 12) ^ (x << 5) ^ x
  *  The shifts are done with the hardware multiplier (x * 16, x * 32). */

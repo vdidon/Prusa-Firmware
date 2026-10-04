@@ -2096,14 +2096,40 @@ static void lcd_cooldown_menu()
         MENU_ITEM_BACK_P(_T(MSG_BACK));
     MENU_END();
 }
+// Preheat menu entries, in MaterialIndex order
+struct PreheatMenuItem {
+    char name[6];
+    menu_func_t func;
+};
+static const PreheatMenuItem preheat_menu_items[] PROGMEM = {
+    {"PLA", mFilamentItem_PLA},
+    {"PETG", mFilamentItem_PETG},
+    {"ASA", mFilamentItem_ASA},
+    {"PC", mFilamentItem_PC},
+    {"PVB", mFilamentItem_PVB},
+    {"PA", mFilamentItem_PA},
+    {"ABS", mFilamentItem_ABS},
+    {"HIPS", mFilamentItem_HIPS},
+    {"PP", mFilamentItem_PP},
+    {"FLEX", mFilamentItem_FLEX},
+    {"VEGET", mFilamentItem_VEGETAL},
+    {"PEARL", mFilamentItem_PLAPERL},
+    {"BOIS", mFilamentItem_PLABOIS},
+    {"CLN1", mFilamentItem_CLEAN1},
+    {"CLN2", mFilamentItem_CLEAN2},
+};
+static_assert(sizeof(preheat_menu_items) / sizeof(preheat_menu_items[0]) == MATERIAL_COUNT, "one preheat menu entry per MaterialIndex");
+
 static char preheat_line[LCD_WIDTH + 1];
 
-static void format_preheat_line(const char* name, MaterialIndex mat, bool nozzle_only) {
-    uint16_t hotend = get_preheat_hotend_temp(mat);
+static void format_preheat_line(uint8_t mat, bool nozzle_only) {
+    char name[sizeof(preheat_menu_items[0].name)];
+    strcpy_P(name, preheat_menu_items[mat].name);
+    uint16_t hotend = get_preheat_hotend_temp((MaterialIndex)mat);
     if (nozzle_only) {
         sprintf_P(preheat_line, PSTR("%-6s- %3u"), name, hotend);
     } else {
-        uint16_t bed = get_preheat_bed_temp(mat);
+        uint16_t bed = get_preheat_bed_temp((MaterialIndex)mat);
         sprintf_P(preheat_line, PSTR("%-6s- %3u/%u"), name, hotend, bed);
     }
 }
@@ -2118,7 +2144,9 @@ void lcd_generic_preheat_menu()
         );
         MENU_ITEM_BACK_P(_T(eFilamentAction == FilamentAction::Lay1Cal ? MSG_BACK : MSG_MAIN));
     }
-    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && (target_temperature[0]!=0 || target_temperature_bed!=0))
+    // Always shown in the preheat context: an entry depending on the target temperatures would
+    // shift the items below when a target changes while the menu is open (e.g. M104 from the host)
+    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && eFilamentAction == FilamentAction::Preheat)
         MENU_ITEM_SUBMENU_P(_T(MSG_COOLDOWN),lcd_cooldown_menu);
     if (farm_mode)
     {
@@ -2128,36 +2156,15 @@ void lcd_generic_preheat_menu()
     else
     {
         bool bPreheatOnlyNozzle = shouldPreheatOnlyNozzle();
-        format_preheat_line("PLA", MaterialIndex::PLA, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PLA);
-        format_preheat_line("PETG", MaterialIndex::PETG, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PETG);
-        format_preheat_line("ASA", MaterialIndex::ASA, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_ASA);
-        format_preheat_line("PC", MaterialIndex::PC, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PC);
-        format_preheat_line("PVB", MaterialIndex::PVB, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PVB);
-        format_preheat_line("PA", MaterialIndex::PA, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PA);
-        format_preheat_line("ABS", MaterialIndex::ABS, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_ABS);
-        format_preheat_line("HIPS", MaterialIndex::HIPS, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_HIPS);
-        format_preheat_line("PP", MaterialIndex::PP, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PP);
-        format_preheat_line("FLEX", MaterialIndex::FLEX, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_FLEX);
-        format_preheat_line("VEGET", MaterialIndex::VEGETAL, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_VEGETAL);
-        format_preheat_line("PEARL", MaterialIndex::PLAPERL, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PLAPERL);
-        format_preheat_line("BOIS", MaterialIndex::PLABOIS, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_PLABOIS);
-        format_preheat_line("CLN1", MaterialIndex::CLEAN1, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_CLEAN1);
-        format_preheat_line("CLN2", MaterialIndex::CLEAN2, bPreheatOnlyNozzle);
-        MENU_ITEM_SUBMENU(preheat_line, mFilamentItem_CLEAN2);
+        for (uint8_t mat = 0; mat < MATERIAL_COUNT; ++mat) {
+            // Load/unload/first layer calibration below the minimal extrusion temperature (CLN2,
+            // 90 C) would be silently blocked by the cold extrusion prevention
+            if (eFilamentAction != FilamentAction::Preheat && (int)get_preheat_hotend_temp((MaterialIndex)mat) < extrude_min_temp)
+                continue;
+            if (menu_item == menu_line) // only the visible rows need their text
+                format_preheat_line(mat, bPreheatOnlyNozzle);
+            MENU_ITEM_SUBMENU(preheat_line, (menu_func_t)pgm_read_ptr(&preheat_menu_items[mat].func));
+        }
     }
     MENU_END();
 }
@@ -4602,7 +4609,8 @@ static void lcd_settings_menu()
     }
     MENU_ITEM_EDIT_int3_P(_T(MSG_FAN_SPEED), &fanSpeed, 0, 255);
 
-    MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);
+    // babystepping is not allowed while paused: the menu would close at once and store the offset
+    if (!printingIsPaused()) MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);
 
 #ifdef FILAMENT_SENSOR
     MENU_ITEM_SUBMENU_P(_T(MSG_FSENSOR), lcd_fsensor_settings_menu);
@@ -4641,8 +4649,6 @@ static void lcd_settings_menu()
 #ifdef HAS_SECOND_SERIAL_PORT
     MENU_ITEM_TOGGLE_P(_T(MSG_RPI_PORT), (selectedSerialPort == 0) ? _T(MSG_OFF) : _T(MSG_ON), lcd_second_serial_set);
 #endif //HAS_SECOND_SERIAL
-
-    if (!printingIsPaused()) MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);
 
 #if (LANG_MODE != 0)
 	MENU_ITEM_SUBMENU_P(_T(MSG_SELECT_LANGUAGE), lcd_language_menu);
@@ -5766,8 +5772,14 @@ static void lcd_mesh_bed_leveling_settings()
 	sToggle[2] = points_nr + '0';
 	sToggle[3] = 0;
 	MENU_ITEM_TOGGLE(_T(MSG_MESH), sToggle, mbl_mesh_toggle);
-	sToggle[0] = mbl_z_probe_nr + '0';
-	sToggle[1] = 0;
+	if (mbl_z_probe_nr >= 10) { // 10 is the only two-digit choice
+		sToggle[0] = '1';
+		sToggle[1] = mbl_z_probe_nr - 10 + '0';
+		sToggle[2] = 0;
+	} else {
+		sToggle[0] = mbl_z_probe_nr + '0';
+		sToggle[1] = 0;
+	}
 	MENU_ITEM_TOGGLE(_T(MSG_Z_PROBE_NR), sToggle, mbl_probe_nr_toggle);
 	MENU_ITEM_TOGGLE_P(_T(MSG_MAGNETS_COMP), (points_nr == 7) ? (magnet_elimination ? _T(MSG_ON): _T(MSG_OFF)) : _T(MSG_NA), mbl_magnets_elimination_toggle);
 	MENU_END();

@@ -33,14 +33,15 @@ int SdFatUtil::FreeRam() {
   return &top - reinterpret_cast<char*>(sbrk(0));
 }
 #else  // __arm__
-extern char *__brkval;
 extern char __bss_end;
 /** Amount of free RAM
  * \return The number of free bytes.
  */
 int SdFatUtil::FreeRam() {
   char top;
-  return __brkval ? &top - __brkval : &top - &__bss_end;
+  // The firmware never allocates on the heap, so __brkval would always be 0;
+  // reading it would link the 4 bytes of RAM of the malloc() state
+  return &top - &__bss_end;
 }
 #endif  // __arm
 

@@ -177,6 +177,46 @@ eof_or_fail:
     return -1;
 }
 
+/// Copies the next characters of the current line into dst, at most room of them, up to the first one
+/// readFilteredGcode() or its caller must handle: '\n', '\r', ';', '#', the last byte of the cached block and
+/// the last byte of the file. A G-code line is then read in one run and one character instead of a
+/// readFilteredGcode() call per character.
+/// @return the number of characters copied
+uint8_t SdFile::readFilteredGcodeRun(char *dst, uint8_t room){
+    if( ! gfEnsureBlock() ){
+        return 0; // readFilteredGcode() reports the failure
+    }
+    const uint8_t *rdPtr = gfReadPtr;
+    const uint8_t *start = rdPtr;
+    // the last byte of the block goes through readFilteredGcode(), which moves to the next block
+    const uint8_t *end = gfBlockBuffBegin() + 511;
+    if( rdPtr >= end ){
+        return 0;
+    }
+    uint16_t avail = end - rdPtr;
+    if( avail > room ){
+        avail = room;
+    }
+    // and so does the last byte of the file (the caller never reads past its end)
+    const uint32_t left = fileSize_ - curPosition_;
+    if( left <= avail ){
+        avail = left - 1;
+    }
+    end = rdPtr + avail;
+    while( rdPtr < end ){
+        const uint8_t c = *rdPtr;
+        if( c == '\n' || c == '\r' || c == ';' || c == '#' ){
+            break;
+        }
+        *dst++ = c;
+        ++rdPtr;
+    }
+    const uint8_t n = rdPtr - start;
+    gfUpdateCurrentPosition(n);
+    gfReadPtr = rdPtr;
+    return n;
+}
+
 bool SdFile::gfEnsureBlock(){
     // this comparison is heavy-weight, especially when there is another one inside cacheRawBlock
     // but it is necessary to avoid computing of terminateOfs if not needed

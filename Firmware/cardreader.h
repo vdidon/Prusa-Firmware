@@ -80,6 +80,13 @@ public:
       sdpos = file.curPosition();
       return c;
   };
+  /// Copies the next plain characters of the current line, see SdFile::readFilteredGcodeRun()
+  FORCE_INLINE uint8_t getFilteredGcodeRun(char *dst, uint8_t room)
+  {
+      uint8_t n = file.readFilteredGcodeRun(dst, room);
+      sdpos = file.curPosition();
+      return n;
+  };
   void setIndex(long index) {sdpos = index;file.seekSetFilteredGcode(index);};
   FORCE_INLINE uint8_t percentDone(){if(!isFileOpen()) return 0; if(filesize) return sdpos/((filesize+99)/100); else return 0;};
   FORCE_INLINE char* getWorkDirName(){workDir.getFilename(filename);return filename;};

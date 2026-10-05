@@ -628,6 +628,9 @@ void get_command()
   bool sd_overflow = false;
   // Reads whole lines from the SD card. Never leaves a half-filled line in the cmdbuffer.
   while( !card.eof() && !stop_buffering) {
+    // The plain characters of the line are copied in one run, the character which stops it is read below.
+    if (!sd_comment && serial_count < (MAX_CMD_SIZE - 1))
+        serial_count += card.getFilteredGcodeRun(cmdbuffer+bufindw+CMDHDRSIZE+serial_count, (MAX_CMD_SIZE - 1) - serial_count);
     int16_t n=card.getFilteredGcodeChar();
     char serial_char = (char)n;
     if( serial_char == '\n'

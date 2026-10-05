@@ -2144,9 +2144,21 @@ void lcd_generic_preheat_menu()
         );
         MENU_ITEM_BACK_P(_T(eFilamentAction == FilamentAction::Lay1Cal ? MSG_BACK : MSG_MAIN));
     }
-    // Always shown in the preheat context: an entry depending on the target temperatures would
-    // shift the items below when a target changes while the menu is open (e.g. M104 from the host)
-    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && eFilamentAction == FilamentAction::Preheat)
+    // Cooldown only when something heats, decided once when the menu opens: re-evaluating it on
+    // each redraw would shift the items below when a target changes with the menu open (M104 from
+    // the host)
+    typedef struct
+    {
+        bool initialized;
+        bool cooldown;
+    } _menu_data_t;
+    static_assert(sizeof(menu_data)>= sizeof(_menu_data_t),"_menu_data_t doesn't fit into menu_data");
+    _menu_data_t* _md = (_menu_data_t*)&(menu_data[0]);
+    if (!_md->initialized) {
+        _md->initialized = true;
+        _md->cooldown = target_temperature[0] != 0 || target_temperature_bed != 0;
+    }
+    if (!eeprom_read_byte((uint8_t *) EEPROM_WIZARD_ACTIVE) && eFilamentAction == FilamentAction::Preheat && _md->cooldown)
         MENU_ITEM_SUBMENU_P(_T(MSG_COOLDOWN),lcd_cooldown_menu);
     if (farm_mode)
     {

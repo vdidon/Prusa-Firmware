@@ -117,7 +117,7 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
 				// close() is done automatically by destructor of SdFile
 
 				if (lsParams.LFN)
-					puts_P(PSTR("DIR_EXIT"));
+					SERIAL_PROTOCOLLNRPGM(PSTR("DIR_EXIT"));
 			}
 			else {
 				filenameIsDir = DIR_IS_SUBDIR(&p);
@@ -952,7 +952,7 @@ void CardReader::presort() {
             break;
           } else {
             #ifdef SORTING_DUMP
-            puts_P(PSTR("shift"));
+            SERIAL_PROTOCOLLNRPGM(PSTR("shift"));
             #endif
             sort_entries[j] = o2;
           }
@@ -1014,7 +1014,7 @@ void CardReader::presort() {
 						)
 					{
 						#ifdef SORTING_DUMP
-						puts_P(PSTR("swap"));
+						SERIAL_PROTOCOLLNRPGM(PSTR("swap"));
 						#endif
 
 						sort_entries[j] = o2;

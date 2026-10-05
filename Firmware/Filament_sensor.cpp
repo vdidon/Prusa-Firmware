@@ -301,7 +301,7 @@ bool IR_sensor_analog::checkVoltage(uint16_t raw) {
         /// that the IR fsensor reading is within 1.5 and 3V ... this would have been highly unusual
         /// and would have been considered more like a sabotage than normal printer operation
         if (voltageErrorCnt++ > 4) {
-            puts_P(PSTR("fsensor in forbidden range 1.5-3V - check sensor"));
+            SERIAL_PROTOCOLLNRPGM(PSTR("fsensor in forbidden range 1.5-3V - check sensor"));
             return false;
         }
     } else {
@@ -310,7 +310,7 @@ bool IR_sensor_analog::checkVoltage(uint16_t raw) {
     if (sensorRevision == SensorRevision::_Rev04) {
         /// newer IR sensor cannot normally produce 4.6-5V, this is considered a failure/bad mount
         if (IRsensor_Hopen_TRESHOLD <= raw && raw <= IRsensor_VMax_TRESHOLD) {
-            puts_P(PSTR("fsensor v0.4 in fault range 4.6-5V - unconnected"));
+            SERIAL_PROTOCOLLNRPGM(PSTR("fsensor v0.4 in fault range 4.6-5V - unconnected"));
             return false;
         }
     }

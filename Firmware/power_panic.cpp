@@ -363,12 +363,12 @@ void recover_print(uint8_t automatic) {
         enquecommandf_P(G1_E_F2700, default_retraction);
     }
 
-    puts_P(_N("Temperature Restored\n"));
+    SERIAL_PROTOCOLLNRPGM(_N("Temperature Restored\n"));
     gcode_M114();
 
     // Restart the print.
     restore_print_from_eeprom(mbl_was_active);
-    puts_P(_N("Done reading EEPROM\n"));
+    SERIAL_PROTOCOLLNRPGM(_N("Done reading EEPROM\n"));
     gcode_M114();
 }
 

@@ -42,7 +42,7 @@ void TCodes(char *const strchr_pointer, const uint8_t codeValue) {
         if (MMU2::mmu2.Enabled()) {
             if (codeValue == MMU2::mmu2.get_current_tool()){
                 // don't execute the same T-code twice in a row
-                puts_P(duplicate_Tcode_ignored);
+                SERIAL_PROTOCOLLNRPGM(duplicate_Tcode_ignored);
             } else {
 #if defined(MMU_HAS_CUTTER) && defined(MMU_ALWAYS_CUT)
                 if (EEPROM_MMU_CUTTER_ENABLED_always == eeprom_read_byte((uint8_t *)EEPROM_MMU_CUTTER_ENABLED)) {

@@ -5,6 +5,7 @@
 #include <avr/pgmspace.h>
 #include "rbuf.h"
 #include "macros.h"
+#include "Marlin.h"
 
 #define UART_BAUD_SELECT(baudRate,xtalCpu) (((float)(xtalCpu))/(((float)(baudRate))*8.0)-1.0+0.5)
 #define uart2_txready    (UCSR2A & (1 << UDRE2))
@@ -27,7 +28,7 @@ int uart2_getchar(_UNUSED FILE *stream)
 {
 	if (uart2_rx_overflow) { // reported here, outside of the RX ISR
 		uart2_rx_overflow = false;
-		puts_P(PSTR("USART2 rx Full!!!"));
+		SERIAL_PROTOCOLLNRPGM(PSTR("USART2 rx Full!!!"));
 	}
 	if (rbuf_empty(uart2_ibuf)) return -1;
 	return rbuf_get(uart2_ibuf);

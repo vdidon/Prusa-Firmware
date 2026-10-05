@@ -936,10 +936,10 @@ uint8_t lang_xflash_enum_codes(uint16_t* codes)
 		xflash_rd_data(addr, (uint8_t*)&header, sizeof(lang_table_header_t));
 		if (header.magic != LANG_MAGIC)
 		{
-			puts_P(_n("NG!"));
+			SERIAL_PROTOCOLLNRPGM(_n("NG!"));
 			break;
 		}
-		puts_P(_n("OK"));
+		SERIAL_PROTOCOLLNRPGM(_n("OK"));
 		printf_P(_n(" _lt_magic        = 0x%08lx %S\n"), header.magic, (header.magic==LANG_MAGIC)?_n("OK"):_n("NA"));
 		printf_P(_n(" _lt_size         = 0x%04x (%d)\n"), header.size, header.size);
 		printf_P(_n(" _lt_count        = 0x%04x (%d)\n"), header.count, header.count);
@@ -975,7 +975,7 @@ static void fw_crash_init()
     if(xfdump_check_state(&crash_reason))
     {
         // always signal to the host that a dump is available for retrieval
-        puts_P(_N("//action:dump_available"));
+        SERIAL_PROTOCOLLNRPGM(_N("//action:dump_available"));
 
 #ifdef EMERGENCY_DUMP
         if(crash_reason != dump_crash_reason::manual &&
@@ -1036,7 +1036,7 @@ static void fw_kill_init() {
 
 static void xflash_err_msg()
 {
-    puts_P(_n("XFLASH not responding."));
+    SERIAL_PROTOCOLLNRPGM(_n("XFLASH not responding."));
     lcd_show_fullscreen_message_and_wait_P(_n("External SPI flash\nXFLASH is not res-\nponding. Language\nswitch unavailable."));
 }
 
@@ -1101,10 +1101,10 @@ void setup()
             if (!get_PRUSA_SN(SN))
             {
                 eeprom_update_block_notify(SN, (uint8_t*)EEPROM_PRUSA_SN, 20);
-                puts_P(PSTR("SN updated"));
+                SERIAL_PROTOCOLLNRPGM(PSTR("SN updated"));
             }
             else
-                puts_P(PSTR("SN update failed"));
+                SERIAL_PROTOCOLLNRPGM(PSTR("SN update failed"));
         }
     }
 #endif //PRUSA_SN_SUPPORT
@@ -1117,7 +1117,7 @@ void setup()
 		SERIAL_PROTOCOLLNPGM("start");
 #endif
 	SERIAL_ECHO_START;
-	puts_P(PSTR(" " FW_VERSION_FULL "_" FW_COMMIT_HASH));
+	SERIAL_PROTOCOLLNRPGM(PSTR(" " FW_VERSION_FULL "_" FW_COMMIT_HASH));
 
 	// by default the MMU shall remain disabled - PFW-1418
 	if (eeprom_init_default_byte((uint8_t *)EEPROM_MMU_ENABLED, 0)) {
@@ -1169,12 +1169,12 @@ void setup()
 		printf_P(_n("_SEC_LANG_TABLE checksum = %04x\n"), sum);
 		sum = (sum >> 8) | ((sum & 0xff) << 8); //swap bytes
 		if (sum == header.checksum)
-			puts_P(_n("Checksum OK"));
+			SERIAL_PROTOCOLLNRPGM(_n("Checksum OK"));
 		else
-			puts_P(_n("Checksum NG"));
+			SERIAL_PROTOCOLLNRPGM(_n("Checksum NG"));
 	}
 	else
-		puts_P(_n("lang_get_header failed!"));
+		SERIAL_PROTOCOLLNRPGM(_n("lang_get_header failed!"));
 
 #if 0
 		for (uint16_t i = 0; i < 1024*10; i++)
@@ -1208,11 +1208,11 @@ void setup()
 	if (mcu & 4) SERIAL_ECHOLNRPGM(MSG_BROWNOUT_RESET);
 	if (mcu & 8) SERIAL_ECHOLNRPGM(MSG_WATCHDOG_RESET);
 	if (mcu & 32) SERIAL_ECHOLNRPGM(MSG_SOFTWARE_RESET);*/
-	if (mcu & 1) puts_P(MSG_POWERUP);
-	if (mcu & 2) puts_P(MSG_EXTERNAL_RESET);
-	if (mcu & 4) puts_P(MSG_BROWNOUT_RESET);
-	if (mcu & 8) puts_P(MSG_WATCHDOG_RESET);
-	if (mcu & 32) puts_P(MSG_SOFTWARE_RESET);
+	if (mcu & 1) SERIAL_PROTOCOLLNRPGM(MSG_POWERUP);
+	if (mcu & 2) SERIAL_PROTOCOLLNRPGM(MSG_EXTERNAL_RESET);
+	if (mcu & 4) SERIAL_PROTOCOLLNRPGM(MSG_BROWNOUT_RESET);
+	if (mcu & 8) SERIAL_PROTOCOLLNRPGM(MSG_WATCHDOG_RESET);
+	if (mcu & 32) SERIAL_PROTOCOLLNRPGM(MSG_SOFTWARE_RESET);
 	MCUSR = 0;
 
 	//SERIAL_ECHORPGM(MSG_MARLIN);
@@ -1277,9 +1277,9 @@ void setup()
   tmc2130_sg_stop_on_crash = eeprom_init_default_byte((uint8_t*)EEPROM_CRASH_DET, farm_mode ? false : true);
 
 	if (tmc2130_sg_stop_on_crash) {
-    puts_P(_N("CrashDetect ENABLED!"));
+    SERIAL_PROTOCOLLNRPGM(_N("CrashDetect ENABLED!"));
 	} else {
-	    puts_P(_N("CrashDetect DISABLED"));
+	    SERIAL_PROTOCOLLNRPGM(_N("CrashDetect DISABLED"));
 	}
 
 #ifdef TMC2130_LINEARITY_CORRECTION
@@ -1419,7 +1419,7 @@ void setup()
 	XFLASH_SPI_ENTER();
 	uint8_t uid[8]; // 64bit unique id
 	xflash_rd_uid(uid);
-	puts_P(_n("XFLASH UID="));
+	SERIAL_PROTOCOLLNRPGM(_n("XFLASH UID="));
 	for (uint8_t i = 0; i < 8; i ++)
 		printf_P(PSTR("%02x"), uid[i]);
 	putchar('\n');
@@ -1579,12 +1579,12 @@ void setup()
       uvlo_auto_recovery_ready = (degBed() > ( (float)eeprom_read_byte((uint8_t*)EEPROM_UVLO_TARGET_BED) - AUTOMATIC_UVLO_BED_TEMP_OFFSET));
       if (uvlo_auto_recovery_ready){
 #ifdef DEBUG_UVLO_AUTOMATIC_RECOVER
-        puts_P(_N("Automatic recovery!"));
+        SERIAL_PROTOCOLLNRPGM(_N("Automatic recovery!"));
 #endif //DEBUG_UVLO_AUTOMATIC_RECOVER
         recover_print(1);
       } else {
 #ifdef DEBUG_UVLO_AUTOMATIC_RECOVER
-        puts_P(_N("Normal recovery!"));
+        SERIAL_PROTOCOLLNRPGM(_N("Normal recovery!"));
 #endif //DEBUG_UVLO_AUTOMATIC_RECOVER
         if (saved_printing_type == PowerPanic::PRINT_TYPE_HOST) {
           recover_print(0);
@@ -2754,12 +2754,12 @@ static void gcode_G80()
                 break;
             }
             if (MESH_HOME_Z_SEARCH - current_position[Z_AXIS] < 0.1f) {
-                puts_P(PSTR("Bed leveling failed. Sensor triggered too soon"));
+                SERIAL_PROTOCOLLNRPGM(PSTR("Bed leveling failed. Sensor triggered too soon"));
                 break;
             }
         }
         if (has_z && fabs(z0 - current_position[Z_AXIS]) > Z_CALIBRATION_THRESHOLD) { //if we have data from z calibration, max. allowed difference is 1mm for each point
-            puts_P(PSTR("Bed leveling failed. Too much variation from eeprom mesh"));
+            SERIAL_PROTOCOLLNRPGM(PSTR("Bed leveling failed. Too much variation from eeprom mesh"));
             break;
         }
 
@@ -3982,7 +3982,7 @@ void process_commands()
             char SN[20];
             eeprom_read_block(SN, (uint8_t*)EEPROM_PRUSA_SN, 20);
             if (SN[19])
-                puts_P(PSTR("SN invalid"));
+                SERIAL_PROTOCOLLNRPGM(PSTR("SN invalid"));
             else
                 SERIAL_PROTOCOLLN(SN);
         } else if(code_seen_P(PSTR("Fir"))){ // PRUSA Fir
@@ -4464,7 +4464,7 @@ void process_commands()
 			enquecommand_front_P(G28W);
 			break;
 		}
-		puts_P(_N("PINDA probe calibration start"));
+		SERIAL_PROTOCOLLNRPGM(_N("PINDA probe calibration start"));
 		custom_message_type = CustomMsg::TempCal;
 		custom_message_state = 1;
 		lcd_setstatuspgm(_T(MSG_PINDA_CALIBRATION));
@@ -4536,7 +4536,7 @@ void process_commands()
 		custom_message_type = CustomMsg::Status;
 
 		eeprom_update_byte_notify((uint8_t*)EEPROM_CALIBRATION_STATUS_PINDA, 1);
-		puts_P(_N("Temperature calibration done."));
+		SERIAL_PROTOCOLLNRPGM(_N("Temperature calibration done."));
 			disable_x();
 			disable_y();
 			disable_z();

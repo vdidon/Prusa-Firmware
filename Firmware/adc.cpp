@@ -5,6 +5,7 @@
 #include <avr/pgmspace.h>
 #include <string.h>
 #include "pins.h"
+#include "Marlin.h"
 
 static uint8_t adc_count; //used for oversampling
 static uint8_t adc_channel_idx; //bitmask index
@@ -16,7 +17,7 @@ static void adc_setmux(uint8_t ch);
 
 void adc_init()
 {
-	puts_P(PSTR("adc_init"));
+	SERIAL_PROTOCOLLNRPGM(PSTR("adc_init"));
     DIDR0 = ((ADC_CHAN_MSK & ADC_DIDR_MSK) & 0xff); //disable digital inputs PORTF
     DIDR2 = ((ADC_CHAN_MSK & ADC_DIDR_MSK) >> 8); //disable digital inputs PORTK
     ADMUX |= (1 << REFS0); //use AVCC as reference

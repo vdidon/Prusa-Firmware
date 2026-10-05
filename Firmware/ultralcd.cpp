@@ -5219,7 +5219,7 @@ static void change_sheet()
 }
 
 //! @brief Send a notification to the host. Param 'message' must reside in program memory!
-void sendHostNotification_P(const char* message)
+void __attribute__((noinline)) sendHostNotification_P(const char* message)
 {
     printf_P(MSG_HOST_ACTION_NOTIFICATION, message);
 }

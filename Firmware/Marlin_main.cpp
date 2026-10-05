@@ -8797,7 +8797,7 @@ void mesh_plan_buffer_line(const float &x, const float &y, const float &z, const
 
         if (mbl.active) {
             float len = fabs(dx) + fabs(dy);
-            if (len > 0)
+            if (len > 30.f)
                 // Split to 3cm segments or shorter.
                 n_segments = uint16_t(ceil(len / 30.f));
         }

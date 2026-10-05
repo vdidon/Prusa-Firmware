@@ -1,2 +1,4 @@
-lang/po/*.po text eol=crlf diff=po
-lang/po/*.pot text diff=po
+# LF everywhere, whatever core.autocrlf says (binary files are detected by text=auto)
+* text=auto eol=lf
+lang/po/*.po text eol=lf diff=po
+lang/po/*.pot text eol=lf diff=po

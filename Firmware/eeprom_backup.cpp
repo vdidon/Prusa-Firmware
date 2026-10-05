@@ -178,7 +178,9 @@ EepromBackupResult verify_eeprom_backup(struct EepromBackupHeader *out_header) {
 //! @brief Write a verified backup file to the EEPROM
 //! @param snapshot save the current EEPROM to EEPROM.TMP first (kept if it already exists: it
 //! then holds the state before an interrupted restore, which must not be overwritten)
-static EepromBackupResult restore_from_file(const char *name, bool validate_version, bool snapshot) {
+//! @param written set when the EEPROM may have been modified (the write loop was entered)
+static EepromBackupResult restore_from_file(const char *name, bool validate_version, bool snapshot, bool *written) {
+    *written = false;
     struct EepromBackupHeader header;
     EepromBackupResult result = verify_backup_file(name, &header);
     if (result != EEPROM_BACKUP_OK) return result;
@@ -202,19 +204,18 @@ static EepromBackupResult restore_from_file(const char *name, bool validate_vers
         created = true;
     }
 
-    bool written = false;
     if (!card.openFileReadBinary(name)) {
         result = EEPROM_BACKUP_ERR_FILE_OPEN;
     } else {
         if (card.readFile(&header, sizeof(header)) != sizeof(header)) {
             result = EEPROM_BACKUP_ERR_FILE_READ;
         } else {
-            written = true;
+            *written = true;
             result = read_sd_to_eeprom(header.crc32);
         }
         card.closefile();
     }
-    if (created && !written) {
+    if (created && !*written) {
         // EEPROM untouched: a kept snapshot would be mistaken for an interrupted restore later
         card.removeFileBinary(EEPROM_BACKUP_TEMP_FILENAME);
     }
@@ -228,18 +229,30 @@ static EepromBackupResult restore_from_file(const char *name, bool validate_vers
 }
 
 EepromBackupResult restore_eeprom_from_sd(bool validate_version) {
-    EepromBackupResult result = restore_from_file(EEPROM_BACKUP_FILENAME, validate_version, true);
+    bool written;
+    EepromBackupResult result = restore_from_file(EEPROM_BACKUP_FILENAME, validate_version, true, &written);
     if (result == EEPROM_BACKUP_OK) {
         // completed: the snapshot becomes the undo point
         card.moveFileBinary(EEPROM_BACKUP_TEMP_FILENAME, EEPROM_BACKUP_UNDO_FILENAME);
+    } else if (written) {
+        // Failed during the write (SD read error...): the EEPROM is a mix of both states, put back
+        // the snapshot taken just before. If that fails too (card removed), EEPROM.TMP is kept for
+        // "Undo restore".
+        if (restore_from_file(EEPROM_BACKUP_TEMP_FILENAME, false, false, &written) == EEPROM_BACKUP_OK) {
+            card.removeFileBinary(EEPROM_BACKUP_TEMP_FILENAME);
+            result = EEPROM_BACKUP_ERR_ROLLED_BACK;
+        } else {
+            result = EEPROM_BACKUP_ERR_ROLLBACK_FAILED;
+        }
     }
     return result;
 }
 
 EepromBackupResult undo_eeprom_restore() {
     const bool interrupted = card.fileExistsBinary(EEPROM_BACKUP_TEMP_FILENAME);
+    bool written;
     EepromBackupResult result = restore_from_file(
-        interrupted ? EEPROM_BACKUP_TEMP_FILENAME : EEPROM_BACKUP_UNDO_FILENAME, false, false);
+        interrupted ? EEPROM_BACKUP_TEMP_FILENAME : EEPROM_BACKUP_UNDO_FILENAME, false, false, &written);
     if (result == EEPROM_BACKUP_OK && interrupted) {
         card.moveFileBinary(EEPROM_BACKUP_TEMP_FILENAME, EEPROM_BACKUP_UNDO_FILENAME);
     }

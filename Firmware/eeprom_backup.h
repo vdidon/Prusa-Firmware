@@ -52,8 +52,9 @@ enum EepromBackupResult : uint8_t {
     EEPROM_BACKUP_ERR_INVALID_MAGIC,   // Invalid magic bytes in backup
     EEPROM_BACKUP_ERR_VERSION_MISMATCH,// Backup version incompatible
     EEPROM_BACKUP_ERR_CRC_MISMATCH,    // CRC validation failed
-    EEPROM_BACKUP_ERR_ROLLBACK_FAILED, // Rollback after failed restore
+    EEPROM_BACKUP_ERR_ROLLBACK_FAILED, // Restore failed during the write, rollback failed too (EEPROM.TMP kept)
     EEPROM_BACKUP_ERR_PRINTER_MISMATCH,// Backup made on another printer type
+    EEPROM_BACKUP_ERR_ROLLED_BACK,     // Restore failed during the write, previous EEPROM put back
 };
 
 //! @brief Backup EEPROM contents to SD card
@@ -64,7 +65,8 @@ EepromBackupResult backup_eeprom_to_sd();
 //! @brief Restore EEPROM contents from SD card backup
 //! @details Reads /EEPROM.BAK from SD and writes to EEPROM with validation. The serial number and
 //! the firmware crash flag are never restored. A backup from another printer type is refused.
-//! @note Saves the current EEPROM first (EEPROM.TMP, then EEPROM.UND once completed)
+//! @note Saves the current EEPROM first (EEPROM.TMP, then EEPROM.UND once completed). A failure
+//! during the write puts that snapshot back automatically.
 //! @param validate_version If true, reject backups from different firmware versions
 //! @return EepromBackupResult status code
 EepromBackupResult restore_eeprom_from_sd(bool validate_version = false);

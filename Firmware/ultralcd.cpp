@@ -7754,14 +7754,15 @@ static void lcd_eeprom_backup_message(const char *line1, const char *line2, uint
     lcd_wait_for_click_delay(seconds);
 }
 
-static void lcd_eeprom_backup_error(const char *title, EepromBackupResult result)
+static void lcd_eeprom_backup_error(const char *title, EepromBackupResult result, const char *hint = NULL)
 {
     lcd_clear();
     lcd_puts_at_P(0, 1, title);
     lcd_puts_at_P(0, 2, PSTR("Error code:"));
     lcd_set_cursor(13, 2);
     lcd_print((int)result);
-    lcd_wait_for_click_delay(3);
+    if (hint) lcd_puts_at_P(0, 3, hint);
+    lcd_wait_for_click_delay(hint ? 5 : 3);
 }
 
 //! @brief The backup files use the same SD file handle as printing and M28 uploads
@@ -7808,7 +7809,10 @@ static void lcd_eeprom_restore_result(EepromBackupResult result)
         _delay(2000);
         softReset();
     } else {
-        lcd_eeprom_backup_error(result == EEPROM_BACKUP_ERR_PRINTER_MISMATCH ? PSTR("Other printer type!") : PSTR("Restore failed!"), result);
+        const char *hint = NULL;
+        if (result == EEPROM_BACKUP_ERR_ROLLED_BACK) hint = PSTR("Settings unchanged");
+        else if (result == EEPROM_BACKUP_ERR_ROLLBACK_FAILED) hint = PSTR("Use Undo restore");
+        lcd_eeprom_backup_error(result == EEPROM_BACKUP_ERR_PRINTER_MISMATCH ? PSTR("Other printer type!") : PSTR("Restore failed!"), result, hint);
         menu_back();
     }
 }

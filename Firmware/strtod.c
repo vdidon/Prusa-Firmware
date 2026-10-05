@@ -60,7 +60,8 @@ double strtod_noE(const char* nptr, char** endptr)
 		c = *nptr++;
 	}
 
-	if (!strncasecmp_P(nptr - 1, pstr_inf, 3)) {
+	// The digits skip both comparisons: they can only match from an 'I' or an 'N'.
+	if ((c | 0x20) == 'i' && !strncasecmp_P(nptr - 1, pstr_inf, 3)) {
 		nptr += 2;
 		if (!strncasecmp_P(nptr, pstr_inity, 5))
 			nptr += 5;
@@ -71,7 +72,7 @@ double strtod_noE(const char* nptr, char** endptr)
 
 	/* NAN() construction is not realised.
 	   Length would be 3 characters only.	*/
-	if (!strncasecmp_P(nptr - 1, pstr_nan, 3)) {
+	if ((c | 0x20) == 'n' && !strncasecmp_P(nptr - 1, pstr_nan, 3)) {
 		if (endptr)
 			*endptr = (char*)nptr + 2;
 		return NAN;

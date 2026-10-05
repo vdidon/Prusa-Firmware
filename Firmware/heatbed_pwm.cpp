@@ -97,51 +97,18 @@ static const uint8_t slowInc = 1;
 
 ISR(TIMER0_OVF_vect)          // timer compare interrupt service routine
 {
-	switch(state){
-	case States::ZERO_START:
-		if (bedPWMDisabled) return; // stay in the OFF state and do not change the output pin
-		pwm = soft_pwm_bed << 1;// expecting soft_pwm_bed to be 7bit!
-		if( pwm != 0 ){
-			state = States::ZERO;     // do nothing, let it tick once again after the 30Hz period
-		}
-		break;
-	case States::ZERO: // end of state ZERO - we'll either stay in ZERO or change to RISE
+	// A chain of tests instead of a switch: the jump table cost a RAMPZ save, two more saved registers
+	// and __tablejump2__ on each of the ~8 kHz interrupts. The states are tested by decreasing frequency,
+	// each one does exactly what its case did.
+	const States s = state;
+	if (s == States::ZERO) { // end of state ZERO - we'll either stay in ZERO or change to RISE
 		// In any case update our cache of pwm value for the next whole cycle from soft_pwm_bed
 		slowCounter += slowInc; // this does software timer_clk/256 or less (depends on slowInc)
 		if( slowCounter > pwm ){
 			return;
 		} // otherwise moving towards RISE
 		state = States::ZERO_TO_RISE; // and finalize the change in a transitional state RISE0
-		break;
-	// even though it may look like the ZERO state may be glued together with the ZERO_TO_RISE, don't do it
-	// the timer must tick once more in order to get rid of occasional output pin toggles.
-	case States::ZERO_TO_RISE:  // special state for handling transition between prescalers and switching inverted->non-inverted fast-PWM without toggling the output pin.
-		// It must be done in consequent steps, otherwise the pin will get flipped up and down during one PWM cycle.
-		// Also beware of the correct sequence of the following timer control registers initialization - it really matters!
-		state = States::RISE;     // prepare for standard RISE cycles
-		fastCounter = fastMax - 1;// we'll do 16-1 cycles of RISE
-		TCNT0 = 255;              // force overflow on the next clock cycle
-		TCCR0B = (1 << CS00);     // change prescaler to 1, i.e. 62.5kHz
-		TCCR0A &= ~(1 << COM0B0); // Clear OC0B on Compare Match, set OC0B at BOTTOM (non-inverting mode)
-		break;
-	case States::RISE:
-		OCR0B = (fastMax - fastCounter) << fastShift;
-		if( fastCounter ){
-			--fastCounter;
-		} else { // end of RISE cycles, changing into state ONE
-			state = States::RISE_TO_ONE;
-			OCR0B = 255;          // full duty
-			TCNT0 = 254;          // make the timer overflow in the next cycle
-			// @@TODO these constants are still subject to investigation
-		}
-		break;
-	case States::RISE_TO_ONE:
-		state = States::ONE;
-		OCR0B = 255;              // full duty
-		TCNT0 = 255;              // make the timer overflow in the next cycle
-		TCCR0B = (1 << CS01);     // change prescaler to 8, i.e. 7.8kHz
-		break;
-	case States::ONE:             // state ONE - we'll either stay in ONE or change to FALL
+	} else if (s == States::ONE) { // state ONE - we'll either stay in ONE or change to FALL
 		OCR0B = 255;
 		if (bedPWMDisabled) return; // stay in the ON state and do not change the output pin
 		slowCounter += slowInc;   // this does software timer_clk/256 or less
@@ -160,8 +127,17 @@ ISR(TIMER0_OVF_vect)          // timer compare interrupt service routine
 		// must switch to inverting mode already here, because it takes a whole PWM cycle and it would make a "1" at the end of this pwm cycle
 		// COM0B1 remains set both in inverting and non-inverting mode
 		TCCR0A |= (1 << COM0B0);  // inverting mode
-		break;
-	case States::FALL:
+	} else if (s == States::RISE) {
+		OCR0B = (fastMax - fastCounter) << fastShift;
+		if( fastCounter ){
+			--fastCounter;
+		} else { // end of RISE cycles, changing into state ONE
+			state = States::RISE_TO_ONE;
+			OCR0B = 255;          // full duty
+			TCNT0 = 254;          // make the timer overflow in the next cycle
+			// @@TODO these constants are still subject to investigation
+		}
+	} else if (s == States::FALL) {
 		OCR0B = (fastMax - fastCounter) << fastShift; // this is the same as in RISE, because now we are setting the zero part of duty due to inverting mode
 		//TCCR0A |= (1 << COM0B0); // already set in ONE_TO_FALL
 		if( fastCounter ){
@@ -171,12 +147,31 @@ ISR(TIMER0_OVF_vect)          // timer compare interrupt service routine
 			TCNT0 = 128; //@@TODO again - need to wait long enough to propagate the timer state changes
 			OCR0B = 255;
 		}
-		break;
-	case States::FALL_TO_ZERO:
+	} else if (s == States::ZERO_START) {
+		if (bedPWMDisabled) return; // stay in the OFF state and do not change the output pin
+		pwm = soft_pwm_bed << 1;// expecting soft_pwm_bed to be 7bit!
+		if( pwm != 0 ){
+			state = States::ZERO;     // do nothing, let it tick once again after the 30Hz period
+		}
+	// even though it may look like the ZERO state may be glued together with the ZERO_TO_RISE, don't do it
+	// the timer must tick once more in order to get rid of occasional output pin toggles.
+	} else if (s == States::ZERO_TO_RISE) {  // special state for handling transition between prescalers and switching inverted->non-inverted fast-PWM without toggling the output pin.
+		// It must be done in consequent steps, otherwise the pin will get flipped up and down during one PWM cycle.
+		// Also beware of the correct sequence of the following timer control registers initialization - it really matters!
+		state = States::RISE;     // prepare for standard RISE cycles
+		fastCounter = fastMax - 1;// we'll do 16-1 cycles of RISE
+		TCNT0 = 255;              // force overflow on the next clock cycle
+		TCCR0B = (1 << CS00);     // change prescaler to 1, i.e. 62.5kHz
+		TCCR0A &= ~(1 << COM0B0); // Clear OC0B on Compare Match, set OC0B at BOTTOM (non-inverting mode)
+	} else if (s == States::RISE_TO_ONE) {
+		state = States::ONE;
+		OCR0B = 255;              // full duty
+		TCNT0 = 255;              // make the timer overflow in the next cycle
+		TCCR0B = (1 << CS01);     // change prescaler to 8, i.e. 7.8kHz
+	} else if (s == States::FALL_TO_ZERO) {
 		state = States::ZERO_START; // go to read new soft_pwm_bed value for the next cycle
 		TCNT0 = 128;
 		OCR0B = 255;
 		TCCR0B = (1 << CS01); // change prescaler to 8, i.e. 7.8kHz
-		break;
-    }
+	}
 }

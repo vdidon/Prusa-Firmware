@@ -88,6 +88,7 @@ float mm_per_step[NUM_AXIS];
 
 // The current position of the tool in absolute steps
 long position[NUM_AXIS];   //rescaled from extern when axis_steps_per_mm are changed by gcode
+int32_t planned_e_steps;
 static float previous_speed[NUM_AXIS]; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 static float previous_safe_speed; // Exit speed limited by a jerk to full halt of a previous last segment.
@@ -1231,6 +1232,7 @@ Having the real displacement of the head, we can calculate the total movement le
 
   // Update position
   memcpy(position, target, sizeof(target)); // position[] = target[]
+  planned_e_steps += de;
 
   #ifdef LIN_ADVANCE
   position_float[X_AXIS] = x;

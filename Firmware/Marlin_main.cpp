@@ -164,7 +164,12 @@ static LongTimer crashDetTimer;
 
 bool mesh_bed_leveling_flag = false;
 
-uint32_t total_filament_used; // unit mm/100 or 10um
+int32_t total_filament_steps;
+
+uint32_t total_filament_used() // unit mm/100 or 10um
+{
+    return total_filament_steps > 0 ? total_filament_steps * (100.f / cs.axis_steps_per_mm[E_AXIS]) : 0;
+}
 HeatingStatus heating_status;
 int fan_edge_counter[2];
 int fan_speed[2];
@@ -4054,10 +4059,6 @@ void process_commands()
         uint16_t start_segment_idx = restore_interrupted_gcode();
         get_coordinates(); // For X Y Z E F
 
-		if (total_filament_used > ((current_position[E_AXIS] - destination[E_AXIS]) * 100)) { //protection against total_filament_used overflow
-			total_filament_used = total_filament_used + ((destination[E_AXIS] - current_position[E_AXIS]) * 100);
-		}
-
 #ifdef FWRETRACT
         if(cs.autoretract_enabled) {
             if( !(code_seen('X') || code_seen('Y') || code_seen('Z')) && code_seen('E')) {
@@ -4073,7 +4074,12 @@ void process_commands()
         }
 #endif //FWRETRACT
 
-        prepare_move(start_segment_idx);
+        {
+            // Counted in exact planner steps: a float sum of the E moves stalled past 2^24 x 10 um
+            const int32_t e_steps = planned_e_steps;
+            prepare_move(start_segment_idx);
+            total_filament_steps += planned_e_steps - e_steps;
+        }
         //ClearToSend();
       }
       break;
@@ -5264,7 +5270,7 @@ void process_commands()
         if (printJobOngoing()) {
           _m_fil = _O(MSG_FILAMENT_USED);
           _m_time = _O(MSG_PRINT_TIME);
-          _cm = (uint32_t)total_filament_used / 1000;
+          _cm = total_filament_used() / 1000;
           _min = print_job_timer.duration() / 60;
         } else {
           if (code_seen('S')) {
@@ -9269,10 +9275,10 @@ void save_statistics() {
 
     uint32_t time_minutes = print_job_timer.duration() / 60;
     eeprom_update_dword_notify((uint32_t *)EEPROM_TOTALTIME, _previous_time + time_minutes); // EEPROM_TOTALTIME unit: min
-    eeprom_update_dword_notify((uint32_t *)EEPROM_FILAMENTUSED, _previous_filament + (total_filament_used / 1000));
+    eeprom_update_dword_notify((uint32_t *)EEPROM_FILAMENTUSED, _previous_filament + (total_filament_used() / 1000));
 
     print_job_timer.reset();
-    total_filament_used = 0;
+    total_filament_steps = 0;
 
     if (MMU2::mmu2.Enabled()) {
         eeprom_add_dword((uint32_t *)EEPROM_MMU_MATERIAL_CHANGES, MMU2::mmu2.ToolChangeCounter());

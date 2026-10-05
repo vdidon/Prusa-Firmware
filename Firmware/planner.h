@@ -167,6 +167,8 @@ extern uint32_t max_acceleration_steps_per_s2[NUM_AXIS];
 extern float mm_per_step[NUM_AXIS];
 
 extern long position[NUM_AXIS];
+// E steps of all the planned blocks, retractions counted negative.
+extern int32_t planned_e_steps;
 
 
 #ifdef AUTOTEMP

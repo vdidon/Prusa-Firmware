@@ -250,7 +250,8 @@ extern float retract_recover_length_swap;
 extern ShortTimer usb_timer;
 extern bool processing_tcode;
 extern bool homing_flag;
-extern uint32_t total_filament_used; // mm/100 or 10um
+extern int32_t total_filament_steps; // E steps extruded by the G0/G1 moves of the current print
+uint32_t total_filament_used(); // mm/100 or 10um
 
 /// @brief Save print statistics to EEPROM
 void save_statistics();

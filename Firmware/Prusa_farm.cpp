@@ -86,7 +86,7 @@ static void prusa_stat_temperatures() {
 
 static void prusa_stat_printinfo() {
     SERIAL_ECHOPGM("[TFU:");
-    SERIAL_ECHO(total_filament_used);
+    SERIAL_ECHO(total_filament_used());
     SERIAL_ECHOPGM("][PCD:");
     SERIAL_ECHO((int)card.percentDone());
     SERIAL_ECHOPGM("][FEM:");

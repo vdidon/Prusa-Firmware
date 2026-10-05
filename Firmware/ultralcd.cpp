@@ -2406,7 +2406,7 @@ void lcd_menu_statistics()
     lcd_timeoutToStatus.stop(); //infinite timeout
 	if (printJobOngoing())
 	{
-		const float _met = ((float)total_filament_used) / (100000.f);
+		const float _met = ((float)total_filament_used()) / (100000.f);
 
 		const uint32_t _t = print_job_timer.duration();
 		const uint32_t _h = (_t / 60) / 60;

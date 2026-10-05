@@ -920,7 +920,8 @@ void tmc2130_set_wave(uint8_t axis, uint8_t amp, uint8_t fac1000)
 		if (fac == 0) // default TMC wave
 			vA = (uint8_t)((amp+1) * sin((2*PI*i + PI)/1024) + 0.5) - 1;
 		else // corrected wave
-			vA = (uint8_t)(amp * pow(sin(2*PI*i/1024), fac) + 0.5);
+			// pow() of the C library computes exp(y * log(x)) for x >= 0: same result, 156 bytes less
+			vA = (uint8_t)(amp * exp(fac * log(sin(2*PI*i/1024))) + 0.5);
 		dA = vA - va; // calculate delta
 		va = vA;
 		b = -1;

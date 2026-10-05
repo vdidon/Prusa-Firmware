@@ -75,6 +75,16 @@ static uint8_t lcd_displaymode = 0;
 uint8_t lcd_currline;
 static uint8_t lcd_ddram_address; // no need for preventing ddram overflow
 
+// Shadow of the visible DDRAM cells: a byte the cell already shows is not sent again (one byte
+// costs ~110us on the bus and the status screen is redrawn whole every second). The DDRAM address
+// is set lazily, only before a byte that is actually sent. lcd_begin() forgets the shadow, so the
+// periodic lcd_refresh_noclear() still rewrites the whole screen.
+#define LCD_UNKNOWN 0xFF
+static uint8_t lcd_shadow[LCD_WIDTH * LCD_HEIGHT];
+// Both are set by lcd_begin() before the first byte
+static uint8_t lcd_addr;    // DDRAM address of the next byte, as the controller would have it
+static uint8_t lcd_hw_addr; // address counter of the controller
+
 struct CustomCharacter {
     uint8_t colByte;
     uint8_t rowData[4];
@@ -134,6 +144,34 @@ static void lcd_command(uint8_t value, uint16_t duration = LCD_DEFAULT_DELAY)
 	lcd_send(value, LOW, duration);
 }
 
+// Write one byte at lcd_addr, skipped if the shadow says the cell already shows it
+static void lcd_write_ddram(uint8_t value)
+{
+	const uint8_t addr = lcd_addr;
+	uint8_t i = LCD_UNKNOWN;
+	// 0x27 and 0x67 are left out: the address counter wraps after them
+	if (addr < 0x27) i = addr;
+	else if (addr >= 0x40 && addr < 0x67) i = addr - 0x40 + 0x28;
+	if (i != LCD_UNKNOWN) {
+		lcd_addr = addr + 1;
+		if (lcd_shadow[i] == value && value != LCD_UNKNOWN) return;
+		lcd_shadow[i] = value;
+		if (lcd_hw_addr != addr) lcd_command(LCD_SETDDRAMADDR | addr);
+		lcd_send(value, HIGH);
+		lcd_hw_addr = addr + 1;
+		return;
+	}
+	// Last cell before a wrap, address without a cell or unknown: send as is, the following bytes
+	// go where the controller puts them
+	if (addr != LCD_UNKNOWN) {
+		if (lcd_hw_addr != addr) lcd_command(LCD_SETDDRAMADDR | addr);
+	} else {
+		memset(lcd_shadow, LCD_UNKNOWN, sizeof(lcd_shadow));
+	}
+	lcd_send(value, HIGH);
+	lcd_addr = lcd_hw_addr = LCD_UNKNOWN;
+}
+
 static void lcd_write(uint8_t value)
 {
 	if (value == '\n') {
@@ -142,7 +180,7 @@ static void lcd_write(uint8_t value)
 	} else if ((value >= 0x80) && (value < (0x80 + CUSTOM_CHARACTERS_CNT))) {
 		lcd_print_custom(value);
 	} else {
-		lcd_send(value, HIGH);
+		lcd_write_ddram(value);
 		lcd_ddram_address++; // no need for preventing ddram overflow
 	}
 }
@@ -153,6 +191,12 @@ static void lcd_begin(uint8_t clear)
 	lcd_ddram_address = 0;
 
 	lcd_invalidate_custom_characters();
+
+	// The init sequence keeps the address counter: leave it where the next byte expects it, then
+	// forget the shadow (the controller may have been reset)
+	if (lcd_addr != LCD_UNKNOWN && lcd_hw_addr != lcd_addr) lcd_command(LCD_SETDDRAMADDR | lcd_addr);
+	lcd_addr = lcd_hw_addr = LCD_UNKNOWN;
+	memset(lcd_shadow, LCD_UNKNOWN, sizeof(lcd_shadow));
 
 	lcd_send(LCD_FUNCTIONSET | LCD_8BITMODE, LOW | LCD_HALF_FLAG, 4500); // wait min 4.1ms
 	// second try
@@ -225,6 +269,8 @@ void lcd_clear(void)
 	lcd_command(LCD_CLEARDISPLAY, 1600);
 	lcd_currline = 0;
 	lcd_ddram_address = 0;
+	lcd_addr = lcd_hw_addr = 0;
+	memset(lcd_shadow, ' ', sizeof(lcd_shadow));
 	lcd_invalidate_custom_characters();
 }
 
@@ -262,14 +308,14 @@ void lcd_set_cursor(uint8_t col, uint8_t row)
 	lcd_set_current_row(row);
     uint8_t addr = col + lcd_get_row_offset(lcd_currline);
 	lcd_ddram_address = addr;
-	lcd_command(LCD_SETDDRAMADDR | addr);
+	lcd_addr = addr & 0x7F; // set lazily by lcd_write_ddram()
 }
 
 void lcd_set_cursor_column(uint8_t col)
 {
 	uint8_t addr = col + lcd_get_row_offset(lcd_currline);
 	lcd_ddram_address = addr;
-	lcd_command(LCD_SETDDRAMADDR | addr);
+	lcd_addr = addr & 0x7F; // set lazily by lcd_write_ddram()
 }
 
 // Allows us to fill the first 8 CGRAM locations
@@ -324,10 +370,11 @@ void lcd_createChar_P(uint8_t location, const CustomCharacter *char_p)
 	);
 
 	lcd_command(LCD_SETCGRAMADDR | (location << 3));
+	lcd_hw_addr = LCD_UNKNOWN;
 	for (uint8_t i = 0; i < 8; i++) {
 		lcd_send(charmap[i], HIGH);
 	}
-	lcd_command(LCD_SETDDRAMADDR | lcd_ddram_address); // no need for masking the address
+	lcd_addr = lcd_ddram_address & 0x7F; // set lazily by lcd_write_ddram()
 }
 
 int lcd_putc(char c)
@@ -681,7 +728,7 @@ createChar:
 #endif // DEBUG_CUSTOM_CHARACTERS
 
 sendChar:
-	lcd_send(charToSend, HIGH);
+	lcd_write_ddram(charToSend);
 	lcd_ddram_address++; // no need for preventing ddram overflow
 }
 

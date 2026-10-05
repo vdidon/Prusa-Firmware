@@ -179,6 +179,25 @@ FORCE_INLINE float intersection_distance(float initial_rate, float final_rate, f
 // Minimum stepper rate 120Hz.
 #define MINIMAL_STEP_RATE 120
 
+// num / d for d < 2^23, by ten steps of a restoring division instead of the 32 of __udivmodsi4. Quotients
+// above 1023 return 1024: the caller clamps them to a step_event_count below 1024.
+static uint16_t __attribute__((noinline)) udiv_small(uint32_t num, uint32_t d)
+{
+  if ((num >> 10) >= d)
+    return 1024;
+  uint16_t q = 0;
+  d <<= 9;
+  for (uint8_t i = 0; i < 10; ++ i) {
+    q <<= 1;
+    if (num >= d) {
+      num -= d;
+      q |= 1;
+    }
+    d >>= 1;
+  }
+  return q;
+}
+
 // Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
 void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit_speed)
 {
@@ -210,13 +229,28 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
   uint32_t nominal_rate_sqr  = block->nominal_rate*block->nominal_rate;
   uint32_t final_rate_sqr    = final_rate*final_rate;
   uint32_t acceleration_x2   = acceleration << 1;
-  // ceil(estimate_acceleration_distance(initial_rate, block->nominal_rate, acceleration));
-  uint32_t accelerate_steps  = (nominal_rate_sqr - initial_rate_sqr + acceleration_x2 - 1) / acceleration_x2;
-  // floor(estimate_acceleration_distance(block->nominal_rate, final_rate, -acceleration));
-  uint32_t decelerate_steps  = (nominal_rate_sqr - final_rate_sqr) / acceleration_x2;
-  uint32_t accel_decel_steps = accelerate_steps + decelerate_steps;
+  uint32_t accelerate_sqr    = nominal_rate_sqr - initial_rate_sqr;
+  uint32_t decelerate_sqr    = nominal_rate_sqr - final_rate_sqr;
+  uint32_t accelerate_steps  = 0;
+  uint32_t decelerate_steps;
   // Size of Plateau of Nominal Rate.
   uint32_t plateau_steps     = 0;
+  bool     plateau           = false;
+  // Short segments: the products below stay in 32 bits and udiv_small() can divide by acceleration_x4.
+  bool     short_block       = block->step_event_count.wide < 1024 && acceleration_x2 < (1UL << 22);
+  // The two ramps below cover more than (accelerate_sqr + decelerate_sqr) / acceleration_x2 - 1 steps:
+  // there is no plateau if this sum reaches step_event_count. Checking it first spares two divisions
+  // for the short segments, which never reach the nominal rate.
+  if (short_block && accelerate_sqr + decelerate_sqr >= acceleration_x2 * block->step_event_count.wide) {
+      // floor(decelerate_sqr / acceleration_x2) is only tested against zero below
+      decelerate_steps = decelerate_sqr >= acceleration_x2;
+  } else {
+      // ceil(estimate_acceleration_distance(initial_rate, block->nominal_rate, acceleration));
+      accelerate_steps = (accelerate_sqr + acceleration_x2 - 1) / acceleration_x2;
+      // floor(estimate_acceleration_distance(block->nominal_rate, final_rate, -acceleration));
+      decelerate_steps = decelerate_sqr / acceleration_x2;
+      plateau = accelerate_steps + decelerate_steps < block->step_event_count.wide;
+  }
 
 #ifdef LIN_ADVANCE
   uint16_t final_adv_steps = 0;
@@ -229,8 +263,8 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
   // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
   // have to use intersection_distance() to calculate when to abort acceleration and start braking
   // in order to reach the final_rate exactly at the end of this block.
-  if (accel_decel_steps < block->step_event_count.wide) {
-    plateau_steps = block->step_event_count.wide - accel_decel_steps;
+  if (plateau) {
+    plateau_steps = block->step_event_count.wide - accelerate_steps - decelerate_steps;
 #ifdef LIN_ADVANCE
     if (block->use_advance_lead)
         max_adv_steps = block->nominal_rate * block->adv_comp;
@@ -248,7 +282,7 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
         accelerate_steps = final_rate_sqr - initial_rate_sqr + acceleration_x4 - 1;
         if (block->step_event_count.wide & 1)
             accelerate_steps += acceleration_x2;
-        accelerate_steps /= acceleration_x4;
+        accelerate_steps = short_block ? udiv_small(accelerate_steps, acceleration_x4) : accelerate_steps / acceleration_x4;
         accelerate_steps += (block->step_event_count.wide >> 1);
 #endif
         if (accelerate_steps > block->step_event_count.wide)
@@ -260,7 +294,7 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
         decelerate_steps = initial_rate_sqr - final_rate_sqr;
         if (block->step_event_count.wide & 1)
             decelerate_steps += acceleration_x2;
-        decelerate_steps /= acceleration_x4;
+        decelerate_steps = short_block ? udiv_small(decelerate_steps, acceleration_x4) : decelerate_steps / acceleration_x4;
         decelerate_steps += (block->step_event_count.wide >> 1);
 #endif
         if (decelerate_steps > block->step_event_count.wide)

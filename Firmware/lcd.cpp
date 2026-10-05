@@ -392,13 +392,17 @@ int lcd_putc_at(uint8_t c, uint8_t r, char ch)
 
 int lcd_puts_P(const char* str)
 {
-	return fputs_P(str, lcdout);
+	// fputs_P() would only pass each byte through lcdout to lcd_write()
+	char ch;
+	while ((ch = pgm_read_byte(str++)))
+		lcd_write(ch);
+	return 0;
 }
 
 int lcd_puts_at_P(uint8_t c, uint8_t r, const char* str)
 {
 	lcd_set_cursor(c, r);
-	return fputs_P(str, lcdout);
+	return lcd_puts_P(str);
 }
 
 int lcd_printf_P(const char* format, ...)

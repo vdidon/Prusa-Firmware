@@ -23,7 +23,7 @@ static int uart2_putchar(char c, _UNUSED FILE *stream)
 
 static volatile bool uart2_rx_overflow = false;
 
-static int uart2_getchar(_UNUSED FILE *stream)
+int uart2_getchar(_UNUSED FILE *stream)
 {
 	if (uart2_rx_overflow) { // reported here, outside of the RX ISR
 		uart2_rx_overflow = false;

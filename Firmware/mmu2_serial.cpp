@@ -12,7 +12,7 @@ void MMU2Serial::close() {
 }
 
 int MMU2Serial::read() {
-    return fgetc(uart2io);
+    return uart2_getchar(uart2io);
 }
 
 void MMU2Serial::flush() {

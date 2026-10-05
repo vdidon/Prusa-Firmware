@@ -92,6 +92,7 @@ struct CustomCharacter {
 };
 
 static uint8_t lcd_custom_characters[8] = {0};
+static bool lcd_frame_written; // a byte was written since the last lcd_frame_start()
 static const CustomCharacter Font[] PROGMEM = {
 #include "FontTable.h"
 };
@@ -174,6 +175,7 @@ static void lcd_write_ddram(uint8_t value)
 
 static void lcd_write(uint8_t value)
 {
+	lcd_frame_written = true;
 	if (value == '\n') {
 		if (lcd_currline > 3) lcd_currline = -1;
 		lcd_set_cursor(0, lcd_currline + 1); // LF
@@ -688,8 +690,9 @@ static void lcd_print_custom(uint8_t c) {
 	uint8_t charToSend = pgm_read_byte(&Font[c - 0x80].alternate); // in case no empty slot is found, use the alternate character.
 	int8_t slotToUse = -1;
 
+	// first check if we already have the character in the lcd memory, in any slot: an empty slot
+	// met first must not get a second copy (a CGRAM upload)
 	for (uint8_t i = 0; i < 8; i++) {
-		// first check if we already have the character in the lcd memory
 		if ((lcd_custom_characters[i] & 0x7F) == (c & 0x7F)) {
 			lcd_custom_characters[i] = c; // mark the custom character as used
 			charToSend = i; // send the found custom character id
@@ -697,8 +700,11 @@ static void lcd_print_custom(uint8_t c) {
 			printf_P(PSTR("found char %02x at slot %u\n"), c, i);
 #endif // DEBUG_CUSTOM_CHARACTERS
 			goto sendChar;
-		} else if (lcd_custom_characters[i] == 0x7F) { //found an empty slot. create a new custom character and send it
-			lcd_custom_characters[i] = c; // mark the custom character as used
+		}
+	}
+
+	for (uint8_t i = 0; i < 8; i++) {
+		if (lcd_custom_characters[i] == 0x7F) { //found an empty slot. create a new custom character and send it
 			slotToUse = i;
 			goto createChar;
 		} else if (!(lcd_custom_characters[i] & 0x80)) { // found potentially unused slot. Remember it in case it's needed
@@ -721,6 +727,9 @@ static void lcd_print_custom(uint8_t c) {
 #endif // DEBUG_CUSTOM_CHARACTERS
 
 createChar:
+	// mark the custom character as used, also in a replaced slot (the table kept the old character,
+	// which was then found in a slot showing the new one)
+	lcd_custom_characters[slotToUse] = c;
 	charToSend = slotToUse;
 	lcd_createChar_P(slotToUse, &Font[c - 0x80]);
 #ifdef DEBUG_CUSTOM_CHARACTERS
@@ -737,6 +746,12 @@ static void lcd_invalidate_custom_characters() {
 }
 
 void lcd_frame_start() {
+	// A second call without any byte written since the first one (the status screen is started by
+	// menu_lcd_lcdupdate_func() and then by itself) would discard all the characters of the last
+	// frame and upload them again
+	if (!lcd_frame_written) return;
+	lcd_frame_written = false;
+
 	// check all custom characters and discard unused ones
 	for (uint8_t i = 0; i < 8; i++) {
 		uint8_t c = lcd_custom_characters[i];

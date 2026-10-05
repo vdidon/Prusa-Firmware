@@ -440,7 +440,7 @@ void get_command()
 		  if (*cmd_head == 'N') {
 
 			  // Line number met: decode the number, then move cmd_start past all spaces.
-			  gcode_N = (strtol(cmd_head+1, &cmd_start, 10));
+			  gcode_N = (strtol_10_16(cmd_head+1, &cmd_start, 10));
 			  while (*cmd_start == ' ') ++cmd_start;
 
 			  // Test whether the successive lines are stamped with an increasing line number ID.

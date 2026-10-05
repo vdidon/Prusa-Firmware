@@ -3846,7 +3846,7 @@ void process_commands()
 			axis = (axis == 'E')?3:(axis - 'X');
 			if (axis < 4)
 			{
-				uint8_t fac = (uint8_t)strtol(CMDBUFFER_CURRENT_STRING + 14, NULL, 10);
+				uint8_t fac = (uint8_t)strtol_10_16(CMDBUFFER_CURRENT_STRING + 14, NULL, 10);
 				tmc2130_set_wave(axis, 247, fac);
 			}
 		}
@@ -3859,7 +3859,7 @@ void process_commands()
 			axis = (axis == 'E')?3:(axis - 'X');
 			if (axis < 4)
 			{
-				uint8_t step = (uint8_t)strtol(CMDBUFFER_CURRENT_STRING + 14, NULL, 10);
+				uint8_t step = (uint8_t)strtol_10_16(CMDBUFFER_CURRENT_STRING + 14, NULL, 10);
 				uint16_t res = tmc2130_get_res(axis);
 				tmc2130_goto_step(axis, step & (4*res - 1), 2, 1000, res);
 			}
@@ -3880,15 +3880,15 @@ void process_commands()
 				char* str_end = 0;
 				if (CMDBUFFER_CURRENT_STRING[14])
 				{
-					chop0 = (uint8_t)strtol(CMDBUFFER_CURRENT_STRING + 14, &str_end, 10) & 15;
+					chop0 = (uint8_t)strtol_10_16(CMDBUFFER_CURRENT_STRING + 14, &str_end, 10) & 15;
 					if (str_end && *str_end)
 					{
-						chop1 = (uint8_t)strtol(str_end, &str_end, 10) & 7;
+						chop1 = (uint8_t)strtol_10_16(str_end, &str_end, 10) & 7;
 						if (str_end && *str_end)
 						{
-							chop2 = (uint8_t)strtol(str_end, &str_end, 10) & 15;
+							chop2 = (uint8_t)strtol_10_16(str_end, &str_end, 10) & 15;
 							if (str_end && *str_end)
-								chop3 = (uint8_t)strtol(str_end, &str_end, 10) & 3;
+								chop3 = (uint8_t)strtol_10_16(str_end, &str_end, 10) & 3;
 						}
 					}
 				}
@@ -3904,7 +3904,7 @@ void process_commands()
 #ifdef BACKLASH_X
 	else if (strncmp_P(CMDBUFFER_CURRENT_STRING, PSTR("BACKLASH_X"), 10) == 0)
 	{
-		uint8_t bl = (uint8_t)strtol(CMDBUFFER_CURRENT_STRING + 10, NULL, 10);
+		uint8_t bl = (uint8_t)strtol_10_16(CMDBUFFER_CURRENT_STRING + 10, NULL, 10);
 		st_backlash_x = bl;
 		printf_P(_N("st_backlash_x = %d\n"), st_backlash_x);
 	}
@@ -3912,7 +3912,7 @@ void process_commands()
 #ifdef BACKLASH_Y
 	else if (strncmp_P(CMDBUFFER_CURRENT_STRING, PSTR("BACKLASH_Y"), 10) == 0)
 	{
-		uint8_t bl = (uint8_t)strtol(CMDBUFFER_CURRENT_STRING + 10, NULL, 10);
+		uint8_t bl = (uint8_t)strtol_10_16(CMDBUFFER_CURRENT_STRING + 10, NULL, 10);
 		st_backlash_y = bl;
 		printf_P(_N("st_backlash_y = %d\n"), st_backlash_y);
 	}
@@ -8073,7 +8073,7 @@ void process_commands()
     case 707: {
         if ( MMU2::mmu2.Enabled() ) {
             if( code_seen('A') ) {
-                MMU2::mmu2.ReadRegister(uint8_t(strtol(strchr_pointer+1, NULL, 16)));
+                MMU2::mmu2.ReadRegister(uint8_t(strtol_10_16(strchr_pointer+1, NULL, 16)));
             }
         }
     } break;
@@ -8097,7 +8097,7 @@ void process_commands()
         if ( MMU2::mmu2.Enabled() ){
             uint8_t addr = 0;
             if( code_seen('A') ) {
-                addr = uint8_t(strtol(strchr_pointer+1, NULL, 16));
+                addr = uint8_t(strtol_10_16(strchr_pointer+1, NULL, 16));
             }
             uint16_t data = 0;
             if( code_seen('X') ) {

@@ -176,4 +176,72 @@ double strtod_noE(const char* nptr, char** endptr)
 	return x.flt;
 }
 
+/* strtol() of avr-libc reduced to the bases 10 and 16, the only ones the firmware parses: same
+   result and same end pointer, without the generic base handling and without errno (not read).	*/
+long strtol_10_16(const char* nptr, char** endptr, unsigned char base)
+{
+	unsigned long acc = 0;
+	unsigned char c;
+
+	unsigned char flag = 0;
+#define SL_NEG	    0x01	/* number is negative		*/
+#define SL_0X	    0x02	/* number has a 0x prefix	*/
+#define SL_ANY	    0x04	/* any digit was read		*/
+#define SL_OVFL	    0x08	/* overflow was			*/
+
+	if (endptr)
+		*endptr = (char*)nptr;
+
+	do {
+		c = *nptr++;
+	} while (isspace(c));
+
+	if (c == '-') {
+		flag = SL_NEG;
+		c = *nptr++;
+	}
+	else if (c == '+') {
+		c = *nptr++;
+	}
+
+	if (base == 16 && c == '0' && (*nptr | 0x20) == 'x') {
+		c = nptr[1];
+		nptr += 2;
+		flag |= SL_0X;
+	}
+
+	for (;; c = *nptr++) {
+		if (c >= '0' && c <= '9')
+			c -= '0';
+		else if ((unsigned char)((c | 0x20) - 'a') < 26)
+			c = (c | 0x20) - ('a' - 10);
+		else
+			break;
+		if (c >= base)
+			break;
+		flag |= SL_ANY;
+		/* The digits after an overflow are still read, for the end pointer	*/
+		if (acc > (base == 10 ? 0x80000000UL / 10 : 0x80000000UL / 16))
+			flag |= SL_OVFL;
+		acc = acc * base + c;
+		if (acc > 0x80000000UL)
+			flag |= SL_OVFL;
+	}
+
+	if (endptr) {
+		if (flag & SL_ANY)
+			*endptr = (char*)nptr - 1;
+		else if (flag & SL_0X)
+			*endptr = (char*)nptr - 2;
+	}
+
+	if (flag & SL_OVFL)
+		return flag & SL_NEG ? LONG_MIN : LONG_MAX;
+	if (flag & SL_NEG)
+		return -acc;
+	if ((long)acc < 0)
+		return LONG_MAX;
+	return acc;
+}
+
 #endif

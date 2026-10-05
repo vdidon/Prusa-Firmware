@@ -135,7 +135,7 @@ void dcode_core(daddr_t addr_start, const daddr_t addr_end, const dcode_mem_t ty
     DBG(_N("D%d - Read/Write %S\n"), dcode, type_desc);
     daddr_t count = -1; // RW the entire space by default
     if (code_seen('A'))
-        addr_start = (strchr_pointer[1] == 'x')?strtol(strchr_pointer + 2, 0, 16):(int)code_value();
+        addr_start = (strchr_pointer[1] == 'x')?strtol_10_16(strchr_pointer + 2, 0, 16):(int)code_value();
     if (code_seen('C'))
         count = code_value_long();
     if (addr_start > addr_end)
@@ -348,7 +348,7 @@ void dcode_5()
 	uint32_t address = 0x0000; //default 0x0000
 	uint16_t count = 0x0400; //default 0x0400 (1kb block)
 	if (code_seen('A')) // Address (0x00000-0x3ffff)
-		address = (strchr_pointer[1] == 'x')?strtol(strchr_pointer + 2, 0, 16):(int)code_value();
+		address = (strchr_pointer[1] == 'x')?strtol_10_16(strchr_pointer + 2, 0, 16):(int)code_value();
 	if (code_seen('C')) // Count (0x0001-0x2000)
 		count = (int)code_value();
 	address &= 0x3ffff;

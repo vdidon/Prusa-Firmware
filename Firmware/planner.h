@@ -85,10 +85,9 @@ typedef struct {
   float entry_speed;
   // Maximum allowable junction entry speed in mm/sec. This value is also a maximum exit speed of the previous block.
   float max_entry_speed;
-  // The total travel of this block in mm
-  float millimeters;
-  // acceleration mm/sec^2
-  float acceleration;
+  // 2 * acceleration (mm/sec^2) * travel of this block (mm): the increase of the squared speed over the block,
+  // precalculated for the junction speed planning.
+  float max_dv2;
 
   // Bit flags defined by the BlockFlag enum.
   uint8_t flag;
@@ -164,6 +163,8 @@ extern float* max_feedrate;
 // Use M201 to override by software
 extern uint32_t* max_acceleration_mm_per_s2;
 extern uint32_t max_acceleration_steps_per_s2[NUM_AXIS];
+// 1 / cs.axis_steps_per_mm, updated with max_acceleration_steps_per_s2 by reset_acceleration_rates().
+extern float mm_per_step[NUM_AXIS];
 
 extern long position[NUM_AXIS];
 

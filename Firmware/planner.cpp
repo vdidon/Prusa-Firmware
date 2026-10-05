@@ -84,6 +84,7 @@ float* max_feedrate = cs.max_feedrate_normal;
 // Use M201 to override by software
 uint32_t* max_acceleration_mm_per_s2 = cs.max_acceleration_mm_per_s2_normal;
 uint32_t max_acceleration_steps_per_s2[NUM_AXIS];
+float mm_per_step[NUM_AXIS];
 
 // The current position of the tool in absolute steps
 long position[NUM_AXIS];   //rescaled from extern when axis_steps_per_mm are changed by gcode
@@ -335,11 +336,10 @@ void calculate_trapezoid_for_block(block_t *block, float entry_speed, float exit
 }
 
 // Calculates the maximum allowable entry speed, when you must be able to reach target_velocity using the
-// decceleration within the allotted distance.
-FORCE_INLINE float max_allowable_entry_speed(float decceleration, float target_velocity, float distance)
+// decceleration within the allotted distance. max_dv2 = 2 * decceleration * distance.
+FORCE_INLINE float max_allowable_entry_speed(float max_dv2, float target_velocity)
 {
-    // assert(decceleration < 0);
-    return  sqrt(target_velocity*target_velocity-2*decceleration*distance);
+    return  sqrt(target_velocity*target_velocity+max_dv2);
 }
 
 // Recalculates the motion plan according to the following algorithm:
@@ -386,6 +386,9 @@ void planner_recalculate(const float &safe_final_speed)
     uint8_t tail = block_buffer_tail;
     uint8_t block_index;
     block_t *prev, *current, *next;
+    // plan_buffer_line() has calculated the trapezoid of the newest block from this entry speed.
+    block_t *last = block_buffer + prev_block_index(block_buffer_head);
+    const float last_entry_speed = last->entry_speed;
 
 //    SERIAL_ECHOLNPGM("planner_recalculate - 1");
 
@@ -420,13 +423,13 @@ void planner_recalculate(const float &safe_final_speed)
                 // segment and the maximum acceleration allowed for this segment.
                 // If nominal length true, max junction speed is guaranteed to be reached even if decelerating to a jerk-from-zero velocity.
                 // Only compute for max allowable speed if block is decelerating and nominal length is false.
-                // entry_speed is uint16_t, 24 bits would be sufficient for block->acceleration and block->millimiteres, if scaled to um.
+                // entry_speed is uint16_t, 24 bits would be sufficient for the acceleration and the travel of the block, if scaled to um.
                 // therefore an optimized assembly 24bit x 24bit -> 32bit multiply would be more than sufficient
                 // together with an assembly 32bit->16bit sqrt function.
                 current->entry_speed = ((current->flag & BLOCK_FLAG_NOMINAL_LENGTH) || current->max_entry_speed <= next->entry_speed) ?
                     current->max_entry_speed :
-                    // min(current->max_entry_speed, sqrt(next->entry_speed*next->entry_speed+2*current->acceleration*current->millimeters));
-                    min(current->max_entry_speed, max_allowable_entry_speed(-current->acceleration,next->entry_speed,current->millimeters));
+                    // min(current->max_entry_speed, sqrt(next->entry_speed*next->entry_speed+current->max_dv2));
+                    min(current->max_entry_speed, max_allowable_entry_speed(current->max_dv2,next->entry_speed));
                 current->flag |= BLOCK_FLAG_RECALCULATE;
             }
             next = current;
@@ -448,7 +451,7 @@ void planner_recalculate(const float &safe_final_speed)
             // speeds have already been reset, maximized, and reverse planned by reverse planner.
             // If nominal length is true, max junction speed is guaranteed to be reached. No need to recheck.
             if (! (prev->flag & BLOCK_FLAG_NOMINAL_LENGTH) && prev->entry_speed < current->entry_speed) {
-                float entry_speed = min(current->entry_speed, max_allowable_entry_speed(-prev->acceleration,prev->entry_speed,prev->millimeters));
+                float entry_speed = min(current->entry_speed, max_allowable_entry_speed(prev->max_dv2,prev->entry_speed));
                 // Check for junction speed change
                 if (current->entry_speed != entry_speed) {
                     current->entry_speed = entry_speed;
@@ -469,10 +472,11 @@ void planner_recalculate(const float &safe_final_speed)
 
 //    SERIAL_ECHOLNPGM("planner_recalculate - 3");
 
-    // Last/newest block in buffer. Exit speed is set with safe_final_speed. Always recalculated.
-    current = block_buffer + prev_block_index(block_buffer_head);
-    calculate_trapezoid_for_block(current, current->entry_speed, safe_final_speed);
-    current->flag &= ~BLOCK_FLAG_RECALCULATE;
+    // Last/newest block in buffer. Exit speed is set with safe_final_speed. Recalculated only if the forward
+    // pass lowered its entry speed, its trapezoid is up to date otherwise.
+    if (last->entry_speed != last_entry_speed)
+        calculate_trapezoid_for_block(last, last->entry_speed, safe_final_speed);
+    last->flag &= ~BLOCK_FLAG_RECALCULATE;
 
 //    SERIAL_ECHOLNPGM("planner_recalculate - 4");
 }
@@ -882,30 +886,32 @@ Having the real displacement of the head, we can calculate the total movement le
 */
   #ifndef COREXY
     float delta_mm[4];
-    delta_mm[X_AXIS] = dx / cs.axis_steps_per_mm[X_AXIS];
-    delta_mm[Y_AXIS] = dy / cs.axis_steps_per_mm[Y_AXIS];
+    delta_mm[X_AXIS] = dx * mm_per_step[X_AXIS];
+    delta_mm[Y_AXIS] = dy * mm_per_step[Y_AXIS];
   #else
     float delta_mm[6];
-    delta_mm[X_HEAD] = dx / cs.axis_steps_per_mm[X_AXIS];
-    delta_mm[Y_HEAD] = dy / cs.axis_steps_per_mm[Y_AXIS];
-    delta_mm[X_AXIS] = (dx + dy) / cs.axis_steps_per_mm[X_AXIS];
-    delta_mm[Y_AXIS] = (dx - dy) / cs.axis_steps_per_mm[Y_AXIS];
+    delta_mm[X_HEAD] = dx * mm_per_step[X_AXIS];
+    delta_mm[Y_HEAD] = dy * mm_per_step[Y_AXIS];
+    delta_mm[X_AXIS] = (dx + dy) * mm_per_step[X_AXIS];
+    delta_mm[Y_AXIS] = (dx - dy) * mm_per_step[Y_AXIS];
   #endif
-  delta_mm[Z_AXIS] = dz / cs.axis_steps_per_mm[Z_AXIS];
-  delta_mm[E_AXIS] = de / cs.axis_steps_per_mm[E_AXIS];
+  delta_mm[Z_AXIS] = dz * mm_per_step[Z_AXIS];
+  delta_mm[E_AXIS] = de * mm_per_step[E_AXIS];
+  // The total travel of this block in mm
+  float millimeters;
   if ( block->steps[X_AXIS].wide <=dropsegments && block->steps[Y_AXIS].wide <=dropsegments && block->steps[Z_AXIS].wide <=dropsegments )
   {
-    block->millimeters = fabs(delta_mm[E_AXIS]);
+    millimeters = fabs(delta_mm[E_AXIS]);
   }
   else
   {
     #ifndef COREXY
-      block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
+      millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
 	#else
-	  block->millimeters = sqrt(square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS]));
+	  millimeters = sqrt(square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS]));
     #endif
   }
-  float inverse_millimeters = 1.0/block->millimeters;  // Inverse millimeters to remove multiple divides
+  float inverse_millimeters = 1.0/millimeters;  // Inverse millimeters to remove multiple divides
 
     // Calculate speed in mm/second for each axis. No divide by zero due to previous checks.
   float inverse_second = feed_rate * inverse_millimeters;
@@ -925,7 +931,7 @@ Having the real displacement of the head, we can calculate the total movement le
   }
 #endif // SLOWDOWN
 
-  block->nominal_speed = block->millimeters * inverse_second; // (mm/sec) Always > 0
+  block->nominal_speed = millimeters * inverse_second; // (mm/sec) Always > 0
   block->nominal_rate = ceil(block->step_event_count.wide * inverse_second); // (step/sec) Always > 0
 
   // Calculate and limit speed in mm/sec for each axis
@@ -964,8 +970,8 @@ Having the real displacement of the head, we can calculate the total movement le
 #endif
   // Compute and limit the acceleration rate for the trapezoid generator.
   // block->step_event_count ... event count of the fastest axis
-  // block->millimeters ... Euclidian length of the XYZ movement or the E length, if no XYZ movement.
-  float steps_per_mm = block->step_event_count.wide/block->millimeters;
+  // millimeters ... Euclidian length of the XYZ movement or the E length, if no XYZ movement.
+  float steps_per_mm = block->step_event_count.wide/millimeters;
   uint32_t accel;
   if(block->steps[X_AXIS].wide == 0 && block->steps[Y_AXIS].wide == 0 && block->steps[Z_AXIS].wide == 0)
   {
@@ -1035,7 +1041,8 @@ Having the real displacement of the head, we can calculate the total movement le
   }
   // Acceleration of the segment, in mm/sec^2
   block->acceleration_steps_per_s2 = accel;
-  block->acceleration = accel / steps_per_mm;
+  float acceleration = accel / steps_per_mm;
+  block->max_dv2 = 2 * acceleration * millimeters;
   block->acceleration_rate = (uint32_t)(accel * (float(1UL << 24) / ((F_CPU) / 8.0f)));
 
   // Start with a safe speed.
@@ -1142,7 +1149,7 @@ Having the real displacement of the head, we can calculate the total movement le
   block->max_entry_speed = vmax_junction;
 
   // Initialize block entry speed. Compute based on deceleration to safe_speed.
-  double v_allowable = max_allowable_entry_speed(-block->acceleration,safe_speed,block->millimeters);
+  double v_allowable = max_allowable_entry_speed(block->max_dv2,safe_speed);
   block->entry_speed = min(vmax_junction, v_allowable);
 
   // Initialize planner efficiency flags
@@ -1173,7 +1180,7 @@ Having the real displacement of the head, we can calculate the total movement le
 
       float advance_speed;
       if (e_D_ratio > 0)
-          advance_speed = (extruder_advance_K * e_D_ratio * block->acceleration * cs.axis_steps_per_mm[E_AXIS]);
+          advance_speed = (extruder_advance_K * e_D_ratio * acceleration * cs.axis_steps_per_mm[E_AXIS]);
       else
           advance_speed = cs.max_jerk[E_AXIS] * cs.axis_steps_per_mm[E_AXIS];
 
@@ -1312,8 +1319,10 @@ void set_extrude_min_temp(int temp)
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates()
 {
-	for(int8_t i=0; i < NUM_AXIS; i++)
+	for(int8_t i=0; i < NUM_AXIS; i++) {
         max_acceleration_steps_per_s2[i] = max_acceleration_mm_per_s2[i] * cs.axis_steps_per_mm[i];
+        mm_per_step[i] = 1.f / cs.axis_steps_per_mm[i];
+    }
 }
 
 #ifdef TMC2130

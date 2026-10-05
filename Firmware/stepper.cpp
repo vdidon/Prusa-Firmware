@@ -67,7 +67,7 @@ uint16_t SP_min = 0x21FF;
 #else
 #define STEPPER_MINIMUM_PULSE 2
 #define STEPPER_SET_DIR_DELAY 100
-#define STEPPER_MINIMUM_DELAY delayMicroseconds(STEPPER_MINIMUM_PULSE)
+#define STEPPER_MINIMUM_DELAY _delay_us(STEPPER_MINIMUM_PULSE)
 #endif
 
 #ifdef TMC2130_DEDGE_STEPPING
@@ -632,128 +632,172 @@ FORCE_INLINE void stepper_check_endstops()
 }
 
 
+// The tick loops work on local copies: a step pin write is a byte-sized volatile store, which may
+// alias any variable, so the compiler would reload current_block, counter and count_position after
+// every pulse. The positions are accumulated and stored once per interrupt instead.
+FORCE_INLINE void stepper_count_steps(uint8_t sx, uint8_t sy, uint8_t sz, uint8_t se)
+{
+  // 8-bit products: at most step_loops steps per axis
+  if (sx) count_position[X_AXIS] += (int8_t)(sx * count_direction[X_AXIS]);
+  if (sy) count_position[Y_AXIS] += (int8_t)(sy * count_direction[Y_AXIS]);
+  if (sz) count_position[Z_AXIS] += (int8_t)(sz * count_direction[Z_AXIS]);
+  if (se) {
+    const int8_t de = (int8_t)(se * count_direction[E_AXIS]);
+    count_position[E_AXIS] += de;
+#ifdef LIN_ADVANCE
+    e_steps += de;
+#endif
+  }
+}
+
 FORCE_INLINE void stepper_tick_lowres()
 {
-  for (uint8_t i=0; i < step_loops; ++ i) { // Take multiple steps per interrupt (For high speed moves)
-    MSerial.checkRx(); // Check for serial chars.
+  const block_t *const block = current_block;
+  const uint16_t step_event_count = block->step_event_count.lo;
+  uint16_t completed = step_events_completed.lo;
+  int16_t cx = counter[X_AXIS].lo, cy = counter[Y_AXIS].lo;
+  int16_t cz = counter[Z_AXIS].lo, ce = counter[E_AXIS].lo;
+  uint8_t sx = 0, sy = 0, sz = 0, se = 0; // steps taken along each axis in this interrupt
+  for (uint8_t i = step_loops; i; -- i) { // Take multiple steps per interrupt (For high speed moves)
     // Step in X axis
-    counter[X_AXIS].lo += current_block->steps[X_AXIS].lo;
-    if (counter[X_AXIS].lo > 0) {
+    cx += block->steps[X_AXIS].lo;
+    if (cx > 0) {
       STEP_NC_HI(X_AXIS);
 #ifdef DEBUG_XSTEP_DUP_PIN
       STEP_NC_HI(X_DUP_AXIS);
 #endif //DEBUG_XSTEP_DUP_PIN
-      counter[X_AXIS].lo -= current_block->step_event_count.lo;
-      count_position[X_AXIS]+=count_direction[X_AXIS];
+      cx -= step_event_count;
+      ++ sx;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(X_AXIS);
 #ifdef DEBUG_XSTEP_DUP_PIN
       STEP_NC_LO(X_DUP_AXIS);
 #endif //DEBUG_XSTEP_DUP_PIN
     }
     // Step in Y axis
-    counter[Y_AXIS].lo += current_block->steps[Y_AXIS].lo;
-    if (counter[Y_AXIS].lo > 0) {
+    cy += block->steps[Y_AXIS].lo;
+    if (cy > 0) {
       STEP_NC_HI(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_HI(Y_DUP_AXIS);
 #endif //DEBUG_YSTEP_DUP_PIN
-      counter[Y_AXIS].lo -= current_block->step_event_count.lo;
-      count_position[Y_AXIS]+=count_direction[Y_AXIS];
+      cy -= step_event_count;
+      ++ sy;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_LO(Y_DUP_AXIS);
 #endif //DEBUG_YSTEP_DUP_PIN
     }
     // Step in Z axis
-    counter[Z_AXIS].lo += current_block->steps[Z_AXIS].lo;
-    if (counter[Z_AXIS].lo > 0) {
+    cz += block->steps[Z_AXIS].lo;
+    if (cz > 0) {
       STEP_NC_HI(Z_AXIS);
-      counter[Z_AXIS].lo -= current_block->step_event_count.lo;
-      count_position[Z_AXIS]+=count_direction[Z_AXIS];
+      cz -= step_event_count;
+      ++ sz;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(Z_AXIS);
     }
     // Step in E axis
-    counter[E_AXIS].lo += current_block->steps[E_AXIS].lo;
-    if (counter[E_AXIS].lo > 0) {
+    ce += block->steps[E_AXIS].lo;
+    if (ce > 0) {
 #ifndef LIN_ADVANCE
       STEP_NC_HI(E_AXIS);
 #endif /* LIN_ADVANCE */
-      counter[E_AXIS].lo -= current_block->step_event_count.lo;
-      count_position[E_AXIS] += count_direction[E_AXIS];
-#ifdef LIN_ADVANCE
-      e_steps += count_direction[E_AXIS];
-#else
+      ce -= step_event_count;
+      ++ se;
+#ifndef LIN_ADVANCE
 #if defined(FILAMENT_SENSOR) && (FILAMENT_SENSOR_TYPE == FSENSOR_PAT9125)
       fsensor.stStep(count_direction[E_AXIS] < 0);
 #endif //defined(FILAMENT_SENSOR) && (FILAMENT_SENSOR_TYPE == FSENSOR_PAT9125)
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(E_AXIS);
 #endif
     }
-    if(++ step_events_completed.lo >= current_block->step_event_count.lo)
+    if (++ completed >= step_event_count)
       break;
   }
+  counter[X_AXIS].lo = cx;
+  counter[Y_AXIS].lo = cy;
+  counter[Z_AXIS].lo = cz;
+  counter[E_AXIS].lo = ce;
+  step_events_completed.lo = completed;
+  stepper_count_steps(sx, sy, sz, se);
 }
 
 FORCE_INLINE void stepper_tick_highres()
 {
-  for (uint8_t i=0; i < step_loops; ++ i) { // Take multiple steps per interrupt (For high speed moves)
-    MSerial.checkRx(); // Check for serial chars.
+  const block_t *const block = current_block;
+  const uint32_t step_event_count = block->step_event_count.wide;
+  uint32_t completed = step_events_completed.wide;
+  int32_t cx = counter[X_AXIS].wide, cy = counter[Y_AXIS].wide;
+  int32_t cz = counter[Z_AXIS].wide, ce = counter[E_AXIS].wide;
+  uint8_t sx = 0, sy = 0, sz = 0, se = 0; // steps taken along each axis in this interrupt
+  for (uint8_t i = step_loops; i; -- i) { // Take multiple steps per interrupt (For high speed moves)
     // Step in X axis
-    counter[X_AXIS].wide += current_block->steps[X_AXIS].wide;
-    if (counter[X_AXIS].wide > 0) {
+    cx += block->steps[X_AXIS].wide;
+    if (cx > 0) {
       STEP_NC_HI(X_AXIS);
 #ifdef DEBUG_XSTEP_DUP_PIN
       STEP_NC_HI(X_DUP_AXIS);
 #endif //DEBUG_XSTEP_DUP_PIN
-      counter[X_AXIS].wide -= current_block->step_event_count.wide;
-      count_position[X_AXIS]+=count_direction[X_AXIS];
+      cx -= step_event_count;
+      ++ sx;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(X_AXIS);
 #ifdef DEBUG_XSTEP_DUP_PIN
       STEP_NC_LO(X_DUP_AXIS);
 #endif //DEBUG_XSTEP_DUP_PIN
     }
     // Step in Y axis
-    counter[Y_AXIS].wide += current_block->steps[Y_AXIS].wide;
-    if (counter[Y_AXIS].wide > 0) {
+    cy += block->steps[Y_AXIS].wide;
+    if (cy > 0) {
       STEP_NC_HI(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_HI(Y_DUP_AXIS);
 #endif //DEBUG_YSTEP_DUP_PIN
-      counter[Y_AXIS].wide -= current_block->step_event_count.wide;
-      count_position[Y_AXIS]+=count_direction[Y_AXIS];
+      cy -= step_event_count;
+      ++ sy;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(Y_AXIS);
 #ifdef DEBUG_YSTEP_DUP_PIN
       STEP_NC_LO(Y_DUP_AXIS);
 #endif //DEBUG_YSTEP_DUP_PIN
     }
     // Step in Z axis
-    counter[Z_AXIS].wide += current_block->steps[Z_AXIS].wide;
-    if (counter[Z_AXIS].wide > 0) {
+    cz += block->steps[Z_AXIS].wide;
+    if (cz > 0) {
       STEP_NC_HI(Z_AXIS);
-      counter[Z_AXIS].wide -= current_block->step_event_count.wide;
-      count_position[Z_AXIS]+=count_direction[Z_AXIS];
+      cz -= step_event_count;
+      ++ sz;
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(Z_AXIS);
     }
     // Step in E axis
-    counter[E_AXIS].wide += current_block->steps[E_AXIS].wide;
-    if (counter[E_AXIS].wide > 0) {
+    ce += block->steps[E_AXIS].wide;
+    if (ce > 0) {
 #ifndef LIN_ADVANCE
       STEP_NC_HI(E_AXIS);
 #endif /* LIN_ADVANCE */
-      counter[E_AXIS].wide -= current_block->step_event_count.wide;
-      count_position[E_AXIS] += count_direction[E_AXIS];
-#ifdef LIN_ADVANCE
-      e_steps += count_direction[E_AXIS];
-#else
+      ce -= step_event_count;
+      ++ se;
+#ifndef LIN_ADVANCE
 #if defined(FILAMENT_SENSOR) && (FILAMENT_SENSOR_TYPE == FSENSOR_PAT9125)
       fsensor.stStep(count_direction[E_AXIS] < 0);
 #endif //defined(FILAMENT_SENSOR) && (FILAMENT_SENSOR_TYPE == FSENSOR_PAT9125)
+      STEPPER_MINIMUM_DELAY;
       STEP_NC_LO(E_AXIS);
 #endif
     }
-    if(++ step_events_completed.wide >= current_block->step_event_count.wide)
+    if (++ completed >= step_event_count)
       break;
   }
+  counter[X_AXIS].wide = cx;
+  counter[Y_AXIS].wide = cy;
+  counter[Z_AXIS].wide = cz;
+  counter[E_AXIS].wide = ce;
+  step_events_completed.wide = completed;
+  stepper_count_steps(sx, sy, sz, se);
 }
 
 
@@ -935,10 +979,11 @@ FORCE_INLINE void isr() {
         }
     }
 
+#endif
+
     // Check for serial chars. This executes roughtly inbetween 50-60% of the total runtime of the
     // entire isr, making this spot a much better choice than checking during esteps
     MSerial.checkRx();
-#endif
 
     // If current block is finished, reset pointer
     if (step_events_completed.wide >= current_block->step_event_count.wide) {

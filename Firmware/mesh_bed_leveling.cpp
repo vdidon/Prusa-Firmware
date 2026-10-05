@@ -12,35 +12,24 @@ void mesh_bed_leveling::reset() {
 }
 
 float mesh_bed_leveling::get_z(float x, float y) {
-    int   i, j;
-    float s, t;
-
-    i = int(floor((x - (BED_X0 + X_PROBE_OFFSET_FROM_EXTRUDER)) / x_mesh_density));
-    if (i < 0) {
+    // Position in mesh cells. Called for every planned segment: the constant divisions are multiplications by
+    // the inverse, and the truncation is floor() for the positive positions, the negative ones land on the
+    // first cell anyway. Out of the mesh, s and t extrapolate the border cell.
+    float s = (x - (BED_X0 + X_PROBE_OFFSET_FROM_EXTRUDER)) * (1.f / x_mesh_density);
+    int8_t i = (s < MESH_NUM_X_POINTS - 2) ? int8_t(s) : MESH_NUM_X_POINTS - 2;
+    if (i < 0)
         i = 0;
-        s = (x - (BED_X0 + X_PROBE_OFFSET_FROM_EXTRUDER)) / x_mesh_density;
-    } else {
-        if (i > MESH_NUM_X_POINTS - 2) {
-            i = MESH_NUM_X_POINTS - 2;
-        }
-        s = (x - get_x(i)) / x_mesh_density;
-    }
+    s -= i;
 
-    j = int(floor((y - (BED_Y0 + Y_PROBE_OFFSET_FROM_EXTRUDER)) / y_mesh_density));
-    if (j < 0) {
+    float t = (y - (BED_Y0 + Y_PROBE_OFFSET_FROM_EXTRUDER)) * (1.f / y_mesh_density);
+    int8_t j = (t < MESH_NUM_Y_POINTS - 2) ? int8_t(t) : MESH_NUM_Y_POINTS - 2;
+    if (j < 0)
         j = 0;
-        t = (y - (BED_Y0 + Y_PROBE_OFFSET_FROM_EXTRUDER)) / y_mesh_density;
-    } else {
-        if (j > MESH_NUM_Y_POINTS - 2) {
-            j = MESH_NUM_Y_POINTS - 2;
-        }
-        t = (y - get_y(j)) / y_mesh_density;
-    }
+    t -= j;
 
-    float si = 1.f-s;
-    float z0 = si * z_values[j  ][i] + s * z_values[j  ][i+1];
-    float z1 = si * z_values[j+1][i] + s * z_values[j+1][i+1];
-    return (1.f-t) * z0 + t * z1;
+    float z0 = z_values[j  ][i] + s * (z_values[j  ][i+1] - z_values[j  ][i]);
+    float z1 = z_values[j+1][i] + s * (z_values[j+1][i+1] - z_values[j+1][i]);
+    return z0 + t * (z1 - z0);
 }
 // Works for an odd number of MESH_NUM_X_POINTS and MESH_NUM_Y_POINTS
 

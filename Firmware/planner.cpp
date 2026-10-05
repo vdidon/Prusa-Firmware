@@ -761,7 +761,7 @@ void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate
   }
 
   // Apply the machine correction matrix.
-  world2machine(x, y);
+  world2machine_cached(x, y);
 
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps

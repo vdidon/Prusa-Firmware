@@ -16,6 +16,8 @@
 #define DBG(args...) printf_P(args)
 
 uint8_t world2machine_correction_mode;
+// Last world2machine_cached() input (x, y) and result. NAN never compares equal: no result yet.
+static float world2machine_last[4] = { NAN };
 float   world2machine_rotation_and_skew[2][2];
 float   world2machine_rotation_and_skew_inv[2][2];
 float   world2machine_shift[2];
@@ -679,8 +681,25 @@ bool is_bed_z_jitter_data_valid()
     return false;
 }
 
+void world2machine_cached(float &x, float &y)
+{
+    if (world2machine_correction_mode == WORLD2MACHINE_CORRECTION_NONE)
+        return;
+    if (x == world2machine_last[0] && y == world2machine_last[1]) {
+        x = world2machine_last[2];
+        y = world2machine_last[3];
+        return;
+    }
+    world2machine_last[0] = x;
+    world2machine_last[1] = y;
+    world2machine(x, y);
+    world2machine_last[2] = x;
+    world2machine_last[3] = y;
+}
+
 static void world2machine_update(const float vec_x[2], const float vec_y[2], const float cntr[2])
 {
+    world2machine_last[0] = NAN;
     world2machine_rotation_and_skew[0][0] = vec_x[0];
     world2machine_rotation_and_skew[1][0] = vec_x[1];
     world2machine_rotation_and_skew[0][1] = vec_y[0];

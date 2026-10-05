@@ -53,6 +53,9 @@ extern void world2machine_revert_to_uncorrected();
 extern void world2machine_initialize();
 extern void world2machine_read_valid(float vec_x[2], float vec_y[2], float cntr[2]);
 extern void world2machine_update_current();
+// world2machine() remembering its last result: the planner transforms again the position that
+// prepare_move() has just clamped.
+extern void world2machine_cached(float &x, float &y);
 
 inline void world2machine(float &x, float &y)
 {
@@ -124,8 +127,8 @@ inline void machine2world(float &x, float &y)
 inline bool world2machine_clamp(float &x, float &y)
 {
 	bool clamped = false;
-	float tmpx, tmpy;
-    world2machine(x, y, tmpx, tmpy);
+	float tmpx = x, tmpy = y;
+    world2machine_cached(tmpx, tmpy);
     if (tmpx < X_MIN_POS) {
         tmpx = X_MIN_POS;
         clamped = true;

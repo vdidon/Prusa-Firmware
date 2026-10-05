@@ -839,6 +839,7 @@ void dcode_2130()
 						cs.axis_steps_per_mm[axis] *= (res_new / res);
 					else
 						cs.axis_steps_per_mm[axis] /= (res / res_new);
+					reset_acceleration_rates();
 				}
 			}
 			else if (strncmp(strchr_pointer + 7, "wave", 4) == 0)

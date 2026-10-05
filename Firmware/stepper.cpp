@@ -105,7 +105,7 @@ block_t *current_block;  // A pointer to the block currently being traced
 // Variables used by The Stepper Driver Interrupt
 static unsigned char out_bits;         // The next stepping-bits to be output
 static dda_isteps_t counter[NUM_AXIS]; // Counter variables for the bresenham line tracer
-volatile dda_usteps_t step_events_completed; // The number of step events executed in the current block
+static dda_usteps_t step_events_completed; // The number of step events executed in the current block
 static uint32_t  acceleration_time, deceleration_time;
 static uint16_t acc_step_rate; // needed for deccelaration start point
 static uint8_t  step_loops;

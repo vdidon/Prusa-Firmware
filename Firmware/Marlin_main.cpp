@@ -3984,7 +3984,7 @@ void process_commands()
             if (SN[19])
                 puts_P(PSTR("SN invalid"));
             else
-                puts(SN);
+                SERIAL_PROTOCOLLN(SN);
         } else if(code_seen_P(PSTR("Fir"))){ // PRUSA Fir
 
             SERIAL_PROTOCOLLNPGM(FW_VERSION_FULL);

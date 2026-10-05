@@ -154,8 +154,8 @@ emit_char:
         gfUpdateCurrentPosition( rdPtr - start + 1 );
         int16_t rv = *rdPtr++;
 
-        if( curPosition_ >= fileSize_ ){
-            // past the end of file
+        if( curPosition_ > fileSize_ ){
+            // past the end of file (its last byte is still returned)
             goto eof_or_fail;
         } else if( rdPtr - blockBuffBegin >= 512 ){
             // past the end of current bufferred block - prepare the next one...

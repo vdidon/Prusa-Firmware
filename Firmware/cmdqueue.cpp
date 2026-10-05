@@ -633,11 +633,23 @@ void get_command()
         serial_count += card.getFilteredGcodeRun(cmdbuffer+bufindw+CMDHDRSIZE+serial_count, (MAX_CMD_SIZE - 1) - serial_count);
     int16_t n=card.getFilteredGcodeChar();
     char serial_char = (char)n;
-    if( serial_char == '\n'
-     || serial_char == '\r'
-     || (serial_char == '#' && !sd_comment)
-     || n==-1
-    ){
+    if(!( serial_char == '\n'
+       || serial_char == '\r'
+       || (serial_char == '#' && !sd_comment)
+       || n==-1
+    )){
+        if (serial_char == ';') sd_comment = true;
+        if (!sd_comment) {
+            if (serial_count < (MAX_CMD_SIZE - 1))
+                cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
+            else
+                sd_overflow = true;
+        }
+        // The last byte of a file without a final newline also ends its last line.
+        if (!card.eof())
+            continue;
+    }
+    {
       if(serial_char=='#')
         stop_buffering=true;
 
@@ -701,16 +713,6 @@ void get_command()
       // The following line will reserve buffer space if available.
       if (! cmdqueue_could_enqueue_back(MAX_CMD_SIZE-1))
           return;
-    }
-    else
-    {
-        if (serial_char == ';') sd_comment = true;
-        if (!sd_comment) {
-            if (serial_count < (MAX_CMD_SIZE - 1))
-                cmdbuffer[bufindw+CMDHDRSIZE+serial_count++] = serial_char;
-            else
-                sd_overflow = true;
-        }
     }
   }
   if(card.eof())

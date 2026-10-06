@@ -430,12 +430,7 @@ def generate_cpp_code(
     # Add helper functions
     lines.extend([
         'NozzleCategory get_nozzle_category() {',
-        '    uint16_t dia_um = eeprom_read_word((uint16_t*)EEPROM_NOZZLE_DIAMETER_uM);',
-        '    if (dia_um == (uint16_t)EEPROM_EMPTY_VALUE || dia_um == 0)',
-        '        return NozzleCategory::Default;',
-        '    if (dia_um >= 800) return NozzleCategory::Dia080;',
-        '    if (dia_um >= 600) return NozzleCategory::Dia060;',
-        '    return NozzleCategory::Default;',
+        '    return nozzle_category_from_um(eeprom_read_word((uint16_t*)EEPROM_NOZZLE_DIAMETER_uM));',
         '}',
         '',
         'uint16_t get_preheat_hotend_temp(MaterialIndex material) {',

@@ -22,6 +22,15 @@ static constexpr uint8_t NOZZLE_CAT_COUNT = static_cast<uint8_t>(NozzleCategory:
 extern const uint16_t preheat_hotend_temps[MATERIAL_COUNT][NOZZLE_CAT_COUNT] PROGMEM;
 extern const uint16_t preheat_bed_temps[MATERIAL_COUNT] PROGMEM;
 
+// Categorie d'un diametre de buse en um (0xFFFF = EEPROM vierge, 0 = inconnu)
+inline NozzleCategory nozzle_category_from_um(uint16_t dia_um) {
+    if (dia_um == 0xFFFF || dia_um == 0)
+        return NozzleCategory::Default;
+    if (dia_um >= 800) return NozzleCategory::Dia080;
+    if (dia_um >= 600) return NozzleCategory::Dia060;
+    return NozzleCategory::Default;
+}
+
 // API
 NozzleCategory get_nozzle_category();
 uint16_t get_preheat_hotend_temp(MaterialIndex material);

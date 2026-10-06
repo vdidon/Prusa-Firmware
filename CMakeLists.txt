@@ -60,6 +60,20 @@ message(STATUS "Filename debug suffix ...........: ${FN_VERSION_DEBUG_SUFFIX}")
 if(NOT "${PROJECT_VERSION_HASH}" STREQUAL "UNKNOWN" AND NOT "${FW_COMMIT_DSC}" MATCHES ".+NOTFOUND.+") # else -> no commit hash is known... likely no git.
 string(REGEX MATCH "[v|t|c]([0-9]+)\.([0-9]+)\.([0-9]+)-?(${DEV_TAG_REGEX})?([0-9]+)?-([0-9]+)" TAG_VERSION "${FW_COMMIT_DSC}")
 
+# The fork's history does not carry the upstream release tags: the nearest annotated tag is an
+# ancient one (v2.2.3), which would override the version of Configuration.h (FW_MAJOR=2...).
+# Unless the match is enforced, trust Configuration.h when the tag disagrees with it.
+if(NOT ENFORCE_VERSION_MATCH AND NOT "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}" STREQUAL "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_REV}")
+    git_head_commit_number(_commit_count)
+    set(_cfg_dsc "v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_REV}")
+    if(PROJECT_VERSION_FLV AND PROJECT_VERSION_FLV_VER)
+        string(APPEND _cfg_dsc "-${PROJECT_VERSION_FLV}${PROJECT_VERSION_FLV_VER}")
+    endif()
+    string(APPEND _cfg_dsc "-${_commit_count}")
+    MESSAGE(WARNING "Tag ${FW_COMMIT_DSC} disagrees with Configuration.h, using ${_cfg_dsc}")
+    string(REGEX MATCH "[v|t|c]([0-9]+)\.([0-9]+)\.([0-9]+)-?(${DEV_TAG_REGEX})?([0-9]+)?-([0-9]+)" TAG_VERSION "${_cfg_dsc}")
+endif()
+
 if (CMAKE_MATCH_4) # Do we have a build type?
     decode_flavor_code(PROJECT_VER_TAG_FLV "${CMAKE_MATCH_4}" "${CMAKE_MATCH_5}")
 else()

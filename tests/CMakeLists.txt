@@ -8,12 +8,19 @@ include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 set(TEST_SOURCES
 	Example_test.cpp
 	PrusaStatistics_test.cpp
+	Strtod_test.cpp
+	Crc32_test.cpp
+	Fastdiv_test.cpp
+	Preheat_test.cpp
+	host_stubs.c
+	${CMAKE_SOURCE_DIR}/Firmware/strtod.c
     #Tests/Timer_test.cpp
     #Firmware/Timer.cpp
 	)
 
 add_executable(tests ${TEST_SOURCES})
-target_include_directories(tests PRIVATE tests)
+# tests/ first: its avr/ headers stand in for avr-libc on the host
+target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/Firmware)
 target_link_libraries(tests Catch2::Catch2WithMain)
 catch_discover_tests(tests)
 

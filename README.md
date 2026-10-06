@@ -93,6 +93,13 @@ Bugs fixed in this fork but not (yet) in upstream:
 - **EEPROM restore bugs**: dedicated binary file open to avoid spurious serial logs, correct
   rendering of Yes/No prompts, soft reset after restore.
 - **`PLANNER_DIAGNOSTICS`**: replacement for `itostr3()` (removed upstream).
+- **Filament sensor turned off or faulty** (upstream issue #4808, PR #4834 still open):
+    - MK3 (PAT9125): a sensor turned off in the menu is no longer probed at boot. When
+      unplugged, the failed probe put it in error, so the menu showed `On` after every reboot
+      and hid `Load` / `Unload filament`.
+    - All variants: the main menu, the nozzle change and the M862 filament check only trust the
+      sensor once it is ready. A sensor in error no longer hides `Unload filament` or raises a
+      false "missing filament" warning.
 
 # Prusa Firmware MK3
 

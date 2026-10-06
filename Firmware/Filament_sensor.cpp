@@ -365,6 +365,9 @@ void PAT9125_sensor::init() {
 //    puts_P(PSTR("fsensor::init()"));
 
     settings_init(); // also sets the state to State::initializing
+    if (state == State::disabled) {
+        return; // don't probe a sensor turned off in the menu, a failed probe would flag an error
+    }
 
     calcChunkSteps(cs.axis_steps_per_mm[E_AXIS]); // for jam detection
 

@@ -802,13 +802,7 @@ FORCE_INLINE void stepper_tick_highres()
 
 
 #ifdef LIN_ADVANCE
-// @wavexx: fast uint16_t division for small dividends<5
-//          q/3 based on "Hacker's delight" formula
-FORCE_INLINE uint16_t fastdiv(uint16_t q, uint8_t d)
-{
-    if(d != 3) return q >> (d / 2);
-    else return (uint16_t)(((uint32_t)0xAAAB * q) >> 16) >> 1; // avoid a 17-step 32-bit shift loop
-}
+#include "fastdiv.h"
 
 FORCE_INLINE void advance_spread(uint16_t timer)
 {
